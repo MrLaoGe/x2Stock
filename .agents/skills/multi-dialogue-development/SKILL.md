@@ -21,4 +21,4 @@ description: "在 XXStock 按老板派单、独立 PM、专业任务对话组织
 
 真实对话用 Codex create_thread/send_message_to_thread/wait_threads；本地辅助脚本只维护状态，不伪造跨对话 API。新对话不覆盖模型，沿用用户配置。create_thread 前 list_projects；写入角色使用 XXStock 项目的独立 worktree，并从 PM 已提交约定基线接入。
 
-实时记录在 Git 公共目录下被忽略的 `.local/orchestration`，不在 Skill 中放运行数据。发布前取得锁，fetch 最新 origin/main，集成后重新独立验收，调用 [github-release](../github-release/SKILL.md)。锁无超时抢占；异常先核对持有者和远端。取消请求不等于已停止。阶段、时间冻结、独立验收和权限均以契约及行为检查执行，不能只靠提示词。
+实时记录在 Git 公共目录下被忽略的 `.local/orchestration`，不在 Skill 中放运行数据。先 fetch 最新 origin/main、集成并独立验收源候选；取得 task/PM 绑定的发布锁时再次核对最新基线。持锁后按远端 VERSION 调用 [github-release](../github-release/SKILL.md) 准备版本材料，单独记录最终发布 SHA。主线或源内容变化必须重新集成与验收，不能沿用旧候选通过结果。锁无超时抢占；异常先核对持有者和远端。取消请求不等于已停止。阶段、时间冻结、独立验收和权限均以契约及行为检查执行，不能只靠提示词。
