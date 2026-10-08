@@ -1,0 +1,30 @@
+name: Notify VoceChat on Git push
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    if: ${{ vars.VOCECHAT_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Send push notification to configured channel
+        env:
+          VOCECHAT_ENABLED: ${{ vars.VOCECHAT_ENABLED }}
+          VOCECHAT_BASE_URL: ${{ secrets.VOCECHAT_BASE_URL }}
+          VOCECHAT_API_KEY: ${{ secrets.VOCECHAT_API_KEY }}
+          VOCECHAT_GROUP_ID: ${{ vars.VOCECHAT_GROUP_ID || '19' }}
+          VOCECHAT_API_PREFIX: ${{ vars.VOCECHAT_API_PREFIX || '/api/bot' }}
+          VOCECHAT_TIMEOUT_SECONDS: ${{ vars.VOCECHAT_TIMEOUT_SECONDS || '15' }}
+        run: python scripts/vocechat_notify.py

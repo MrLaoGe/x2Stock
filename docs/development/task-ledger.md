@@ -11,11 +11,12 @@
 | S0-005 | 架构、契约、界面与功能归并 | 架构 Agent | completed | 架构、接口、UI、模块目录 |
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
 | S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
+| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | in_progress | 通知与脱敏已实现；23合成测试通过，Secrets/频道19已配置，待真实push验收 |
 | S1-001 | 数据中心与迁移详细实施 | 后续对话 | planned | 先模块范围和验收，再骨架/数据代码 |
 
 ## 下一轮入口
 
-[数据中心与迁移](../modules/data-center.md) 是下一轮的唯一首模块。当前未实现数据库、采集、迁移、API、业务页面、产品 Agent、回测或交易执行。
+[数据中心与迁移](../modules/data-center.md) 是下一轮首个 A 股业务模块。用户已先追加 Git通知运维任务 S0-008；当前未实现数据库、采集、迁移、API、业务页面、产品 Agent、回测或交易执行。
 
 ## 本轮验证
 

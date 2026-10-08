@@ -2,7 +2,7 @@
 
 面向 A 股投资者的开源研究工作台，逐步构建 **多 Agent 研究分析 → 量化验证 → 可审计执行** 的能力。
 
-**当前状态：阶段 0，设计文档仓库。** 尚无可运行网页、采集服务、迁移程序或交易功能。这里的架构、接口和部署描述是后续开发契约，不代表已经实现。
+**当前状态：阶段 0，设计文档与开发运维仓库。** 已实现可配置的 Git 推送到 VChat / VoceChat 通知；尚无可运行网页、采集服务、迁移程序或交易功能。架构、业务接口和应用部署描述是后续开发契约，不代表已经实现。
 
 ## 项目原则
 
@@ -23,6 +23,7 @@
 | 数据源和历史数据复用 | [来源能力矩阵](docs/data/sources.md)、[迁移设计](docs/data/migration.md) |
 | 多 Agent 接入与交接 | [开发约束](AGENTS.md)、[协作规范](docs/development/collaboration.md) |
 | 当前进度 | [任务台账](docs/development/task-ledger.md)、[阶段路线](docs/roadmap.md) |
+| Git 推送机器人通知 | [VChat / VoceChat 配置与脱敏](docs/development/git-notifications.md) |
 
 ## 技术选型
 
@@ -36,6 +37,7 @@
 
 ```text
 python scripts/verify_repository.py
+python -m unittest discover -s tests -p 'test_*.py'
 git diff --check
 ```
 

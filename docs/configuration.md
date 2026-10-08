@@ -1,6 +1,6 @@
 # 配置与用户接入设计
 
-状态：设计确定，尚无配置读取器。公开模板为 [config.example.json](../config/config.example.json) 与 [.env.example](../.env.example)。模板不是真实用户配置，也不触发网络访问。
+状态：应用配置为设计；独立 Git 通知工具已实现其 `notifications.vocechat` 子集的读取与脱敏。公开模板为 [config.example.json](../config/config.example.json) 与 [.env.example](../.env.example)。模板不是真实用户配置，也不触发网络访问。
 
 ## 配置位置和优先级
 
@@ -57,6 +57,12 @@ MCP 是后续 Agent 工具通道，不承担初期持久采集。若接入，带
 不会因 Responses 失败就隐式切换到另一模型或协议重复付费。连接测试属于用户主动操作，显示预期请求和预算，再按已有操作授权执行。模型故障时确定性计算可继续，报告明确标记 AI 未完成。
 
 OpenAI 官方 SDK 支持 Responses 和可配置客户端；第三方兼容性需另行验证，参考 [官方 Python SDK](https://developers.openai.com/api/reference/python)。开发 Codex 的模型设置与产品 AI 配置彼此独立。
+
+## 已实现：VChat / VoceChat Git 通知
+
+机器人地址与密钥分别通过 `VOCECHAT_BASE_URL`、`VOCECHAT_API_KEY` 配置，频道 `VOCECHAT_GROUP_ID` 默认 `19`；公开模板默认关闭且秘密为空。GitHub端使用 Actions Secrets 存地址/密钥、Variables存开关/频道/前缀/超时。配置检查只显示是否已配置，错误不包含上游正文或原始异常。
+
+工具仅为 Git 推送通知，不启动应用服务或旧调度器。使用方法、环境优先级、脱敏及故障验收见 [通知说明](development/git-notifications.md)。
 
 ## 迁移配置
 

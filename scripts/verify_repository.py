@@ -23,6 +23,8 @@ REQUIRED = (
     "docs/adr/0001-project-boundary.md", "docs/adr/0002-stack-and-deployment.md",
     "docs/adr/0003-provenance-and-migration.md", "docs/adr/0004-agent-and-execution.md",
     ".github/workflows/verify-docs.yml", "scripts/verify_repository.py",
+    ".github/workflows/notify-vocechat.yml", "scripts/vocechat_notify.py",
+    "tests/test_vocechat_notify.py", "docs/development/git-notifications.md",
 )
 PRIVATE_ROOTS = {".local", ".worktrees", "runtime", "data", "logs", "outputs", "backups"}
 PRIVATE_SUFFIXES = {
@@ -41,10 +43,14 @@ SECRET_RULES = (
     ("credential in connection URI", re.compile(r"(?:postgres(?:ql)?(?:\+\w+)?|https?)://[^\s/:]+:[^\s/@]+@", re.I)),
 )
 SECRET_ASSIGNMENT = re.compile(
-    r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
+    r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|VOCECHAT_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
     r"[\"']?[ \t]*[:=][ \t]*[\"']?([A-Za-z0-9_./+=:-]+)"
 )
-ENV_REFERENCES = {"TUSHARE_TOKEN", "AI_API_KEY", "OPENAI_API_KEY", "POSTGRES_PASSWORD", "DATABASE_URL"}
+PYTHON_SECRET_ASSIGNMENT = re.compile(
+    r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|VOCECHAT_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
+    r"[\"']?[ \t]*[:=][ \t]*[\"']([A-Za-z0-9_./+=:-]+)"
+)
+ENV_REFERENCES = {"TUSHARE_TOKEN", "AI_API_KEY", "OPENAI_API_KEY", "VOCECHAT_API_KEY", "POSTGRES_PASSWORD", "DATABASE_URL"}
 
 
 def repository_files() -> list[str]:
@@ -55,14 +61,15 @@ def repository_files() -> list[str]:
     return sorted(set(result.stdout.decode("utf-8").split("\0")) - {""})
 
 
-def secret_issues(text: str) -> list[str]:
+def secret_issues(text: str, python_code: bool = False) -> list[str]:
     # Only print category/line, never the credential or matching source line.
     issues = []
     for label, pattern in SECRET_RULES:
         for match in pattern.finditer(text):
             line = text.count("\n", 0, match.start()) + 1
             issues.append(f"{label} at line {line}")
-    for match in SECRET_ASSIGNMENT.finditer(text):
+    assignments = PYTHON_SECRET_ASSIGNMENT if python_code else SECRET_ASSIGNMENT
+    for match in assignments.finditer(text):
         value = match.group(1)
         if value in ENV_REFERENCES or value.lower().startswith(("example", "placeholder", "replace_")):
             continue
@@ -115,7 +122,7 @@ def config_issues(config: dict, env_text: str) -> list[str]:
         if line and not line.startswith("#") and "=" in line:
             key, value = line.split("=", 1)
             env[key] = value
-    for key in ("POSTGRES_PASSWORD", "DATABASE_URL", "TUSHARE_TOKEN", "AI_API_KEY", "AI_MODEL", "LEGACY_SOURCE_PATH"):
+    for key in ("POSTGRES_PASSWORD", "DATABASE_URL", "TUSHARE_TOKEN", "AI_API_KEY", "AI_MODEL", "LEGACY_SOURCE_PATH", "VOCECHAT_BASE_URL", "VOCECHAT_API_KEY"):
         if env.get(key) != "":
             issues.append(f"environment template must leave {key} empty")
     if env.get("AI_ENABLED") != "false" or env.get("AI_DAILY_BUDGET_CNY") != "0":
@@ -123,6 +130,14 @@ def config_issues(config: dict, env_text: str) -> list[str]:
     identity = config.get("identity", {})
     if identity != {"local_user_id": "local", "local_workspace_id": "local"}:
         issues.append("single-user template identity must be local/local")
+    bot = config.get("notifications", {}).get("vocechat", {})
+    if bot.get("enabled") is not False or env.get("VOCECHAT_ENABLED") != "false":
+        issues.append("public notification templates must be disabled")
+    if bot.get("api_key_env") != "VOCECHAT_API_KEY" or "api_key" in bot or "base_url" in bot:
+        issues.append("bot address/key templates must only reference environment variables")
+    for field, env_name in (("group_id", "VOCECHAT_GROUP_ID"), ("api_prefix", "VOCECHAT_API_PREFIX"), ("timeout_seconds", "VOCECHAT_TIMEOUT_SECONDS")):
+        if str(bot.get(field, "")) != env.get(env_name):
+            issues.append(f"notification defaults disagree for {field}")
     for key, value in config.get("deployment", {}).get("ports", {}).items():
         env_key = {"web": "XXSTOCK_WEB_PORT", "api": "XXSTOCK_API_PORT", "dev_web": "XXSTOCK_DEV_WEB_PORT"}.get(key)
         if env_key is None or env.get(env_key) != str(value):
@@ -163,7 +178,7 @@ def verify() -> int:
             continue
         if not content.endswith("\n"):
             issues.append(f"{name}: missing final newline")
-        issues.extend(f"{name}: {issue}" for issue in secret_issues(content))
+        issues.extend(f"{name}: {issue}" for issue in secret_issues(content, python_code=path.suffix.lower() == ".py"))
         if path.suffix.lower() == ".md":
             issues.extend(f"{name}: {issue}" for issue in link_issues(name, content, public))
         if path.suffix.lower() == ".json":

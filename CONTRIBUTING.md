@@ -24,6 +24,7 @@ PR 描述先说明触发问题与变化后的行为，再列验证结果和实�
 
 ```text
 python scripts/verify_repository.py
+python -m unittest discover -s tests -p 'test_*.py'
 git diff --check
 ```
 

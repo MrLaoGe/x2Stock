@@ -20,6 +20,8 @@ jobs:
           python-version: '3.11'
       - name: Validate public assets and configuration examples
         run: python scripts/verify_repository.py
+      - name: Test Git notification behavior without network access
+        run: python -m unittest discover -s tests -p 'test_*.py'
       - name: Check whitespace
         env:
           DOCS_EVENT_NAME: ${{ github.event_name }}

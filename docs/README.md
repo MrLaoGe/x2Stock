@@ -1,6 +1,6 @@
 # 设计文档索引
 
-当前交付是阶段 0 文档仓库。以下设计均不代表相应运行功能已经实现。
+当前交付是阶段 0 文档与开发运维仓库；Git通知工具已实现，其他设计不代表相应运行功能已经实现。
 
 ## 项目和产品
 
@@ -23,6 +23,7 @@
 
 - [Agent 设计](agents.md)：开发角色与未来产品研究角色。
 - [协作规范](development/collaboration.md)：分支、worktree、评审和集成。
+- [Git 推送到 VChat / VoceChat](development/git-notifications.md)：已实现通知、配置和脱敏。
 - [任务台账](development/task-ledger.md)：实际完成状态。
 - [交接模板](development/handoff-template.md)：每轮交付的最小交接。
 - [阶段 0 交接](development/handoffs/phase-0.md)：本轮已交付内容及下一轮入口。

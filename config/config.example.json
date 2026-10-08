@@ -13,6 +13,16 @@
     "eastmoney": { "enabled": true },
     "cailianshe": { "enabled": true }
   },
+  "notifications": {
+    "vocechat": {
+      "enabled": false,
+      "base_url_env": "VOCECHAT_BASE_URL",
+      "api_key_env": "VOCECHAT_API_KEY",
+      "group_id": "19",
+      "api_prefix": "/api/bot",
+      "timeout_seconds": 15
+    }
+  },
   "ai": {
     "enabled": false,
     "base_url": "https://api.openai.com/v1",
