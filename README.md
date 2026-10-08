@@ -6,6 +6,11 @@
 
 开发协作采用老板派单 → 独立 PM → 持久专业对话 → 独立验收 → 已授权发布。可用的 [多对话开发 Skill](.agents/skills/multi-dialogue-development/SKILL.md) 与本地任务/发布协调工具服务开发阶段；[角色与模块覆盖](docs/development/agent-coverage.md) 定义未来金融专责，不代表金融 Agent 已可运行。
 
+## 项目交流群
+
+- 私域交流群：[https://qq.mctop1.com/](https://qq.mctop1.com/)
+- QQ交流群：1126775948
+
 ## 项目原则
 
 - 每位使用者独立部署，自行提供 Tushare 与 AI 配置；首期单用户，数据访问边界预留多用户。
