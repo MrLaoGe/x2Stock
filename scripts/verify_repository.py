@@ -22,7 +22,6 @@ REQUIRED = (
     "docs/development/handoff-template.md", "docs/development/handoffs/phase-0.md",
     "docs/adr/0001-project-boundary.md", "docs/adr/0002-stack-and-deployment.md",
     "docs/adr/0003-provenance-and-migration.md", "docs/adr/0004-agent-and-execution.md",
-    "docs/adr/0006-module-first-new-project.md", "docs/modules/application-skeleton.md",
     ".github/workflows/verify-docs.yml", "scripts/verify_repository.py",
     ".github/workflows/notify-vocechat.yml", "scripts/vocechat_notify.py",
     "tests/test_vocechat_notify.py", "docs/development/git-notifications.md",
@@ -30,7 +29,7 @@ REQUIRED = (
     ".agents/skills/github-release/SKILL.md", ".agents/skills/github-release/agents/openai.yaml",
     ".agents/skills/github-release/scripts/release.py", ".agents/skills/github-release/references/release-contract.md",
     "tests/test_github_release.py", "docs/development/skills.md", "docs/development/releases.md",
-    "docs/development/handoffs/skill-releases.md", "docs/development/handoffs/module-first-roadmap.md",
+    "docs/development/handoffs/skill-releases.md",
 )
 PRIVATE_ROOTS = {".local", ".worktrees", "runtime", "data", "logs", "outputs", "backups"}
 PRIVATE_SUFFIXES = {
