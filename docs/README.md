@@ -5,7 +5,8 @@
 ## 项目和产品
 
 - [总体方案](project-plan.md)：已确认决策与首轮边界。
-- [功能审查清单](modules/catalog.md)：旧功能归并、候选与淘汰边界。
+- [旧功能参考目录](modules/catalog.md)：用户选模块的参考，不是任务队列。
+- [最小应用骨架](modules/application-skeleton.md)：下一项本体任务，只有规划与验收，未实现。
 - [界面规范](ui-design.md)：桌面工作台与手机操作原则。
 - [阶段路线](roadmap.md)：各阶段交付与进入下一阶段的条件。
 
@@ -17,7 +18,7 @@
 - [来源能力矩阵](data/sources.md)：允许来源、数据集、权限与核验。
 - [旧数据审计](data/legacy-audit.md)：已观察事实、规模和缺口。
 - [迁移设计](data/migration.md)：来源过滤、只读导出、幂等和回滚。
-- [数据中心与迁移模块](modules/data-center.md)：下一轮模块入口和验收。
+- [数据中心](modules/data-center.md)：随已启用模块增长的配置、任务、来源/质量管理；非前置搬库。
 
 ## Agent 和多对话维护
 
@@ -32,6 +33,7 @@
 - [阶段 0 交接](development/handoffs/phase-0.md)：本轮已交付内容及下一轮入口。
 - [Git 通知交接](development/handoffs/git-notifications.md)：此前真实频道19投递验收与维护。
 - [Skill 与发布交接](development/handoffs/skill-releases.md)：本轮本地完成和外部待验收状态。
+- [路线调整交接](development/handoffs/module-first-roadmap.md)：本轮文档边界、审查与串行发布依赖。
 - [CHANGELOG](../CHANGELOG.md)：正式发布版本索引。
 
 ## 已接受的架构决策
@@ -40,6 +42,7 @@
 - [ADR 0002：技术栈与独立部署](adr/0002-stack-and-deployment.md)
 - [ADR 0003：来源准入和历史迁移](adr/0003-provenance-and-migration.md)
 - [ADR 0004：Agent 证据与执行边界](adr/0004-agent-and-execution.md)
+- [ADR 0006：独立新建与按模块复用](adr/0006-module-first-new-project.md)：替代旧数据中心/迁移优先顺序，保留历史 ADR。
 
 ## 外部依据
 

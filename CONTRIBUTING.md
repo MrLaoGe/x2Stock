@@ -2,7 +2,7 @@
 
 ## 开始之前
 
-当前仓库为业务设计与开发运维仓库，尚无 A 股业务应用。先阅读 [文档索引](docs/README.md)、[任务台账](docs/development/task-ledger.md) 和 [AGENTS.md](AGENTS.md)，确认任务所属阶段。首个实施模块是数据中心与迁移，不要求贡献者同时实现所有业务。
+当前仓库为业务设计与开发运维仓库，尚无 A 股业务应用。先阅读 [文档索引](docs/README.md)、[任务台账](docs/development/task-ledger.md) 和 [AGENTS.md](AGENTS.md)，确认任务所属阶段。下一项本体任务是[最小应用骨架](docs/modules/application-skeleton.md)，当前只规划未实现；其后用户逐个选择业务模块，默认不迁移旧数据。旧目录、共有功能和角色覆盖不构成开发/导入授权，未选模块不建业务表、不部署采集/导入任务。
 
 ## 工作流程
 

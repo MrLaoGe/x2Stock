@@ -15,10 +15,12 @@
 
 ## 项目原则
 
-- 每位使用者独立部署，自行提供 Tushare 与 AI 配置；首期单用户，数据访问边界预留多用户。
+- 每位使用者独立部署；首期单用户，数据访问边界预留多用户。骨架无需旧项目、数据源凭据或 AI 即可启动，启用相应功能时再自行配置。
 - 新项目与 ReviewStock_Codex 的数据库、目录、配置和调度器独立；只在明确的本地迁移操作中只读访问旧数据。
 - 支持的数据源仅为 Tushare、东方财富、财联社；排除 zhitu、mairuiapi 的接口、配置和历史数据。
-- 先统一数据、重建常规研究功能，再逐步加入 Agent、回测、模拟交易和执行能力。
+- 按独立新项目建设：用户选模块 → 明确新版功能 → 定义所需数据 → 评估旧数据价值 → 按需另批导入。旧 3.0 仅参考，默认不迁移旧数据。
+- 下一项本体任务是最小应用骨架；随后由用户逐个选业务模块，依赖只补最小前置。未选模块不建业务表、不部署采集/导入任务。数据中心随已启用模块增长。
+- 新采集满足功能即可独立交付，无需等待可选旧迁移；历史缺失与量化限制如实显示。研究 Agent、量化验证和单独授权执行保持长期方向。
 - 展示数据来源、时间、缺失和过期状态；AI 结论需要证据，不将角色投票作为事实证明。
 
 ## 阅读入口
@@ -28,8 +30,8 @@
 | 理解项目和本轮边界 | [总体方案](docs/project-plan.md) |
 | 查找全部设计文档 | [文档索引](docs/README.md) |
 | 理解模块和旧功能归并 | [功能审查清单](docs/modules/catalog.md) |
-| 开始下一轮开发 | [数据中心与迁移模块](docs/modules/data-center.md) |
-| 数据源和历史数据复用 | [来源能力矩阵](docs/data/sources.md)、[迁移设计](docs/data/migration.md) |
+| 开始下一轮开发 | [最小应用骨架（仅规划）](docs/modules/application-skeleton.md) |
+| 已选模块的数据管理和可选复用 | [数据中心](docs/modules/data-center.md)、[来源能力矩阵](docs/data/sources.md)、[迁移设计](docs/data/migration.md) |
 | 多 Agent 接入与交接 | [开发约束](AGENTS.md)、[协作规范](docs/development/collaboration.md) |
 | 当前进度 | [任务台账](docs/development/task-ledger.md)、[阶段路线](docs/roadmap.md) |
 | 项目 Skill | [组织与注册规则](docs/development/skills.md)、[github-release](.agents/skills/github-release/SKILL.md) |
@@ -62,7 +64,7 @@ git diff --check
 
 ## 参与开发
 
-阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [AGENTS.md](AGENTS.md)。每轮只处理约定模块，完成设计、实现和验收后更新台账与交接记录；不把终极交易目标提前塞入数据底座。
+阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [AGENTS.md](AGENTS.md)。每轮只处理约定模块，完成设计、实现和验收后更新台账与交接记录；不把旧表存在、角色覆盖或共有功能当作实施授权。当前路线见 [ADR 0006](docs/adr/0006-module-first-new-project.md)。
 
 ## 许可与数据
 
