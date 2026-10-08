@@ -27,6 +27,12 @@ threadId，也不能再次派发。API 返回真实 ID 后单独确认。API 错
 很久无响应也不能按超时抢占。恢复先提供持有者状态和远端 Git/Actions/标签/Release/通知
 六类证据；任何歧义都保持锁。第二 PM 必须重新读取最新 main 并重新集成复验。
 
+发布顺序是：先锁定已集成且独立验收通过的源候选；再按锁定的 `version` 准备
+`VERSION` 与说明，运行 `release.py check`，提交最终发布材料并取得 exact SHA；最后由
+工作流发布并保存 receipt。receipt 同时关联 `source_candidate`、发布 SHA、Actions、
+Release 和通知结果。锁中的源候选不是随后版本材料的 SHA；持锁后源实现若发生变化，
+原验收立即失效，必须产生新候选、重新独立验收并重新绑定锁。
+
 持锁后 fetch origin/main，从远端 VERSION 计算下一 patch；推送必须快进。失败恢复沿用
 同 SHA/版本，不 force push，不修改历史发布材料。最终收据留本地或 Actions，不追加成功提交。
 
@@ -37,3 +43,7 @@ python .agents/skills/multi-dialogue-development/scripts/orchestration.py show
 python -m unittest tests/test_orchestration.py
 git diff --check
 ```
+
+CLI 还提供 `task-freeze`、`task-deliver`、`task-review`、`task-accept`、
+`task-cancel`、`task-stop`、`publish-lock-recover`；这些命令只更新本地协作状态，
+不代替 Codex 对话 API、GitHub Actions 或发布工具。

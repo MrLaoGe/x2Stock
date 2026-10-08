@@ -89,7 +89,7 @@ def roles(root):
     for row in rows if isinstance(rows,list) else []:
         if isinstance(row,dict) and isinstance(row.get("id"),str):
             stage=row.get("stage", row.get("minimum_stage", 0))
-            try: stage=int(stage)
+            try: stage=int(str(stage).replace("stage_", "").replace("stage-", ""))
             except (TypeError,ValueError): raise OrchestrationError("Role stage is invalid")
             if stage < 0 or stage > 5: raise OrchestrationError("Role stage is outside 0..5")
             out[row["id"]]=stage
@@ -97,7 +97,7 @@ def roles(root):
 def pathnorm(x):
     x=clean(x,"file path"); p=x.replace("\\","/")
     if not p or p.startswith("/") or re.match(r"^[A-Za-z]:/",p) or ".." in p.split("/"): raise OrchestrationError("File ownership paths must be repository-relative")
-    return "/".join(a for a in p.split("/") if a not in ("","."))
+    return "/".join(a for a in p.split("/") if a not in ("",".")).casefold()
 def conflict(a,b): return a==b or a.startswith(b+"/") or b.startswith(a+"/")
 def check_files(s,tid,files):
     for oid,t in s["tasks"].items():
@@ -106,7 +106,7 @@ def check_files(s,tid,files):
 def task(s,tid):
     try:return s["tasks"][ident(tid,"task ID")]
     except KeyError as e:raise OrchestrationError("Task does not exist") from e
-def create_task(root,*,task_id,title,parent_task_id,boss_thread_id,pm_thread_id,professional_thread_id,role,phase,mode,authorization,dependencies=None,branch="",worktree="",baseline_sha="",file_ownership=None,versions=None,actor=None):
+def create_task(root,*,task_id,title,parent_task_id,boss_thread_id,pm_thread_id,professional_thread_id,reviewer_thread_id,role,phase,mode,authorization,dependencies=None,branch="",worktree="",baseline_sha="",file_ownership=None,versions=None,contributor_thread_ids=None,author_thread_ids=None,actor=None):
     tid=ident(task_id,"task ID"); phase=int(phase)
     if mode not in MODES:raise OrchestrationError("Mode must be design or execution")
     if mode=="execution" and not authorization.get("execution"):raise OrchestrationError("Execution mode requires explicit authorization")
@@ -115,7 +115,12 @@ def create_task(root,*,task_id,title,parent_task_id,boss_thread_id,pm_thread_id,
     if role not in role_stages:raise OrchestrationError("Unknown role ID")
     if phase < 0 or phase > 5:raise OrchestrationError("Phase must be between 0 and 5")
     if mode=="execution" and phase < role_stages[role]:raise OrchestrationError("Role is not enabled at this execution phase")
-    for x,l in ((boss_thread_id,"boss ID"),(pm_thread_id,"PM thread ID"),(professional_thread_id,"professional thread ID")):real_thread(x,l)
+    for x,l in ((boss_thread_id,"boss ID"),(pm_thread_id,"PM thread ID"),(professional_thread_id,"professional thread ID"),(reviewer_thread_id,"reviewer thread ID")):real_thread(x,l)
+    contributors={real_thread(x,"contributor thread ID") for x in (contributor_thread_ids or [])}
+    authors={real_thread(x,"author thread ID") for x in (author_thread_ids or [])}
+    authors.update(x for x in (authorization.get("strategy_author_thread_id"), authorization.get("experiment_author_thread_id")) if x)
+    if reviewer_thread_id in {professional_thread_id} | contributors | authors:
+        raise OrchestrationError("Reviewer must be independent of implementer, strategy author, and experiment author")
     deps=[ident(x,"dependency task ID") for x in (dependencies or [])]; files=sorted({pathnorm(x) for x in (file_ownership or [])})
     if baseline_sha and not SHA.fullmatch(baseline_sha):raise OrchestrationError("Baseline must be a full Git SHA")
     with locked(root) as s:
@@ -123,7 +128,7 @@ def create_task(root,*,task_id,title,parent_task_id,boss_thread_id,pm_thread_id,
         for d in deps:
             if d not in s["tasks"]:raise OrchestrationError(f"Dependency task {d} is missing")
         check_files(s,tid,files)
-        t={"task_id":tid,"title":clean(title,"title"),"parent_task_id":parent_task_id,"participants":{"boss":boss_thread_id,"pm":pm_thread_id,"professional":professional_thread_id},"reviewer_thread_id":None,"role":role,"authorization":copy.deepcopy(authorization),"dependencies":deps,"phase":phase,"mode":mode,"status":"planned","branch":clean(branch),"worktree":clean(worktree),"baseline_sha":baseline_sha,"file_ownership":files,"ownership_released":False,"versions":copy.deepcopy(versions or {}),"freeze":None,"post_freeze_versions":[],"candidates":[],"current_candidate_id":None,"reviews":[],"cancellation":{"requested":False,"confirmed_stopped":False},"created_at":now(),"updated_at":now()}
+        t={"task_id":tid,"title":clean(title,"title"),"parent_task_id":parent_task_id,"participants":{"boss":boss_thread_id,"pm":pm_thread_id,"professional":professional_thread_id},"reviewer_thread_id":reviewer_thread_id,"contributor_thread_ids":sorted(contributors),"author_thread_ids":sorted(authors),"role":role,"authorization":copy.deepcopy(authorization),"dependencies":deps,"phase":phase,"mode":mode,"status":"planned","branch":clean(branch),"worktree":clean(worktree),"baseline_sha":baseline_sha,"file_ownership":files,"ownership_released":False,"versions":copy.deepcopy(versions or {}),"freeze":None,"post_freeze_versions":[],"candidates":[],"current_candidate_id":None,"reviews":[],"cancellation":{"requested":False,"confirmed_stopped":False},"created_at":now(),"updated_at":now()}
         s["tasks"][tid]=t; audit(s,"task_created",actor,{"task_id":tid,"role":role,"mode":mode,"phase":phase}); return copy.deepcopy(t)
 def transition(root,tid,action,actor=None):
     allowed={"accept-dependencies":{"planned"},"start":{"ready","returned","insufficient"},"rework":{"returned","insufficient"}}
@@ -131,10 +136,18 @@ def transition(root,tid,action,actor=None):
     with locked(root) as s:
         t=task(s,tid)
         if t["status"] not in allowed[action]:raise OrchestrationError("Invalid task transition")
+        if action=="start" and t.get("cancellation",{}).get("requested"):raise OrchestrationError("Cancelled task cannot start")
         if action=="accept-dependencies" and any(task(s,d)["status"]!="accepted" for d in t["dependencies"]):raise OrchestrationError("Dependencies have not been accepted")
         t["status"]="ready" if action=="accept-dependencies" else "running"; t["updated_at"]=now(); audit(s,"task_transition",actor,{"task_id":tid,"action":action}); return copy.deepcopy(t)
 def freeze(root,tid,*,snapshot_id,as_of,cutoff,summary,actor=None,**versions):
-    f={"snapshot_id":ident(snapshot_id,"snapshot ID"),"as_of":clean(as_of),"cutoff":clean(cutoff),"summary":clean(summary),**{k:clean(v) for k,v in versions.items()},"frozen_at":now()}
+    available_at=versions.pop("available_at",None)
+    if not available_at: raise OrchestrationError("Freeze requires available_at")
+    try:
+        available_dt=datetime.fromisoformat(str(available_at).replace("Z","+00:00")); cutoff_dt=datetime.fromisoformat(str(cutoff).replace("Z","+00:00"))
+        if available_dt.tzinfo is None or cutoff_dt.tzinfo is None: raise ValueError
+        if available_dt > cutoff_dt: raise ValueError
+    except (TypeError,ValueError): raise OrchestrationError("available_at and cutoff must be timezone-aware and available_at <= cutoff")
+    f={"snapshot_id":ident(snapshot_id,"snapshot ID"),"as_of":clean(as_of),"available_at":str(available_at),"cutoff":clean(cutoff),"summary":clean(summary),**{k:clean(v) for k,v in versions.items()},"frozen_at":now()}
     with locked(root) as s:
         t=task(s,tid)
         if t["freeze"] is not None:raise OrchestrationError("Pre-market freeze is immutable; create a new version")
@@ -146,7 +159,7 @@ def post_freeze_version(root,tid,*,snapshot_id,as_of,cutoff,summary,actor=None,*
         t=task(s,tid)
         if t["freeze"] is None:raise OrchestrationError("Post-freeze version requires a freeze")
         t["post_freeze_versions"].append(v); audit(s,"post_freeze_version",actor,{"task_id":tid,"snapshot_id":snapshot_id}); return copy.deepcopy(v)
-def deliver(root,tid,*,artifact,candidate_id=None,commit_sha="",snapshot_id="",new_version=False,evidence=None,actor=None):
+def deliver(root,tid,*,artifact,candidate_id=None,commit_sha="",snapshot_id="",available_at=None,new_version=False,evidence=None,actor=None):
     if commit_sha and not SHA.fullmatch(commit_sha):raise OrchestrationError("Candidate commit must be a full Git SHA")
     if not artifact:raise OrchestrationError("Candidate artifact is required")
     cid=ident(candidate_id,"candidate ID") if candidate_id else "cand-"+secrets.token_hex(8)
@@ -157,7 +170,13 @@ def deliver(root,tid,*,artifact,candidate_id=None,commit_sha="",snapshot_id="",n
         if t["freeze"] is not None:
             if not new_version and snapshot_id!=t["freeze"]["snapshot_id"]:raise OrchestrationError("Frozen task cannot be backfilled")
             if new_version and snapshot_id==t["freeze"]["snapshot_id"]:raise OrchestrationError("New candidate needs a new snapshot ID")
-        c={"candidate_id":cid,"commit_sha":commit_sha,"artifact":clean(artifact),"snapshot_id":snapshot_id or None,"new_version":bool(new_version),"evidence":copy.deepcopy(evidence or {}),"status":"pending_review","delivered_at":now()}; t["candidates"].append(c); t["current_candidate_id"]=cid; t["status"]="delivered"; audit(s,"candidate_delivered",actor,{"task_id":tid,"candidate_id":cid}); return copy.deepcopy(c)
+            if new_version and any(c.get("artifact")==artifact and c.get("evidence",{}).get("summary")==((evidence or {}).get("summary")) for c in t["candidates"]):raise OrchestrationError("Post-freeze version must not reuse artifact and summary")
+            if not available_at: raise OrchestrationError("Candidate requires available_at evidence")
+            try:
+                av=datetime.fromisoformat(str(available_at).replace("Z","+00:00")); co=datetime.fromisoformat(str(t["freeze"]["cutoff"]).replace("Z","+00:00"))
+                if av.tzinfo is None or co.tzinfo is None or av > co: raise ValueError
+            except (TypeError,ValueError): raise OrchestrationError("Candidate available_at is unknown, timezone-naive, or after cutoff")
+        c={"candidate_id":cid,"commit_sha":commit_sha,"artifact":clean(artifact),"snapshot_id":snapshot_id or None,"available_at":available_at,"new_version":bool(new_version),"evidence":copy.deepcopy(evidence or {}),"status":"pending_review","delivered_at":now()}; t["candidates"].append(c); t["current_candidate_id"]=cid; t["status"]="delivered"; audit(s,"candidate_delivered",actor,{"task_id":tid,"candidate_id":cid}); return copy.deepcopy(c)
 def review(root,tid,*,candidate_id,result,reviewer_thread_id,notes="",actor=None):
     if result not in {"passed","returned","insufficient"}:raise OrchestrationError("Invalid review result")
     reviewer_thread_id=real_thread(reviewer_thread_id,"review thread ID")
@@ -165,8 +184,7 @@ def review(root,tid,*,candidate_id,result,reviewer_thread_id,notes="",actor=None
         t=task(s,tid)
         if t["status"]!="delivered" or t["current_candidate_id"]!=candidate_id:raise OrchestrationError("Review must bind to current candidate")
         if reviewer_thread_id==t["participants"]["professional"]:raise OrchestrationError("Implementer cannot independently review")
-        if t.get("reviewer_thread_id") and t["reviewer_thread_id"]!=reviewer_thread_id:raise OrchestrationError("Review must use the task's assigned independent reviewer")
-        if not t.get("reviewer_thread_id"): t["reviewer_thread_id"]=reviewer_thread_id
+        if t.get("reviewer_thread_id")!=reviewer_thread_id or reviewer_thread_id in set(t.get("contributor_thread_ids",[]))|set(t.get("author_thread_ids",[])):raise OrchestrationError("Review must use the task's assigned independent reviewer")
         c=next((x for x in t["candidates"] if x["candidate_id"]==candidate_id),None)
         if not c or c["status"]!="pending_review":raise OrchestrationError("Candidate is not awaiting review")
         r={"candidate_id":candidate_id,"reviewer_thread_id":reviewer_thread_id,"result":result,"notes":clean(notes),"reviewed_at":now()}; c["status"]=result; t["reviews"].append(r); t["status"]="reviewed" if result=="passed" else result; audit(s,"candidate_reviewed",actor,{"task_id":tid,"candidate_id":candidate_id,"result":result}); return copy.deepcopy(r)
@@ -183,7 +201,7 @@ def confirm_stop(root,tid,*,actor,evidence=""):
         t=task(s,tid)
         if not t["cancellation"].get("requested"):raise OrchestrationError("Cancellation must be requested first")
         if actor!=t["participants"]["professional"] and not isinstance(evidence,dict):raise OrchestrationError("Stop confirmation requires the executor or recovery evidence")
-        if isinstance(evidence,dict) and not evidence.get("recovery_verified"):raise OrchestrationError("Recovery evidence is not verified")
+        if isinstance(evidence,dict) and (not evidence.get("recovery_verified") or not evidence.get("thread_or_process_stopped")):raise OrchestrationError("Recovery evidence must verify the thread or process stopped")
         t["cancellation"].update({"confirmed_stopped":True,"confirmed_at":now(),"evidence":clean(evidence)}); t["status"]="confirmed_stopped"; audit(s,"confirmed_stopped",actor,{"task_id":tid}); return copy.deepcopy(t)
 def release_files(root,tid,*,actor):
     with locked(root) as s:
@@ -223,9 +241,12 @@ def acquire_lock(root,*,task_id,pm_thread_id,candidate_id,expected_version=None,
         if t["status"]!="accepted" or t.get("current_candidate_id")!=candidate_id:raise OrchestrationError("Publish lock requires the accepted current candidate")
         candidate=next((c for c in t["candidates"] if c["candidate_id"]==candidate_id),None)
         if not candidate or candidate.get("status")!="passed":raise OrchestrationError("Publish lock requires independent review evidence")
-        if t.get("baseline_sha") and git(root,"merge-base","--is-ancestor",t["baseline_sha"],base,optional=True) is None:raise OrchestrationError("Task baseline is outside latest origin/main history")
+        if t.get("baseline_sha") != base:raise OrchestrationError("Task baseline must equal latest origin/main")
+        if not candidate.get("commit_sha") or git(root,"merge-base","--is-ancestor",base,candidate["commit_sha"],optional=True) is None:raise OrchestrationError("Candidate does not contain latest origin/main")
+        evidence=candidate.get("evidence",{})
+        if evidence.get("integrated_base_sha")!=base or evidence.get("integration_verified") is not True:raise OrchestrationError("Candidate lacks verified integration evidence")
         if s.get("publish_lock"):raise OrchestrationError("Another PM holds publish lock; no timeout takeover")
-        l={"task_id":task_id,"pm_thread_id":pm_thread_id,"candidate_id":candidate_id,"baseline_sha":t.get("baseline_sha"),"base_sha":base,"remote_version":old,"version":nxt,"coordination_version":nxt,"acquired_at":now()}; s["publish_lock"]=l; audit(s,"publish_lock_acquired",actor,{"task_id":task_id,"version":nxt,"candidate_id":candidate_id}); return copy.deepcopy(l)
+        l={"task_id":task_id,"pm_thread_id":pm_thread_id,"candidate_id":candidate_id,"baseline_sha":t.get("baseline_sha"),"base_sha":base,"remote_version":old,"version":nxt,"coordination_version":nxt,"holder_status":"held","acquired_at":now()}; s["publish_lock"]=l; audit(s,"publish_lock_acquired",actor,{"task_id":task_id,"version":nxt,"candidate_id":candidate_id}); return copy.deepcopy(l)
 def release_lock(root,*,task_id,pm_thread_id,actor=None):
     with locked(root) as s:
         l=s.get("publish_lock")
@@ -233,11 +254,27 @@ def release_lock(root,*,task_id,pm_thread_id,actor=None):
         s["publish_lock"]=None; audit(s,"publish_lock_released",actor,{"task_id":task_id})
 def recover_lock(root,*,task_id,pm_thread_id,coordinator_id,evidence,actor=None):
     required=("holder_status","remote_git","actions","tag","release","notification")
-    if not isinstance(evidence,dict) or any(k not in evidence or evidence[k] in (None,"","unknown","ambiguous","pending") for k in required):raise OrchestrationError("Recovery evidence is incomplete or ambiguous")
+    if not isinstance(evidence,dict) or evidence.get("holder_status") not in {"stopped","failed"} or not evidence.get("mutex_recovered") or not SHA.fullmatch(str(evidence.get("exact_sha",""))) or not SEMVER.fullmatch(str(evidence.get("version",""))) or evidence.get("actions") not in {"completed","failed"} or any(not isinstance(evidence.get(k),dict) or evidence[k].get("status") not in {"completed","failed","absent"} for k in ("remote_git","tag","release","notification")):
+        raise OrchestrationError("Recovery requires structured terminal evidence with exact SHA and version")
     with locked(root) as s:
         l=s.get("publish_lock")
         if not l or l["task_id"]!=task_id or l["pm_thread_id"]!=pm_thread_id:raise OrchestrationError("Recovery target does not match lock")
         s["publish_lock"]=None; audit(s,"publish_lock_recovered",actor or coordinator_id,{"task_id":task_id,"coordinator_id":coordinator_id,"evidence":copy.deepcopy(evidence)})
+
+def recover_mutex(root,*,evidence):
+    """Explicitly clear a leftover O_EXCL mutex after a crashed process."""
+    if not isinstance(evidence,dict) or evidence.get("holder_status") not in {"stopped","failed"} or not evidence.get("mutex_recovered") or not evidence.get("mutex_token") or not evidence.get("mutex_pid"):
+        raise OrchestrationError("Mutex recovery requires stopped/failed holder, token, and explicit evidence")
+    path=lock_file(root)
+    try: current=json.loads(path.read_text(encoding="utf-8"))
+    except (OSError,ValueError,UnicodeError) as exc: raise OrchestrationError("Mutex evidence does not match a readable lock") from exc
+    if current.get("token")!=evidence["mutex_token"]: raise OrchestrationError("Mutex token mismatch")
+    if current.get("pid")!=evidence["mutex_pid"]: raise OrchestrationError("Mutex pid mismatch")
+    try: os.kill(int(current["pid"]),0)
+    except ProcessLookupError: pass
+    except PermissionError: raise OrchestrationError("Mutex owner is still live or cannot be checked")
+    else: raise OrchestrationError("Mutex owner is still live; no timeout recovery")
+    path.unlink()
 
 def main(argv=None,root=None):
     root=Path(root or Path(__file__).resolve().parents[4]); p=argparse.ArgumentParser(); sub=p.add_subparsers(dest="c",required=True); sub.add_parser("show")
@@ -245,6 +282,13 @@ def main(argv=None,root=None):
     for n in ("task-id","title","boss","pm","professional","role","mode","authorization"):x.add_argument("--"+n,required=True)
     x.add_argument("--phase",type=int,required=True); x.add_argument("--dependencies",default="[]"); x.add_argument("--files",default="[]")
     x=sub.add_parser("task-transition");x.add_argument("task_id");x.add_argument("action")
+    x=sub.add_parser("task-freeze");x.add_argument("task_id");x.add_argument("--snapshot-id",required=True);x.add_argument("--as-of",required=True);x.add_argument("--available-at",required=True);x.add_argument("--cutoff",required=True);x.add_argument("--summary",required=True)
+    x=sub.add_parser("task-deliver");x.add_argument("task_id");x.add_argument("--artifact",required=True);x.add_argument("--candidate-id");x.add_argument("--commit-sha",default="");x.add_argument("--snapshot-id",default="");x.add_argument("--available-at");x.add_argument("--new-version",action="store_true");x.add_argument("--evidence",default="{}")
+    x=sub.add_parser("task-review");x.add_argument("task_id");x.add_argument("--candidate-id",required=True);x.add_argument("--result",required=True);x.add_argument("--reviewer",required=True)
+    x=sub.add_parser("task-accept");x.add_argument("task_id");x.add_argument("--candidate-id",required=True)
+    x=sub.add_parser("task-cancel");x.add_argument("task_id");x.add_argument("--reason",required=True)
+    x=sub.add_parser("task-stop");x.add_argument("task_id");x.add_argument("--actor",required=True);x.add_argument("--evidence",default="")
+    x=sub.add_parser("publish-lock-recover");x.add_argument("--task-id",required=True);x.add_argument("--pm",required=True);x.add_argument("--coordinator",required=True);x.add_argument("--evidence",required=True)
     x=sub.add_parser("dispatch-register");x.add_argument("--dispatch-key",required=True);x.add_argument("--task-id",required=True);x.add_argument("--role",required=True);x.add_argument("--client-thread-id");x.add_argument("--operation-id")
     x=sub.add_parser("dispatch-confirm");x.add_argument("--dispatch-key",required=True);x.add_argument("--thread-id",required=True)
     x=sub.add_parser("publish-lock-acquire");x.add_argument("--task-id",required=True);x.add_argument("--pm",required=True);x.add_argument("--candidate-id",required=True);x.add_argument("--expected-version");x.add_argument("--no-fetch",action="store_true")
@@ -254,9 +298,16 @@ def main(argv=None,root=None):
         if a.c=="show":r=read_state(root)
         elif a.c=="task-create":r=create_task(root,task_id=a.task_id,title=a.title,parent_task_id=None,boss_thread_id=a.boss,pm_thread_id=a.pm,professional_thread_id=a.professional,role=a.role,phase=a.phase,mode=a.mode,authorization=json.loads(a.authorization),dependencies=json.loads(a.dependencies),file_ownership=json.loads(a.files))
         elif a.c=="task-transition":r=transition(root,a.task_id,a.action)
+        elif a.c=="task-freeze":r=freeze(root,a.task_id,snapshot_id=a.snapshot_id,as_of=a.as_of,available_at=a.available_at,cutoff=a.cutoff,summary=a.summary)
+        elif a.c=="task-deliver":r=deliver(root,a.task_id,artifact=a.artifact,candidate_id=a.candidate_id,commit_sha=a.commit_sha,snapshot_id=a.snapshot_id,available_at=a.available_at,new_version=a.new_version,evidence=json.loads(a.evidence))
+        elif a.c=="task-review":r=review(root,a.task_id,candidate_id=a.candidate_id,result=a.result,reviewer_thread_id=a.reviewer)
+        elif a.c=="task-accept":r=accept(root,a.task_id,candidate_id=a.candidate_id)
+        elif a.c=="task-cancel":r=cancel(root,a.task_id,reason=a.reason)
+        elif a.c=="task-stop":r=confirm_stop(root,a.task_id,actor=a.actor,evidence=json.loads(a.evidence) if a.evidence else "")
         elif a.c=="dispatch-register":r=dispatch_register(root,dispatch_key=a.dispatch_key,task_id=a.task_id,role=a.role,client_thread_id=a.client_thread_id,operation_id=a.operation_id)
         elif a.c=="dispatch-confirm":r=dispatch_confirm(root,dispatch_key=a.dispatch_key,thread_id=a.thread_id)
         elif a.c=="publish-lock-acquire":r=acquire_lock(root,task_id=a.task_id,pm_thread_id=a.pm,candidate_id=a.candidate_id,expected_version=a.expected_version,fetch=not a.no_fetch)
+        elif a.c=="publish-lock-recover":r=recover_lock(root,task_id=a.task_id,pm_thread_id=a.pm,coordinator_id=a.coordinator,evidence=json.loads(a.evidence)) or {"recovered":True}
         else:r=release_lock(root,task_id=a.task_id,pm_thread_id=a.pm) or {"released":True}
         print(json.dumps(r,ensure_ascii=False,indent=2,sort_keys=True)); return 0
     except (OrchestrationError,ValueError,TypeError) as e: print(f"Orchestration failed: {e}",file=sys.stderr); return 1
