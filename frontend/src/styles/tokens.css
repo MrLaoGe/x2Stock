@@ -1,0 +1,27 @@
+:root {
+  color-scheme: dark;
+  --color-canvas: #1c1c1e;
+  --color-panel: #2c2c2e;
+  --color-surface: #3a3a3c;
+  --color-sidebar: rgb(28 28 30 / 80%);
+  --color-text: rgb(255 255 255 / 95%);
+  --color-text-muted: rgb(255 255 255 / 72%);
+  --color-text-subtle: rgb(255 255 255 / 58%);
+  --color-text-placeholder: rgb(255 255 255 / 48%);
+  --color-accent: #0a84ff;
+  --color-border: rgb(255 255 255 / 10%);
+  --color-border-strong: rgb(255 255 255 / 25%);
+  --color-focus: #0a84ff;
+  --radius-control: 8px;
+  --radius-panel: 12px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --font-heading: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --transition-color: color 200ms ease-out, background-color 200ms ease-out, border-color 200ms ease-out;
+}

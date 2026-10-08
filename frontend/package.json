@@ -1,0 +1,27 @@
+{
+  "name": "xxstock-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5181 --strictPort",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty",
+    "lint:style": "stylelint \"src/**/*.css\""
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "6.1.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4",
+    "vite": "8.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "stylelint": "17.16.0",
+    "stylelint-config-standard": "40.0.0",
+    "typescript": "7.0.2"
+  }
+}
