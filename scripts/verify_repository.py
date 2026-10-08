@@ -174,6 +174,11 @@ def coverage_issues(catalog: str, coverage: dict) -> list[str]:
     if len(set(identifiers)) != len(identifiers) or None in identifiers:
         issues.append("role IDs missing or duplicated")
     role_ids = set(identifiers)
+    expected_groups = {"data": 4, "market": 8, "report": 6, "personal": 3,
+                       "quant": 7, "execution": 3, "engineering": 9, "coordination": 2}
+    actual_groups = {group: sum(role.get("group") == group for role in roles) for group in expected_groups}
+    if actual_groups != expected_groups or len(roles) != sum(expected_groups.values()):
+        issues.append("approved role pool coverage incomplete")
     for role in roles:
         for field in ("name", "group", "stage", "mode", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
             if not role.get(field):
