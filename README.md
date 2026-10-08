@@ -4,6 +4,8 @@
 
 **当前状态：阶段 0，设计文档与开发运维仓库。** 已实现可配置的 Git 推送到 VChat / VoceChat 通知；尚无可运行网页、采集服务、迁移程序或交易功能。架构、业务接口和应用部署描述是后续开发契约，不代表已经实现。
 
+开发协作采用老板派单 → 独立 PM → 持久专业对话 → 独立验收 → 已授权发布。可用的 [多对话开发 Skill](.agents/skills/multi-dialogue-development/SKILL.md) 与本地任务/发布协调工具服务开发阶段；[角色与模块覆盖](docs/development/agent-coverage.md) 定义未来金融专责，不代表金融 Agent 已可运行。
+
 ## 项目原则
 
 - 每位使用者独立部署，自行提供 Tushare 与 AI 配置；首期单用户，数据访问边界预留多用户。

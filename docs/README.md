@@ -23,6 +23,9 @@
 
 - [Agent 设计](agents.md)：开发角色与未来产品研究角色。
 - [协作规范](development/collaboration.md)：分支、worktree、评审和集成。
+- [多对话开发 Skill](../.agents/skills/multi-dialogue-development/SKILL.md)：老板、PM、专业执行、独立审查与本地协调。
+- [逐项角色覆盖](development/agent-coverage.md)：模块能力的业务、实现和独立验收。
+- [多对话交接](development/handoffs/multi-dialogue-development.md)：本轮实现、真实演练与外部验收边界。
 - [项目 Skill 组织](development/skills.md)：项目目录、注册表、开发/业务分类和权限边界。
 - [github-release Skill](../.agents/skills/github-release/SKILL.md)：本地准备/检查和受限 Actions 发布入口。
 - [版本与正式发布](development/releases.md)：版本、exact SHA、Release、最终通知与失败恢复。
@@ -40,6 +43,7 @@
 - [ADR 0002：技术栈与独立部署](adr/0002-stack-and-deployment.md)
 - [ADR 0003：来源准入和历史迁移](adr/0003-provenance-and-migration.md)
 - [ADR 0004：Agent 证据与执行边界](adr/0004-agent-and-execution.md)
+- [ADR 0005：独立 PM 与持久专业对话](adr/0005-multi-dialogue-development.md)
 
 ## 外部依据
 

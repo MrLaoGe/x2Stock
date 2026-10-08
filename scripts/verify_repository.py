@@ -30,6 +30,16 @@ REQUIRED = (
     ".agents/skills/github-release/scripts/release.py", ".agents/skills/github-release/references/release-contract.md",
     "tests/test_github_release.py", "docs/development/skills.md", "docs/development/releases.md",
     "docs/development/handoffs/skill-releases.md",
+    ".agents/skills/multi-dialogue-development/SKILL.md",
+    ".agents/skills/multi-dialogue-development/agents/openai.yaml",
+    ".agents/skills/multi-dialogue-development/references/roles.md",
+    ".agents/skills/multi-dialogue-development/references/orchestration.md",
+    ".agents/skills/multi-dialogue-development/references/task-template.md",
+    ".agents/skills/multi-dialogue-development/scripts/orchestration.py",
+    "docs/development/agent-coverage.md", "docs/development/agent-coverage.json",
+    "docs/development/handoffs/multi-dialogue-development.md",
+    "docs/adr/0005-multi-dialogue-development.md",
+    "tests/test_orchestration.py", "tests/test_agent_coverage.py",
 )
 PRIVATE_ROOTS = {".local", ".worktrees", "runtime", "data", "logs", "outputs", "backups"}
 PRIVATE_SUFFIXES = {
@@ -150,6 +160,45 @@ def config_issues(config: dict, env_text: str) -> list[str]:
     return issues
 
 
+def coverage_issues(catalog: str, coverage: dict) -> list[str]:
+    """Validate actual catalog coverage and responsibility references."""
+    issues = []
+    section = catalog.split("## 功能与导航归并", 1)[1].split("## 模块设计与迁移顺序", 1)[0]
+    expected = [line.split("|")[1].strip() for line in section.splitlines()
+                if line.startswith("| ") and not line.startswith(("| 能力 |", "| ---"))]
+    roles = coverage.get("roles", [])
+    capabilities = coverage.get("capabilities", [])
+    if coverage.get("schema_version") != 1 or not isinstance(roles, list) or not isinstance(capabilities, list):
+        return ["role coverage schema invalid"]
+    identifiers = [role.get("id") for role in roles]
+    if len(set(identifiers)) != len(identifiers) or None in identifiers:
+        issues.append("role IDs missing or duplicated")
+    role_ids = set(identifiers)
+    for role in roles:
+        for field in ("name", "group", "stage", "mode", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
+            if not role.get(field):
+                issues.append(f"role contract missing {field}")
+        reviewers = role.get("reviewer_role_ids", [])
+        if not isinstance(reviewers, list) or not set(reviewers) <= role_ids or role.get("id") in reviewers:
+            issues.append("role reviewer missing, unknown or self-review")
+    actual = [item.get("catalog_capability") for item in capabilities]
+    if actual != expected:
+        issues.append("catalog capability coverage missing, duplicated or out of order")
+    ids = [item.get("id") for item in capabilities]
+    if len(ids) != len(set(ids)) or None in ids:
+        issues.append("capability IDs missing or duplicated")
+    for row, item in enumerate(capabilities, 1):
+        if item.get("catalog_row") != row:
+            issues.append("catalog row reference invalid")
+        for field in ("business_role_ids", "implementation_role_ids", "acceptance_role_ids"):
+            value = item.get(field)
+            if not isinstance(value, list) or not value or not set(value) <= role_ids:
+                issues.append(f"capability responsibility invalid: {field}")
+        if set(item.get("implementation_role_ids", [])) & set(item.get("acceptance_role_ids", [])):
+            issues.append("capability implementer cannot independently accept itself")
+    return issues
+
+
 def verify() -> int:
     try:
         files = repository_files()
@@ -197,6 +246,12 @@ def verify() -> int:
         issues.extend(config_issues(config, env_text))
     except (OSError, ValueError, TypeError, AttributeError):
         issues.append("configuration templates are missing or malformed")
+    try:
+        coverage = json.loads((ROOT / "docs/development/agent-coverage.json").read_text(encoding="utf-8"))
+        catalog = (ROOT / "docs/modules/catalog.md").read_text(encoding="utf-8")
+        issues.extend(coverage_issues(catalog, coverage))
+    except (OSError, ValueError, TypeError, AttributeError, KeyError, IndexError):
+        issues.append("role coverage missing or malformed")
     try:
         registry = json.loads((ROOT / ".agents/skills/registry.json").read_text(encoding="utf-8"))
         if registry.get("schema_version") != 1 or not isinstance(registry.get("skills"), list):

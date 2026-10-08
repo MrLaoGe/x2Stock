@@ -15,6 +15,8 @@ XXStock 的项目 Skill 统一放在 `.agents/skills/<name>/`，入口为 `SKILL
 
 ## 本轮 Skill
 
+[multi-dialogue-development](../../.agents/skills/multi-dialogue-development/SKILL.md) 属于 development，提供五种接入模式、具体角色模板、任务交接与本地协调脚本。它维护任务与发布锁状态，不调用跨对话创建 API，不运行金融业务；实际对话操作使用 Codex 工具并继承本任务人类授权。
+
 [github-release](../../.agents/skills/github-release/SKILL.md) 属于开发类，负责准备发布材料、检查版本与说明，以及供 GitHub Actions 在受限环境中发布。版本策略和错误恢复见 [发布规范](releases.md)。它不实现行情、业务 Agent 或交易执行，也不读取旧项目配置。
 
 新对话先读 `README.md`、`AGENTS.md`、[任务台账](task-ledger.md)，再查注册表并读取本轮 Skill。若用户已授权对应发布，按 Skill 完成具体材料与验证；不将“存在 Skill”理解为可以自行发布任意变更。

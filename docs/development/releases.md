@@ -11,6 +11,8 @@
 
 ## 准备与检查
 
+多 PM 发布先使用 [多对话协调工具](../../.agents/skills/multi-dialogue-development/references/orchestration.md) 获得 task/PM 绑定的发布锁。锁不授予发布权限，也不因超时被抢占。持锁后 fetch 最新 origin/main，将本轮局部成果集成并重新独立验收，再按远端 VERSION 准备下一 patch；不要提前固定版本。异常先核对持有者、Git、Actions、标签、Release 和通知，结果歧义保留锁，禁止盲目再次 prepare 或重发。
+
 先写好本批说明，再准备本地材料：
 
 ```text

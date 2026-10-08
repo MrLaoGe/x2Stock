@@ -68,4 +68,6 @@
 
 ## 每轮必须交付的模块记录
 
+清单全部43项能力逐项登记于 [角色责任覆盖](../development/agent-coverage.md)，机器登记见 [coverage JSON](../development/agent-coverage.json)。每项明确业务专责、实现和独立验收；金融职责按原阶段定义，不表示本轮已启动业务 Agent。
+
 模块文档应说明用户目标、旧能力对应关系、已选取舍、输入与来源、数据层及归属、时间与缺失语义、界面入口、任务、迁移兼容、行为验收和未解决限制。沿用 [协作规范](../development/collaboration.md) 和 [交接模板](../development/handoff-template.md)，状态只在实现与验证完成后改为已实现。
