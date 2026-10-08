@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/readme-header.jpg" alt="项目趣图" width="270">
+</p>
+
 # XXStock
 
 面向 A 股投资者的开源研究工作台，逐步构建 **多 Agent 研究分析 → 量化验证 → 可审计执行** 的能力。
