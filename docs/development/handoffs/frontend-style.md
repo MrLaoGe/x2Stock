@@ -9,20 +9,22 @@
 
 ## 当前集成状态
 
-C ready=false。已经合入B最终路线候选及A协作能力、更名决策，受保护A/B文件与ADR0006/0009完整保留；没有推送、标签或新版Release。更新UI已经实现三语状态、确认及桌面事件订阅，桌面更新代码与真实helper仍在集成验证。以下待办不能用首包QA代替。
+C ready=false（最终固定集成候选独审进行中）。已经合入B最终路线候选及A协作能力、更名决策，受保护A/B文件与ADR0006/0009完整保留；没有推送、升VERSION、标签或新版Release。更新UI与桌面更新器已实现，四项Windows helper实机闭环通过；完整C重建runtime已暂存LFS，仍须最终exact SHA独审闭合。外部状态不会由本地通过改为成功。
 
 | 项目 | 当前结果 | 验收边界 |
 | --- | --- | --- |
-| 源码集成 | HEAD `7af0293`；validation/架构补丁待独审提交 | 最终C exact SHA尚未产生，不作为正式发布候选 |
-| 整体分发结构 | 根`启动.bat`已实现；仅相对启动`desktop-runtime/win-x64/x2Stock.exe` | canonical脚本检查，不执行npm或下载；最终runtime尚未加入本分支 |
-| 公共runtime准入 | 精确73资源清单、Git LFS index/object、x64 PE、VERSION、源码身份与build提交历史验证 | 12项合成runtime/archive测试通过；不是远端项目下载验收 |
-| 归档安全 | 拒绝LFS pointer、私有配置/数据库、路径碰撞/ADS/设备/遍历，绑定规范BAT及源码hash | 合成archive通过；CI实际archive gate正在实现 |
-| 更新工程 | 三语UI已合入；桌面查Release、摘要/源码验证、隔离helper/回退正在集成 | 独立Windows进程替换与崩溃恢复证据待收齐；真实Release更新闭环未验 |
+| 源码集成 | clean构建源`7a4e1ecf7c65e1fcf91cea1aa834e40a09510c38`；桌面final b5ef7ee已整体集成 | 最终二进制/交接提交及独审收据绑定于对话报告，编译清单build SHA不冒充最终tag |
+| 整体分发结构 | 根BAT UTF8/CRLF原字节通过-text保存到Git archive；相对启动mainEXE及固定.recovery fallback | 无npm/下载；真实temp中文空格路径BAT smoke通过，新profile简体/273chars/localasar/bridge；ChromiumDNS及Nodeupdater离线拒绝实测 |
+| 公共runtime准入 | 共享73资源清单、LFS index/object、x64 PE、VERSION、canonical Git blob源码身份与build祖先 | materialized及LFSfsck通过；13runtime/archive合成测试通过，包含真实gitarchive CRLF回归；不是远端项目下载验收 |
+| 归档安全 | 拒LFS pointer、私有配置/数据库、路径碰撞/ADS/设备/遍历，绑定BAT/源码hash/exactSHA前缀 | CI已实现actualarchive→BAT→metadata artifact门槛；实际Actions未运行 |
+| 更新工程 | Release筛选/同Release9字段metadata digest/整archive安全解压/用户确认/独立helper与恢复已实现 | healthy、blank rollback、backed-up及awaiting-health kill点BAT恢复实测通过，退出5s后native可见Responding/CDP非空/en偏好、hash/env保留；真实跨版本Release更新仍未验 |
 | 架构与性能 | Electron三次warm启动/工作集证据、Python/SQLite/DuckDB未来设计已整理 | 不是cold start/首帧/峰值/private bytes或Tauri实测对比，见[测量证据](../desktop-architecture-evidence.md) |
 | GitHub Include LFS | **外部待验收** | 尚无真实exactSHA source archive含全部二进制、BAT离线非空renderer的下载证据，不能标已验收 |
-| 真实Release | **外部待验收** | 现有v0.1.0无更新资产；最终main工作流前不得宣称已能实际更新 |
+| 真实Release | **外部待验收** | 唯一metadata publisher及notify gate已实现并9项合成测试通过；现有v0.1.0无更新资产，尚无实际跨版本安装证据 |
 
-最终提交将替换本节candidate、测试和独审收据。远端归档与真实Release分别保留外部状态，不因本地通过改为成功。
+最终提交之后由独立QA生成exact SHA收据，路径与完整测试结果在对话报告，避免为补写最终SHA再造发布提交。已验收scoped收据位于本机`E:/XXStock/.local/artifacts/windows-preview/architecture-qa`；final验收另存`final-updater`。最终main升patch由A执行，VERSION变化必须重建runtime并再次匹配sourcehash，不能直接用本地0.1.0候选当新版。
+
+实机场景为相同版本的合成runtime事务与真实Windows进程中断，不是物理断电或真实GitHub跨版本更新。无旧profile首装已由隔离新profile BAT实测补齐；物理文字/系统缩放与原生整窗截图仍未验证。未签名，GitHub资产摘要/TLS不是独立发布者签名。
 
 ## 首包历史状态（源5554d196，非最终更新候选）
 

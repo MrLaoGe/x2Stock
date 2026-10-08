@@ -15,7 +15,7 @@
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
 | S0-010 | 多对话开发 Skill 与金融专业角色体系 | 独立 PM / 角色专责 / 工程 / 独立审查 | in_progress | 42角色契约、44能力逐项三责；角色与工程候选已独立 PASS，等待 x2Stock 更名后的最终集成和发布 |
 | S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；初稿独审无阻断；A/B整合68资产/69测试和差异检查通过，已含更名与ADR0009；等待最终一致性复核及 A/B/C 全部 ready；[交接](handoffs/module-first-roadmap.md) |
-| UI-001 | x2Stock 三语Windows工作台、风格Skill、整体分发与更新闭环 | 独立前端 PM / 前端 / 桌面 / 独立 QA | in_progress | 新名首包5554d196本地QA完成；A/B路线/协作/rename和ADR0009已集成；更新UI已实现，桌面helper及CI正在验证；12项runtime/archive合成测试通过。GitHub Include LFS/真实source archive与Release更新明确外部待验收，C ready=false；旧ZIP留审计。见 [UI-001交接](handoffs/frontend-style.md) |
+| UI-001 | x2Stock 三语Windows工作台、风格Skill、整体分发与更新闭环 | 独立前端 PM / 前端 / 桌面 / 独立 QA | in_progress | A/B/rename/ADR0009完整集成，clean源7a4e1ec重建73资源LFS及BAT离线/freshprofile通过；更新器healthy/blank/2kill点恢复后持续native可见/en偏好/hash/数据保留通过，21Node/9前端/13runtime archive合成测试通过。最终C exactSHA独审待闭合，ready=false；Include LFS/实际archive/跨版本Release仍external_unverified；旧ZIP留审计。见[交接](handoffs/frontend-style.md) |
 | S1-001 | 金融后台应用骨架 | 后续对话 | planned | 空桌面UI已实现；按需Python/SQLite、显式结构升级与配置健康仍规划，PG/Compose留未来服务器，不作Windows启动前提 |
 
 ## 下一轮入口
