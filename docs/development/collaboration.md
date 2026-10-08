@@ -29,7 +29,7 @@
 建议新对话请求：
 
 ```text
-接入 XXStock，先读 README.md、AGENTS.md、docs/development/task-ledger.md
+接入 x2Stock，先读 README.md、AGENTS.md、docs/development/task-ledger.md
 和本轮模块文档，核对 Git 状态。按已确认架构完成本轮授权工作，
 记录输入输出、来源和验证结果，更新台账与交接，不修改旧项目。
 本轮模块：[填写模块/任务 ID]

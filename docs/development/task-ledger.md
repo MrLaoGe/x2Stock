@@ -47,3 +47,7 @@
 - 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
 - 同次[开发校验](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；本轮 S0-009 将正式 main 改为同一发布工作流最终通知，其他 push 的行为见当前通知规范。
 - 配置、限制和失败处理见[通知说明](git-notifications.md)，本轮交接见[通知交接](handoffs/git-notifications.md)。
+
+## 项目改名交接
+
+当前名称统一为 x2Stock，目标仓库 MrLaoGe/x2Stock。GitHub 仓库已通过 API 改名，仓库身份与主线、历史标签保持不变，origin 已更新。独立审查和 45 项合成测试、53 个公开资产校验通过；本地补丁已更新当前文档、Skill、发布与通知工具、测试及配置前缀；保留已发布 0.1.0 的不可改材料。此补丁交由前序 PM 集成，主线版本和正式发布结果等待原队列，未据此宣布新版本发布。详见 [改名决策](../adr/0009-project-name.md)。

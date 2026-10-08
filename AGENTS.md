@@ -1,5 +1,7 @@
 # x2Stock Agent 工作约束
 
+当前项目名称为 `x2Stock`，目标仓库为 `MrLaoGe/x2Stock`；机器标识使用 `x2stock`、配置前缀使用 `X2STOCK_`。已发布版本和真实物理工作区路径保留原始证据，详见 [改名决策](docs/adr/0009-project-name.md)。
+
 ## 每轮接入顺序
 
 1. 阅读 `README.md`、`docs/project-plan.md` 和 `docs/development/task-ledger.md`。

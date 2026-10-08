@@ -144,7 +144,7 @@ def config_issues(config: dict, env_text: str) -> list[str]:
         if str(bot.get(field, "")) != env.get(env_name):
             issues.append(f"notification defaults disagree for {field}")
     for key, value in config.get("deployment", {}).get("ports", {}).items():
-        env_key = {"web": "XXSTOCK_WEB_PORT", "api": "XXSTOCK_API_PORT", "dev_web": "XXSTOCK_DEV_WEB_PORT"}.get(key)
+        env_key = {"web": "X2STOCK_WEB_PORT", "api": "X2STOCK_API_PORT", "dev_web": "X2STOCK_DEV_WEB_PORT"}.get(key)
         if env_key is None or env.get(env_key) != str(value):
             issues.append(f"port defaults disagree for {key}")
     return issues
