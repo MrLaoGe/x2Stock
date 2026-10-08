@@ -6,3 +6,4 @@
 *.woff2 binary
 # Only the reviewed public Electron distribution is tracked as LFS objects.
 /desktop-runtime/win-x64/** filter=lfs diff=lfs merge=lfs -text
+/启动.bat -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

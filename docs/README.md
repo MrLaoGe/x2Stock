@@ -1,6 +1,6 @@
 # 设计文档索引
 
-当前交付是阶段 0 文档与开发运维仓库；Git通知工具已实现，其他设计不代表相应运行功能已经实现。
+当前交付包含阶段 0 文档/开发运维与追加Windows空UI任务；金融设计不代表运行功能已实现，桌面更新与外部归档状态分别记录。
 
 ## 项目和产品
 
@@ -12,6 +12,7 @@
 
 - [前端开发](development/frontend.md)：Windows 构建、根 BAT、三语与浏览器调试边界。
 - [桌面交接](development/handoffs/frontend-style.md)：精确产物、独立 QA 和外部待验。
+- [桌面更新](development/desktop-updates.md)：完整项目、LFS源码归档、BAT及Release门槛。
 
 ## 技术与数据
 

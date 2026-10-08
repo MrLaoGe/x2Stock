@@ -76,6 +76,7 @@ class DesktopRuntimeTests(unittest.TestCase):
             self.assertTrue(any("disagree" in issue for issue in verify_runtime(root, names)))
 
     def test_complete_runtime_requires_all_canonical_resources(self):
+        self.assertEqual(len(REQUIRED), 73)
         self.assertEqual(REQUIRED, FLAT_FILES | {f"locales/{locale}.pak" for locale in LOCALES})
         for required in REQUIRED:
             with tempfile.TemporaryDirectory() as temp:

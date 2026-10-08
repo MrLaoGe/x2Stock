@@ -2,6 +2,7 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 import zipfile
 
@@ -10,6 +11,22 @@ from scripts.verify_desktop_runtime import REQUIRED, CANONICAL_LAUNCHER
 
 
 class ProjectArchiveTests(unittest.TestCase):
+    def test_committed_archive_preserves_canonical_crlf_launcher(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            def git(*args):
+                return subprocess.check_output(["git", *args], cwd=root, stderr=subprocess.DEVNULL)
+            git("init", "-q")
+            (root / ".gitattributes").write_text("/启动.bat -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol\n", encoding="utf-8")
+            (root / "启动.bat").write_bytes(CANONICAL_LAUNCHER)
+            git("add", ".")
+            self.assertEqual(git("show", ":启动.bat"), CANONICAL_LAUNCHER)
+            git("diff", "--cached", "--check")
+            git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "core.hooksPath=none", "commit", "-qm", "canonical launcher")
+            git("archive", "--format=zip", "--output=source.zip", "HEAD")
+            with zipfile.ZipFile(root / "source.zip") as archive:
+                self.assertEqual(archive.read("启动.bat"), CANONICAL_LAUNCHER)
+
     def fixture(self, root, *, pointer=False, wrong_source=False, extra=None, launcher=None):
         sha = "d" * 40
         files = {"VERSION": b"0.1.0\n", "启动.bat": CANONICAL_LAUNCHER if launcher is None else launcher,
@@ -78,7 +95,8 @@ class ProjectArchiveTests(unittest.TestCase):
 
     def test_launcher_is_bound_to_offline_relative_start(self):
         for launcher in (b"rem desktop-runtime\\win-x64\\x2Stock.exe\nwget https://example.com/app.exe\n",
-                         CANONICAL_LAUNCHER + b"wget https://example.com/app.exe\n"):
+                         CANONICAL_LAUNCHER + b"wget https://example.com/app.exe\n",
+                         CANONICAL_LAUNCHER.replace(b"\r\n", b"\n")):
             with tempfile.TemporaryDirectory() as temp:
                 archive, sha = self.fixture(Path(temp), launcher=launcher)
                 with self.assertRaises(ArchiveError):

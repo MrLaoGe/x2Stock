@@ -80,6 +80,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm run build
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install desktop test dependencies without runtime download scripts
+        working-directory: desktop
+        run: npm ci --ignore-scripts
       - name: Test desktop contracts with synthetic fixtures
         run: node --test "desktop/tests/*.test.cjs"
       - name: Launch shipped root BAT offline and require nonempty renderer

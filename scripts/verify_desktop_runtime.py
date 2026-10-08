@@ -9,16 +9,13 @@ import re
 import subprocess
 
 RUNTIME_ROOT = "desktop-runtime/win-x64/"
-FLAT_FILES = {
-    "x2Stock.exe", "chrome_100_percent.pak", "chrome_200_percent.pak",
-    "d3dcompiler_47.dll", "dxcompiler.dll", "dxil.dll", "ffmpeg.dll",
-    "icudtl.dat", "LICENSE.electron.txt", "LICENSES.chromium.html",
-    "resources.pak", "snapshot_blob.bin", "v8_context_snapshot.bin",
-    "vk_swiftshader_icd.json", "vk_swiftshader.dll", "vulkan-1.dll",
-    "resources/build-manifest.json", "resources/app.asar",
-}
-LOCALES = set("af am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr sv sw ta te th tr uk ur vi zh-CN zh-TW".split())
-REQUIRED = FLAT_FILES | {f"locales/{locale}.pak" for locale in LOCALES}
+# The updater and both public distribution gates consume one reviewed list.
+RUNTIME_FILES = json.loads((Path(__file__).resolve().parents[1] / "desktop/updater/runtime-files.json").read_text(encoding="utf-8"))
+if not isinstance(RUNTIME_FILES, list) or not all(isinstance(name, str) for name in RUNTIME_FILES) or len(RUNTIME_FILES) != len(set(RUNTIME_FILES)):
+    raise ValueError("invalid canonical runtime resource list")
+REQUIRED = set(RUNTIME_FILES)
+FLAT_FILES = {name for name in REQUIRED if not name.startswith("locales/")}
+LOCALES = {name.removeprefix("locales/").removesuffix(".pak") for name in REQUIRED if name.startswith("locales/")}
 POINTER = re.compile(rb"version https://git-lfs.github.com/spec/v1\noid sha256:([0-9a-f]{64})\nsize ([1-9][0-9]*)\n")
 COMPILED_SUFFIXES = {".exe", ".dll", ".asar", ".pak", ".bin", ".dat", ".pdb"}
 CANONICAL_LAUNCHER = '''@echo off
@@ -26,6 +23,10 @@ setlocal
 chcp 65001 >nul
 set "X2STOCK_APP=%~dp0desktop-runtime\\win-x64\\x2Stock.exe"
 if not exist "%X2STOCK_APP%" (
+  if exist "%~dp0desktop-runtime\\.recovery\\x2Stock.exe" (
+    start "" /D "%~dp0desktop-runtime\\.recovery" "%~dp0desktop-runtime\\.recovery\\x2Stock.exe" --x2stock-recover
+    exit /b 0
+  )
   echo 未找到 x2Stock 程序，请完整下载项目和 desktop-runtime 目录。
   echo x2Stock executable is missing. Download the complete project and runtime.
   pause
@@ -34,11 +35,11 @@ if not exist "%X2STOCK_APP%" (
 start "" /D "%~dp0desktop-runtime\\win-x64" "%X2STOCK_APP%"
 endlocal
 exit /b 0
-'''.encode("utf-8")
+'''.replace("\n", "\r\n").encode("utf-8")
 
 
 def canonical_launcher(data: bytes) -> bool:
-    return data.replace(b"\r\n", b"\n") == CANONICAL_LAUNCHER
+    return data == CANONICAL_LAUNCHER
 
 
 def approved_name(name: str) -> bool:

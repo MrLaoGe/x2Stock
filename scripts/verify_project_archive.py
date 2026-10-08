@@ -12,10 +12,10 @@ import urllib.request
 import zipfile
 
 try:
-    from scripts.verify_desktop_runtime import approved_name, canonical_launcher, manifest_issues, parse_pointer, REQUIRED, RUNTIME_ROOT
+    from scripts.verify_desktop_runtime import approved_name, canonical_launcher, manifest_issues, parse_pointer, REQUIRED, RUNTIME_ROOT, COMPILED_SUFFIXES
     from scripts.verify_repository import PRIVATE_ROOTS, PRIVATE_SUFFIXES, DATABASE_FILE
 except ModuleNotFoundError:
-    from verify_desktop_runtime import approved_name, canonical_launcher, manifest_issues, parse_pointer, REQUIRED, RUNTIME_ROOT
+    from verify_desktop_runtime import approved_name, canonical_launcher, manifest_issues, parse_pointer, REQUIRED, RUNTIME_ROOT, COMPILED_SUFFIXES
     from verify_repository import PRIVATE_ROOTS, PRIVATE_SUFFIXES, DATABASE_FILE
 
 REPOSITORY = "MrLaoGe/x2Stock"
@@ -84,6 +84,8 @@ def inspect_archive(archive: Path, sha: str, version: str, *, extract: Path | No
                 basename in {"token.json", ".env"} or ".local." in basename or
                 (basename.startswith(".env.") and basename != ".env.example")):
                 raise ArchiveError("private or unexpected archive path")
+            if Path(basename).suffix in COMPILED_SUFFIXES and not approved_name(name):
+                raise ArchiveError("compiled asset outside approved runtime")
             expanded += entry.file_size
             if entry.file_size > MAX_ARCHIVE or expanded > MAX_EXPANDED:
                 raise ArchiveError("archive expanded size limit exceeded")

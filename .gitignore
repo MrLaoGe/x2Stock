@@ -36,6 +36,8 @@ node_modules/
 /desktop/node_modules/
 /desktop/release/
 /desktop/renderer/
+/desktop-runtime/.recovery/
+/desktop-runtime/.x2stock-*/
 dist/
 build/
 .venv/
