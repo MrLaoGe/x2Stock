@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "id": "github-release",
+      "path": ".agents/skills/github-release/SKILL.md",
+      "category": "development",
+      "status": "active",
+      "purpose": "整理变更、升版、验证、发布 GitHub Release 并通知频道",
+      "dependencies": [],
+      "resources": ["VERSION", "CHANGELOG.md", "scripts/vocechat_notify.py"]
+    }
+  ]
+}

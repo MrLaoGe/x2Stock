@@ -6,10 +6,10 @@
 
 | 能力 | 状态 | 产物与证据 |
 | --- | --- | --- |
-| Skill 目录与开发/业务分类规则 | 设计确定 | [组织规范](../skills.md)；注册表由主 Agent 集成核验 |
-| 版本、exact SHA、Release 与通知规则 | 设计确定 | [发布规范](../releases.md) |
+| Skill 目录与开发/业务分类规则 | 本地实现与校验通过 | [组织规范](../skills.md)；Skill 入口、注册表、UI元数据及引用已核验 |
+| 版本、exact SHA、Release 与通知规则 | 本地实现与独立审查通过 | [发布规范](../releases.md)；版本与恢复测试使用临时合成仓库 |
 | 文档与协作入口 | 本地文档完成 | README、AGENTS、贡献规范、索引、协作与通知说明 |
-| 发布 helper、注册表、工作流和行为测试 | 待主 Agent 集成与核验 | 对应实现由主 Agent 负责，不能以本文声称测试已通过 |
+| 发布 helper、注册表、工作流和行为测试 | 本地实现与核验通过 | 43项测试、51个公开资产及Skill校验；工作流真实运行待推送 |
 | 0.1.0 GitHub Release 与 #19 最终通知 | 外部验收待工作流 | 本地文档提交不创建 Release、不发机器人消息 |
 
 ## 关键交接
@@ -22,10 +22,11 @@
 
 ## 推送前核验
 
-- 文档分支 `git diff --cached --check` 通过；现有通知工具的 23 项合成测试通过。这不涵盖尚未集成的发布 helper 和新工作流。
-- 文档分支公开资产校验报告 12 条缺失链接，均指向主 Agent 正在交付的 VERSION、CHANGELOG、github-release 入口或 Skill 注册表；集成后必须重新通过完整校验。
-- 主 Agent 集成后运行公开资产校验、全部相关行为测试、Skill 与版本材料检查、差异检查，并记录实际结果。
-- 独立审查最终 helper、工作流及文档的一致性，重点核查默认升版、exact SHA、已有 Release 冲突、标签后中断及通知脱敏。
-- 主 Agent 在推送前更新本交接的本地实现/验证状态及 S0-009；外部验收保持待工作流。推送后通过 Actions 与用户输出报告结果，不追加成功记录提交。
+- 完整集成后 `python -m unittest discover -s tests -p 'test_*.py'` 通过，共43项；覆盖版本、SHA、材料冲突、历史重写、恢复、标签路由、消息及秘密脱敏。
+- `python scripts/verify_repository.py` 通过，共51个公开资产，原文档分支的缺失链接已全部消除。
+- Skill creator 的 `quick_validate.py` 使用 `python -X utf8` 执行通过（Windows 默认编码需显式 UTF-8）；Skill UI元数据、登记与相对引用均通过检查。
+- release helper 的 `check --base-sha` 使用已核对的远端main SHA通过；`git diff --check` 通过。VERSION为0.1.0，canonical notes与CHANGELOG已生成。
+- 独立审查复现的问题已修复并定向复核：非版本v标签通知、已发布材料不可改写、非快进主线拒绝发布、UI UTF-8。GitHub协议异常只输出安全分类。
+- GitHub只读预检确认尚无标签／Release，机器人Secrets已配置、启用且频道19。外部验收保持待本次工作流；推送后通过Actions与用户输出报告结果，不追加成功记录提交。
 
 下一轮 A 股业务入口仍为 [数据中心与迁移](../../modules/data-center.md)。发布工具与 Skill 治理属于阶段 0 开发运维，不证明任何业务模块已经实现。

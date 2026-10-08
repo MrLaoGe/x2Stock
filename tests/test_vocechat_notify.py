@@ -194,7 +194,7 @@ class SendTests(unittest.TestCase):
         for error_type in (http.client.BadStatusLine, http.client.InvalidURL):
             with self.subTest(error_type=error_type), tempfile.TemporaryDirectory() as directory:
                 event_file = Path(directory) / "event.json"
-                event_file.write_text(json.dumps(event()), encoding="utf-8")
+                event_file.write_text(json.dumps({**event(), "ref": "refs/heads/develop"}), encoding="utf-8")
                 output = io.StringIO()
                 opener = unittest.mock.MagicMock()
                 opener.open.side_effect = error_type(config().api_key + config().base_url)

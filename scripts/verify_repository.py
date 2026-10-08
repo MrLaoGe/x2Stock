@@ -25,6 +25,11 @@ REQUIRED = (
     ".github/workflows/verify-docs.yml", "scripts/verify_repository.py",
     ".github/workflows/notify-vocechat.yml", "scripts/vocechat_notify.py",
     "tests/test_vocechat_notify.py", "docs/development/git-notifications.md",
+    "VERSION", "CHANGELOG.md", ".agents/skills/README.md", ".agents/skills/registry.json",
+    ".agents/skills/github-release/SKILL.md", ".agents/skills/github-release/agents/openai.yaml",
+    ".agents/skills/github-release/scripts/release.py", ".agents/skills/github-release/references/release-contract.md",
+    "tests/test_github_release.py", "docs/development/skills.md", "docs/development/releases.md",
+    "docs/development/handoffs/skill-releases.md",
 )
 PRIVATE_ROOTS = {".local", ".worktrees", "runtime", "data", "logs", "outputs", "backups"}
 PRIVATE_SUFFIXES = {
@@ -192,6 +197,42 @@ def verify() -> int:
         issues.extend(config_issues(config, env_text))
     except (OSError, ValueError, TypeError, AttributeError):
         issues.append("configuration templates are missing or malformed")
+    try:
+        registry = json.loads((ROOT / ".agents/skills/registry.json").read_text(encoding="utf-8"))
+        if registry.get("schema_version") != 1 or not isinstance(registry.get("skills"), list):
+            raise ValueError
+        identifiers = set()
+        for item in registry["skills"]:
+            identifier = item["id"]
+            expected = f".agents/skills/{identifier}/SKILL.md"
+            if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", identifier) or identifier in identifiers:
+                issues.append("Skill identifier invalid or duplicated")
+            identifiers.add(identifier)
+            if item["path"] != expected or expected not in public:
+                issues.append("Skill registry path missing or noncanonical")
+                continue
+            text = (ROOT / expected).read_text(encoding="utf-8")
+            frontmatter = re.match(r"\A---\n(.*?)\n---\n", text, re.S)
+            if not frontmatter or not re.search(rf"^name: {re.escape(identifier)}$", frontmatter[1], re.M) or not re.search(r"^description: .+", frontmatter[1], re.M):
+                issues.append(f"{expected}: invalid Skill frontmatter")
+            if item["category"] not in {"development", "business"} or item["status"] not in {"active", "planned", "deprecated"} or not item["purpose"]:
+                issues.append("Skill registry classification invalid")
+            if not isinstance(item["dependencies"], list) or any(resource not in public for resource in item.get("resources", [])):
+                issues.append("Skill dependencies/resources invalid")
+        if any(dependency not in identifiers for item in registry["skills"] for dependency in item["dependencies"]):
+            issues.append("Skill dependency is not registered")
+        discovered = {name for name in public if name.startswith(".agents/skills/") and name.endswith("/SKILL.md")}
+        if discovered != {item["path"] for item in registry["skills"]}:
+            issues.append("Skill discovery and registry disagree")
+        version = (ROOT / "VERSION").read_text(encoding="utf-8")
+        if not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\n", version):
+            issues.append("VERSION must contain one canonical version and newline")
+        else:
+            for suffix in ("md", "json"):
+                if f"docs/releases/{version.strip()}.{suffix}" not in public:
+                    issues.append("Current release material missing")
+    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+        issues.append("Skill registry or version malformed")
     if issues:
         for issue in sorted(set(issues)):
             print(f"FAIL: {issue}")

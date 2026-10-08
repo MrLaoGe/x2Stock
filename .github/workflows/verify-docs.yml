@@ -1,4 +1,4 @@
-name: Verify documentation repository
+name: Verify and release XXStock
 
 on:
   push:
@@ -22,6 +22,13 @@ jobs:
         run: python scripts/verify_repository.py
       - name: Test Git notification behavior without network access
         run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: Validate canonical release materials
+        run: python .agents/skills/github-release/scripts/release.py check
+      - name: Require a version for each main update
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !github.event.deleted }}
+        env:
+          RELEASE_BASE_SHA: ${{ github.event.before }}
+        run: python .agents/skills/github-release/scripts/release.py check --base-sha "$RELEASE_BASE_SHA"
       - name: Check whitespace
         env:
           DOCS_EVENT_NAME: ${{ github.event_name }}
@@ -37,3 +44,33 @@ jobs:
             DOCS_EMPTY_TREE=$(git hash-object -t tree --stdin < /dev/null)
             git diff --check "$DOCS_EMPTY_TREE" "$DOCS_HEAD_SHA"
           fi
+
+  release:
+    needs: verify
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !github.event.deleted }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Publish or recover exact-commit Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python .agents/skills/github-release/scripts/release.py publish --receipt "$RUNNER_TEMP/xxstock-release.json"
+      - name: Notify channel after verified Release
+        env:
+          VOCECHAT_ENABLED: ${{ vars.VOCECHAT_ENABLED }}
+          VOCECHAT_BASE_URL: ${{ secrets.VOCECHAT_BASE_URL }}
+          VOCECHAT_API_KEY: ${{ secrets.VOCECHAT_API_KEY }}
+          VOCECHAT_GROUP_ID: ${{ vars.VOCECHAT_GROUP_ID || '19' }}
+          VOCECHAT_API_PREFIX: ${{ vars.VOCECHAT_API_PREFIX || '/api/bot' }}
+          VOCECHAT_TIMEOUT_SECONDS: ${{ vars.VOCECHAT_TIMEOUT_SECONDS || '15' }}
+        run: python scripts/vocechat_notify.py --release-file "$RUNNER_TEMP/xxstock-release.json"

@@ -14,9 +14,9 @@
 
 main push 从独立通知中排除，避免早于校验的消息与发布最终消息重复。版本策略及 exact SHA 规则见 [发布规范](releases.md)。无变更的 `git push` 不产生事件；推送多个开发 ref 仍可产生多个事件，不以本地命令次数计数。
 
-开发 push 消息含仓库、分支/标签、操作、推送者、提交短标识、至多五条提交标题、Git 变更和通知运行链接。正式发布消息含版本、exact SHA、校验/发布结果及可用的 Release/Actions 链接；失败时明确失败阶段，不假称发布成功。不发送提交正文、文件diff、环境配置或机器人地址/密钥。标题转义 Markdown、屏蔽提醒标记，并对已知密钥模式及当前机器人秘密脱敏。
+开发 push 消息含仓库、分支/标签、操作、推送者、提交短标识、至多五条提交标题、Git 变更和通知运行链接。正式发布消息含版本、exact SHA、更新摘要、Release、比较和 Actions 链接。验证或发布失败会停止，频道不发送成功提醒；失败阶段记录在 Actions 与用户输出。不发送提交正文、文件diff、环境配置或机器人地址/密钥。标题转义 Markdown、屏蔽提醒标记，并对已知密钥模式及当前机器人秘密脱敏。
 
-手动触发 `workflow_dispatch` 用于链路验证，消息明确标为“非 Git 推送”。Actions 对极大量同时更新 ref 等场景存在平台限制，适用边界以 [GitHub push 事件说明](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#push) 为准。
+手动触发 `workflow_dispatch` 用于链路验证，应选择已有开发分支，消息明确标为“非 Git 推送”；默认 main 和规范版本标签的手动通知也被跳过。Actions 对极大量同时更新 ref 等场景存在平台限制，适用边界以 [GitHub push 事件说明](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#push) 为准。
 
 ## 仓库配置
 
@@ -26,14 +26,14 @@ main push 从独立通知中排除，避免早于校验的消息与发布最终�
 | --- | --- | --- |
 | Secret | `VOCECHAT_BASE_URL` | 用户自己的 HTTPS 服务地址，公开模板为空 |
 | Secret | `VOCECHAT_API_KEY` | 机器人密钥，公开模板为空 |
-| Variable | `VOCECHAT_ENABLED` | `true` 启用；未配置时工作流跳过 |
+| Variable | `VOCECHAT_ENABLED` | `true` 启用；开发通知未启用时跳过，正式发布最终通知未启用时明确失败 |
 | Variable | `VOCECHAT_GROUP_ID` | 默认 `19`，可改为自己的正整数频道 ID |
 | Variable | `VOCECHAT_API_PREFIX` | 默认 `/api/bot` |
 | Variable | `VOCECHAT_TIMEOUT_SECONDS` | 默认 `15`，允许 1～120 秒 |
 
 机器人必须已加入目标频道。只复用 3.0 的地址与机器人身份，不更改 3.0 的频道、定时计划或配置。实际秘密由加密 Secrets 接收，不上传旧配置文件；本地工具也不 import 旧应用。
 
-公开仓库的 fork 不携带原仓库 Secrets；使用者填写自己的配置后才能启用通知。通知 job 不在 PR 中注入机器人密钥，仅有 `contents: read`；同一发布工作流的 release job 单独拥有 `contents: write`。关闭时把 `VOCECHAT_ENABLED` 改成 `false`，无需修改代码。
+公开仓库的 fork 不携带原仓库 Secrets；使用者填写自己的配置后才能启用通知。开发通知 job 仅有 `contents: read`，不在 PR 中注入机器人密钥；正式 main 的 release job 拥有 `contents: write`，GitHub 令牌只注入发布步骤，机器人秘密只注入后续通知步骤。关闭时把 `VOCECHAT_ENABLED` 改成 `false`，无需修改代码；正式发布仍保留成功的 Release，但最终通知步骤会明确失败，不能视为完整交付。
 
 ## 本地配置与检查
 

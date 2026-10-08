@@ -206,6 +206,44 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def should_notify_push(ref: str) -> bool:
+    """Main and canonical version tags are covered by the release workflow."""
+    return ref != "refs/heads/main" and re.fullmatch(r"refs/tags/v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", ref) is None
+
+
+def build_release_message(receipt: dict, env: dict[str, str], config: BotConfig) -> str:
+    repository = receipt.get("repository", "")
+    version = receipt.get("version", "")
+    sha = receipt.get("sha", "")
+    if (not isinstance(repository, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository)
+            or repository != env.get("GITHUB_REPOSITORY") or not isinstance(version, str)
+            or not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", version)
+            or not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha) or sha != env.get("GITHUB_SHA")):
+        raise NotificationError("invalid_release_identity")
+    base = "https://github.com/" + repository
+    release_url = f"{base}/releases/tag/v{version}"
+    comparison = receipt.get("compare_url", "")
+    if (receipt.get("tag") != "v" + version or receipt.get("release_url") != release_url
+            or not isinstance(comparison, str) or not re.fullmatch(re.escape(base) + r"/(?:commits/v[0-9]+\.[0-9]+\.[0-9]+|compare/v[0-9]+\.[0-9]+\.[0-9]+\.\.\.v[0-9]+\.[0-9]+\.[0-9]+)", comparison)
+            or not comparison.endswith("v" + version)):
+        raise NotificationError("invalid_release_links")
+    notes = receipt.get("notes", "")
+    if not isinstance(notes, str) or not notes.startswith(f"# XXStock {version}\n"):
+        raise NotificationError("invalid_release_notes")
+    body = notes.splitlines()[2:]
+    overview = next((line for line in body if line.strip() and not line.startswith("#")), "")
+    bullets = [line[2:] for line in body if line.startswith("- ")][:5]
+    lines = [f"### XXStock {version} 已发布", "", safe_label(overview, config, 400), "", "更新摘要："]
+    lines.extend("- " + safe_label(item, config, 240) for item in bullets)
+    lines.extend(["", f"- 提交：`{sha[:12]}`", f"[查看 Release]({release_url})", f"[查看版本差异／首次提交历史]({comparison})"])
+    run_id = env.get("GITHUB_RUN_ID", "")
+    if not run_id.isdigit():
+        raise NotificationError("missing_release_run_identity")
+    lines.extend([f"[查看发布运行]({base}/actions/runs/{run_id})",
+                  f"通知标识：{run_id}，尝试 {safe_label(env.get('GITHUB_RUN_ATTEMPT', '1'), config, 8)}"])
+    return redact("\n".join(lines), config)
+
+
 def send_message(config: BotConfig, message: str) -> int:
     config.validate()
     if not message.strip():
@@ -239,6 +277,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--env-file", type=Path)
     parser.add_argument("--event-file", type=Path)
+    parser.add_argument("--release-file", type=Path)
     args = parser.parse_args(argv)
     try:
         config = load_config(env_file=args.env_file)
@@ -248,15 +287,25 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(config.summary(), ensure_ascii=False))
             return 0
         if not config.enabled and not args.dry_run:
+            if args.release_file:
+                raise NotificationError("release_notification_disabled")
             print(json.dumps({"status": "disabled", "channel": config.group_id}))
             return 0
-        event_path = args.event_file or (Path(os.environ["GITHUB_EVENT_PATH"]) if os.environ.get("GITHUB_EVENT_PATH") else None)
-        if event_path is None:
-            raise NotificationError("missing_github_event_file")
-        event = json.loads(event_path.read_text(encoding="utf-8"))
-        if not isinstance(event, dict):
-            raise NotificationError("invalid_github_event_file")
-        message = build_message(event, dict(os.environ), config)
+        if args.release_file:
+            receipt = json.loads(args.release_file.read_text(encoding="utf-8"))
+            message = build_release_message(receipt, dict(os.environ), config)
+        else:
+            event_path = args.event_file or (Path(os.environ["GITHUB_EVENT_PATH"]) if os.environ.get("GITHUB_EVENT_PATH") else None)
+            if event_path is None:
+                raise NotificationError("missing_github_event_file")
+            event = json.loads(event_path.read_text(encoding="utf-8"))
+            if not isinstance(event, dict):
+                raise NotificationError("invalid_github_event_file")
+            ref = event.get("ref") or os.environ.get("GITHUB_REF", "")
+            if not should_notify_push(ref):
+                print(json.dumps({"status": "covered_by_release_workflow", "channel": config.group_id}))
+                return 0
+            message = build_message(event, dict(os.environ), config)
         if args.dry_run:
             print(json.dumps({"status": "dry_run", "channel": config.group_id, "markdown": message}, ensure_ascii=False))
             return 0

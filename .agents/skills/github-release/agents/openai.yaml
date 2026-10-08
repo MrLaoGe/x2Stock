@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub 版本发布"
+  short_description: "整理中文更新说明、递增版本并发布 GitHub Release 与频道提醒"
+  default_prompt: "使用 $github-release 完成本批 XXStock 主线版本发布并核验频道通知。"

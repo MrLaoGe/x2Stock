@@ -24,7 +24,7 @@ git diff --check
 `prepare` 只修改本地 VERSION、CHANGELOG 和版本说明，不创建远端标签或 Release。无 VERSION 时生成 `0.1.0`；已有 VERSION 时默认准备下一 patch。明确的版本变更使用：
 
 ```text
-python .agents/skills/github-release/scripts/release.py prepare --version X.Y.Z --allow-version-change --notes-file <已写好说明文件>
+python .agents/skills/github-release/scripts/release.py prepare --version X.Y.Z --allow-version-change --reason "用户明确指定的版本调整" --notes-file <已写好说明文件>
 python .agents/skills/github-release/scripts/release.py check --base-sha <已确认的父版本提交>
 ```
 
@@ -38,7 +38,7 @@ python .agents/skills/github-release/scripts/release.py check --base-sha <已确
 
 1. 校验公开资产、发布材料、行为测试和提交差异。
 2. release job 以 `contents: write` 将 `v<version>` 指向本次验证的确切 SHA，再创建对应 GitHub Release。
-3. notify job 以 `contents: read` 和机器人 Secrets 向配置频道发送本次最终结果，默认 #19；消息同时说明验证、发布和通知链的实际状态。
+3. 同一 release job 的后续通知步骤使用机器人 Secrets 向配置频道发送本次最终结果，默认 #19；GitHub 写入令牌仅注入发布步骤，通知步骤不注入该令牌，checkout 不持久保存凭据。消息包含版本、摘要、Release、比较链接和运行标识；投递结果单独记录在 Actions。
 
 通知不能只写“Git 已推送”却让读者误以为发布成功。正式 main push 不再触发另一路独立 push 通知；发布标签也不重复通知。不依赖 `release` 事件唤醒另一工作流，避免权限令牌创建事件的触发差异与竞态。开发分支、非发布标签仍沿用 [Git push 通知](git-notifications.md)。
 

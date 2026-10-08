@@ -12,7 +12,7 @@
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
 | S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
 | S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)，频道19返回HTTP200 |
-| S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 文档本地完成；helper/注册表/工作流集成验收由主 Agent 补充，远端 Release 与最终通知待工作流 |
+| S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
 | S1-001 | 数据中心与迁移详细实施 | 后续对话 | planned | 先模块范围和验收，再骨架/数据代码 |
 
 ## 下一轮入口
@@ -31,7 +31,7 @@
 
 ## Skill 与正式发布（S0-009）
 
-本轮规则、Skill 组织、版本流程和文档交接已在本地完成；实现、合成测试与独立评审由主 Agent 集成后填入实际结果。尚未据此验收 `0.1.0` GitHub Release 或本批 #19 最终通知。正式发布结果在 Actions 与用户输出中报告，不为写成功记录追加发布提交。见 [交接](handoffs/skill-releases.md)。
+本轮 Skill、登记、版本 helper、说明、工作流和规范已在本地完成。43 项合成测试、51 个公开资产校验、Skill frontmatter 与引用、版本材料及差异检查通过；独立审查已复核历史材料不可改写、非快进主线拒绝发布、精确标签路由与 UTF-8。尚未据此验收 `0.1.0` GitHub Release 或本批 #19 最终通知，等待本次推送后的工作流。正式发布结果在 Actions 与用户输出中报告，不为写成功记录追加发布提交。见 [交接](handoffs/skill-releases.md)。
 
 ## Git 通知验收（S0-008，历史记录）
 

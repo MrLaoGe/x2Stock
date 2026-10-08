@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   notify:
-    if: ${{ vars.VOCECHAT_ENABLED == 'true' }}
+    if: ${{ vars.VOCECHAT_ENABLED == 'true' && github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
