@@ -13,7 +13,7 @@
 | S0-007 | 创建并发布 MrLaoGe/x2Stock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/x2Stock)，MIT；初次远端main提交和32文件与本地一致 |
 | S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
-| S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；本地55资产/43测试通过，独立审查无阻断；等待 S0-010 发布后集成复验；[交接](handoffs/module-first-roadmap.md) |
+| S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；本地55资产/43测试通过，独立审查无阻断；等待本地集成复验及 A/B/C 全部 ready；[交接](handoffs/module-first-roadmap.md) |
 | S1-001 | 最小应用骨架 | 后续对话 | planned | 独立前后端/PG、显式结构升级、配置健康、空工作台与部署；仅规划未实现 |
 
 ## 下一轮入口
@@ -24,7 +24,7 @@
 
 ## 路线调整（S0-011）
 
-本轮只交付文档；本地验证、独立审查与外部发布分别验收。与 S0-010 Skill 任务并行准备，先等其 Git、Release、Actions、#19 通知全部验收，再集成最新 main 并计算实际下一 patch；未提前占用版本。角色模板、协调脚本、行为测试和发布流水线不属本轮修改范围，前任务成果须完整保留。旧项目和真实业务数据未修改。当前审查/验证进度见[本轮交接](handoffs/module-first-roadmap.md)。
+本轮只交付文档；本地验证、独立审查与外部发布分别验收。与 S0-010 Skill 和桌面任务并行本地验收，按最新 all-ready 门槛整合固定候选，不要求前任务先单独发布。A 负责最终集成与独立审查，A/B/C 全部 ready 后统一正式批次并核验 Git、Release、Actions、#19；B 不单独 push 或预占版本。角色模板、协调脚本、行为测试和发布流水线不属本轮修改范围，前任务成果须完整保留。旧项目和真实业务数据未修改。当前审查/验证进度见[本轮交接](handoffs/module-first-roadmap.md)。
 
 ## 本轮验证
 
