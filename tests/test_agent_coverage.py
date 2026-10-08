@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
-from scripts.verify_repository import coverage_issues
+from scripts.verify_repository import coverage_issues, coverage_reference_issues
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -49,6 +49,23 @@ class CoverageTests(unittest.TestCase):
         for stage in ("2/3", "0-5", -1, 6, True):
             candidate["roles"][0]["stage"] = stage
             self.assertIn("role stage must be an integer from 0 to 5", coverage_issues(self.catalog, candidate))
+
+    def test_human_routing_and_template_references(self):
+        matrix = (ROOT / "docs/development/agent-coverage.md").read_text(encoding="utf-8")
+        templates = (ROOT / ".agents/skills/multi-dialogue-development/references/roles.md").read_text(encoding="utf-8")
+        self.assertEqual(coverage_reference_issues(self.coverage, matrix, templates), [])
+        altered = matrix.replace("`engineering.backend_api`", "`engineering.database`", 1)
+        self.assertIn("human coverage matrix disagrees with JSON routing",
+                      coverage_reference_issues(self.coverage, altered, templates))
+        role = self.coverage["roles"][0]
+        role["template_ref"] += "-missing"
+        self.assertIn("role template reference missing, duplicated or noncanonical",
+                      coverage_reference_issues(self.coverage, matrix, templates))
+        role["template_ref"] = role["template_ref"].removesuffix("-missing")
+        anchor = role["id"].replace(".", "-").replace("_", "-")
+        duplicated = templates + f'\n<a id="{anchor}"></a>\n'
+        self.assertIn("role template reference missing, duplicated or noncanonical",
+                      coverage_reference_issues(self.coverage, matrix, duplicated))
 
 
 if __name__ == "__main__":

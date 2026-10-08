@@ -206,6 +206,32 @@ def coverage_issues(catalog: str, coverage: dict) -> list[str]:
     return issues
 
 
+def coverage_reference_issues(coverage: dict, matrix: str, templates: str) -> list[str]:
+    """Keep human routing and callable template references aligned with JSON."""
+    issues = []
+    rows = []
+    for line in matrix.splitlines():
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) == 5 and cells[0].isdigit():
+            rows.append((int(cells[0]), cells[1], *[
+                re.findall(r"`([^`]+)`", cell) for cell in cells[2:]
+            ]))
+    expected = [(item["catalog_row"], item["catalog_capability"],
+                 item["business_role_ids"], item["implementation_role_ids"],
+                 item["acceptance_role_ids"]) for item in coverage["capabilities"]]
+    if rows != expected:
+        issues.append("human coverage matrix disagrees with JSON routing")
+    anchors = re.findall(r'<a id="([^"]+)"></a>', templates)
+    for role in coverage["roles"]:
+        anchor = role["id"].replace(".", "-").replace("_", "-")
+        expected_ref = ".agents/skills/multi-dialogue-development/references/roles.md#" + anchor
+        if role.get("template_ref") != expected_ref or anchors.count(anchor) != 1:
+            issues.append("role template reference missing, duplicated or noncanonical")
+        if f'### `{role["id"]}`：{role["name"]}' not in templates:
+            issues.append("role template identity disagrees with JSON")
+    return issues
+
+
 def verify() -> int:
     try:
         files = repository_files()
@@ -257,6 +283,9 @@ def verify() -> int:
         coverage = json.loads((ROOT / "docs/development/agent-coverage.json").read_text(encoding="utf-8"))
         catalog = (ROOT / "docs/modules/catalog.md").read_text(encoding="utf-8")
         issues.extend(coverage_issues(catalog, coverage))
+        matrix = (ROOT / "docs/development/agent-coverage.md").read_text(encoding="utf-8")
+        templates = (ROOT / ".agents/skills/multi-dialogue-development/references/roles.md").read_text(encoding="utf-8")
+        issues.extend(coverage_reference_issues(coverage, matrix, templates))
     except (OSError, ValueError, TypeError, AttributeError, KeyError, IndexError):
         issues.append("role coverage missing or malformed")
     try:
