@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test:preferences": "node --experimental-strip-types --test tests/language-preferences.test.mjs",
+    "test:updates": "node --experimental-strip-types --test tests/update-state.test.mjs",
     "dev": "vite --host 127.0.0.1 --port 5181 --strictPort",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty",

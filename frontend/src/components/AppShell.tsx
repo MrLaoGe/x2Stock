@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useI18n } from '../i18n'
+import { UpdateControl } from './UpdateControl'
 
 export function AppShell() {
   const { t, language, setLanguage, languageOptions } = useI18n()
@@ -39,6 +40,7 @@ export function AppShell() {
         <header className="topbar">
           <span className="topbar-context">{t.localSpace} · {t.notConnected}</span>
           <div className="topbar-actions">
+            <UpdateControl />
             <label className="sr-only" htmlFor="language-select">{t.language}</label>
             <select id="language-select" className="language-select" value={language} onChange={(event) => setLanguage(event.target.value as typeof language)}>
               {languageOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}

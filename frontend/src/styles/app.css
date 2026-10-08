@@ -68,6 +68,18 @@ h3 { font-size: 20px; }
 .code-note { margin: var(--space-4) 0 0; color: var(--color-text-subtle); font: 12px/1.7 var(--font-mono); }
 .topbar-context, .page-header p, .lede, .empty-copy p, .preview-card > p, .notice, .button, .nav-link { overflow-wrap: anywhere; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.update-trigger { border: 0; padding: 0; background: transparent; color: var(--color-accent); font-size: 13px; cursor: pointer; transition: var(--transition-color); }
+.update-trigger:hover { color: var(--color-text); }
+.update-dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 32px); margin: auto; padding: var(--space-6); overflow: auto; border: 1px solid var(--color-border); border-radius: var(--radius-panel); background: var(--color-panel); color: var(--color-text); }
+.update-dialog::backdrop { background: var(--color-sidebar); }
+.update-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.update-dialog p { color: var(--color-text-muted); line-height: 1.7; overflow-wrap: anywhere; }
+.update-details { display: grid; gap: var(--space-2); margin: var(--space-5) 0; font-size: 14px; }
+.update-details > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); }
+.update-details dt { color: var(--color-text-muted); }
+.update-details dd { margin: 0; overflow-wrap: anywhere; }
+.release-notes { max-height: 200px; padding: var(--space-3); overflow: auto; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-canvas); color: var(--color-text-muted); font: 14px/1.7 var(--font-body); white-space: pre-wrap; overflow-wrap: anywhere; }
+.button:disabled { color: var(--color-text-subtle); cursor: default; background: var(--color-panel); }
 
 @media (max-width: 760px) {
   .app-shell { grid-template-columns: 1fr; }
