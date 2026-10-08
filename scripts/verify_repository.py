@@ -9,6 +9,11 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+try:
+    from scripts.verify_desktop_runtime import approved_name, COMPILED_SUFFIXES, verify_runtime
+except ModuleNotFoundError:
+    from verify_desktop_runtime import approved_name, COMPILED_SUFFIXES, verify_runtime
+
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = (
@@ -38,7 +43,7 @@ PRIVATE_SUFFIXES = {
 }
 TEXT_SUFFIXES = {
     ".md", ".json", ".py", ".yml", ".yaml", ".toml", ".example",
-    ".ts", ".tsx", ".js", ".jsx", ".css", ".html", ".cjs", ".mjs",
+    ".ts", ".tsx", ".js", ".jsx", ".css", ".html", ".cjs", ".mjs", ".bat", ".ps1", ".txt",
 }
 DATABASE_FILE = re.compile(r"\.(?:db|sqlite|sqlite3)(?:-(?:wal|shm|journal))?$|\.duckdb(?:\.wal)?$", re.I)
 LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+[\"'][^\n]*[\"'])?\s*\)")
@@ -177,6 +182,14 @@ def verify() -> int:
             issues.append(f"{name}: private file type or configuration")
         if path.name.startswith(".env.") and path.name != ".env.example":
             issues.append(f"{name}: real environment file")
+        if name.startswith("desktop-runtime/"):
+            # Only the exact approved Electron bundle can be public. Its pointer,
+            # bytes, architecture and structured manifest are checked separately.
+            if not approved_name(name):
+                issues.append(f"{name}: unapproved public runtime asset")
+            continue
+        if path.suffix.lower() in COMPILED_SUFFIXES and not fixture:
+            issues.append(f"{name}: compiled asset outside the approved runtime")
         if path.suffix.lower() not in TEXT_SUFFIXES and path.name not in {"LICENSE", ".gitignore", ".gitattributes", ".editorconfig"}:
             continue
         try:
@@ -194,6 +207,10 @@ def verify() -> int:
                 json.loads(content)
             except json.JSONDecodeError as exc:
                 issues.append(f"{name}: invalid JSON at line {exc.lineno}")
+    try:
+        issues.extend(verify_runtime(ROOT, files))
+    except (OSError, ValueError, subprocess.SubprocessError):
+        issues.append("controlled desktop runtime verification failed")
     try:
         config = json.loads((ROOT / "config/config.example.json").read_text(encoding="utf-8"))
         env_text = (ROOT / ".env.example").read_text(encoding="utf-8")
