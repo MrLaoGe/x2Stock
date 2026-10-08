@@ -1,0 +1,1475 @@
+{
+  "schema_version": 1,
+  "catalog_source": "docs/modules/catalog.md",
+  "catalog_capability_count": 43,
+  "role_count": 42,
+  "coordination_role_count": 2,
+  "roles": [
+    {
+      "id": "data.source_ingestion",
+      "name": "数据源接入与采集",
+      "group": "data",
+      "stage": "1",
+      "mode": "design",
+      "responsibility": "负责数据源接入与采集的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "数据源接入与采集的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "data.standardization_quality",
+      "name": "数据标准化与质量",
+      "group": "data",
+      "stage": "1",
+      "mode": "design",
+      "responsibility": "负责数据标准化与质量的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "数据标准化与质量的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "data.historical_migration",
+      "name": "历史迁移",
+      "group": "data",
+      "stage": "1",
+      "mode": "design",
+      "responsibility": "负责历史迁移的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "历史迁移的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "data.time_provenance",
+      "name": "数据与时间核验",
+      "group": "data",
+      "stage": "1",
+      "mode": "design",
+      "responsibility": "负责数据与时间核验的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "数据与时间核验的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.structure_sentiment",
+      "name": "市场结构与情绪分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责市场结构与情绪分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "市场结构与情绪分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.sector_theme",
+      "name": "板块与题材分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责板块与题材分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "板块与题材分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.fund_flow_lhb",
+      "name": "资金流与龙虎榜分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责资金流与龙虎榜分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "资金流与龙虎榜分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.technical",
+      "name": "个股技术分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责个股技术分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "个股技术分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.financial_valuation",
+      "name": "公司财务与估值分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责公司财务与估值分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "公司财务与估值分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.news_event",
+      "name": "新闻电报与事件分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责新闻电报与事件分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "新闻电报与事件分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.corporate_action",
+      "name": "公司公告与公司行动分析",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责公司公告与公司行动分析的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "公司公告与公司行动分析的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "market.method_validation",
+      "name": "特色指标与方法验证",
+      "group": "market",
+      "stage": "2/3",
+      "mode": "design",
+      "responsibility": "负责特色指标与方法验证的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "特色指标与方法验证的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "report.pre_open",
+      "name": "盘前策略",
+      "group": "report",
+      "stage": "3",
+      "mode": "design",
+      "responsibility": "负责盘前策略的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "盘前策略的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "report.intraday",
+      "name": "盘中跟踪",
+      "group": "report",
+      "stage": "3",
+      "mode": "design",
+      "responsibility": "负责盘中跟踪的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "盘中跟踪的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "report.post_close",
+      "name": "盘后复盘",
+      "group": "report",
+      "stage": "3",
+      "mode": "design",
+      "responsibility": "负责盘后复盘的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "盘后复盘的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "report.prediction_settlement",
+      "name": "预测结算与研究评估",
+      "group": "report",
+      "stage": "3",
+      "mode": "design",
+      "responsibility": "负责预测结算与研究评估的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "预测结算与研究评估的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "report.adversarial_review",
+      "name": "反方审查",
+      "group": "report",
+      "stage": "3",
+      "mode": "design",
+      "responsibility": "负责反方审查的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "反方审查的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "report.editorial_final",
+      "name": "报告审校与终稿复核",
+      "group": "report",
+      "stage": "3",
+      "mode": "design",
+      "responsibility": "负责报告审校与终稿复核的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "报告审校与终稿复核的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "personal.research_management",
+      "name": "个人研究管理",
+      "group": "personal",
+      "stage": "2",
+      "mode": "design",
+      "responsibility": "负责个人研究管理的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "个人研究管理的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "personal.monitor_alerts",
+      "name": "监控与提醒",
+      "group": "personal",
+      "stage": "2",
+      "mode": "design",
+      "responsibility": "负责监控与提醒的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "监控与提醒的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "personal.trade_record_discipline",
+      "name": "交易记录与纪律复盘",
+      "group": "personal",
+      "stage": "2",
+      "mode": "design",
+      "responsibility": "负责交易记录与纪律复盘的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "交易记录与纪律复盘的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.strategy_research",
+      "name": "量化策略研究",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责量化策略研究的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "量化策略研究的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.strategy_implementation",
+      "name": "量化程序开发",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责量化程序开发的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "量化程序开发的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.backtest_engine",
+      "name": "回测引擎开发",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责回测引擎开发的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "回测引擎开发的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.experiment_execution",
+      "name": "回测实验执行",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责回测实验执行的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "回测实验执行的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.independent_evaluation",
+      "name": "独立策略评估",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责独立策略评估的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "独立策略评估的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.paper_trading_drift",
+      "name": "模拟交易与偏差监控",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责模拟交易与偏差监控的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "模拟交易与偏差监控的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "quant.portfolio_risk",
+      "name": "投资组合与风险",
+      "group": "quant",
+      "stage": "4",
+      "mode": "design",
+      "responsibility": "负责投资组合与风险的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "投资组合与风险的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "execution.order_engineering",
+      "name": "订单执行工程",
+      "group": "execution",
+      "stage": "5",
+      "mode": "design",
+      "responsibility": "负责订单执行工程的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "订单执行工程的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "execution.independent_risk",
+      "name": "独立执行风控",
+      "group": "execution",
+      "stage": "5",
+      "mode": "design",
+      "responsibility": "负责独立执行风控的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "独立执行风控的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "execution.strategy_operations",
+      "name": "策略运行与维护",
+      "group": "execution",
+      "stage": "5",
+      "mode": "design",
+      "responsibility": "负责策略运行与维护的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "策略运行与维护的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.architecture",
+      "name": "架构",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责架构的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "架构的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.frontend_interaction",
+      "name": "前端与交互",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责前端与交互的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "前端与交互的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.backend_api",
+      "name": "后端 API",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责后端 API的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "后端 API的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.database",
+      "name": "数据库工程",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责数据库工程的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "数据库工程的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.worker",
+      "name": "作业与 worker 工程",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责作业与 worker 工程的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "作业与 worker 工程的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.ai_workflow",
+      "name": "AI 工作流工程",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责AI 工作流工程的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "AI 工作流工程的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.qa_review",
+      "name": "独立 QA／代码审查",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责独立 QA／代码审查的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "独立 QA／代码审查的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.security_ops",
+      "name": "安全与运维",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责安全与运维的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "安全与运维的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "engineering.integration_release",
+      "name": "集成与发布",
+      "group": "engineering",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责集成与发布的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "集成与发布的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "boss",
+      "name": "老板",
+      "group": "coordination",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责老板的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "老板的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "pm"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    },
+    {
+      "id": "pm",
+      "name": "PM",
+      "group": "coordination",
+      "stage": "0-5",
+      "mode": "design",
+      "responsibility": "负责PM的业务规则、范围和阶段性产物。",
+      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
+      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "outputs": "PM的结构化产物、来源/版本引用、缺口和失败状态。",
+      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "reviewer_role_ids": [
+        "engineering.qa_review",
+        "engineering.integration_release",
+        "boss"
+      ],
+      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
+      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "catalog.01",
+      "catalog_capability": "来源配置、能力和权限核验",
+      "catalog_row": 1,
+      "business": [
+        "data.source_ingestion"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.security_ops"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.02",
+      "catalog_capability": "标准化事实、原始引用、字段质量",
+      "catalog_row": 2,
+      "business": [
+        "data.standardization_quality"
+      ],
+      "implementation": [
+        "engineering.database",
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.03",
+      "catalog_capability": "来源探测、覆盖率与可用性审计",
+      "catalog_row": 3,
+      "business": [
+        "data.source_ingestion"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.worker"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.04",
+      "catalog_capability": "历史导入、预检、隔离和补缺",
+      "catalog_row": 4,
+      "business": [
+        "data.historical_migration"
+      ],
+      "implementation": [
+        "engineering.database",
+        "engineering.worker"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.05",
+      "catalog_capability": "刷新、自动任务、依赖、手动运行",
+      "catalog_row": 5,
+      "business": [
+        "data.source_ingestion"
+      ],
+      "implementation": [
+        "engineering.worker",
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.06",
+      "catalog_capability": "健康检查、日志、备份恢复",
+      "catalog_row": 6,
+      "business": [
+        "data.time_provenance"
+      ],
+      "implementation": [
+        "engineering.security_ops",
+        "engineering.database"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.architecture"
+      ]
+    },
+    {
+      "id": "catalog.07",
+      "catalog_capability": "首页摘要、指数与全球参考",
+      "catalog_row": 7,
+      "business": [
+        "market.structure_sentiment"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.08",
+      "catalog_capability": "市场宽度、成交额、涨跌分布",
+      "catalog_row": 8,
+      "business": [
+        "market.structure_sentiment"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.09",
+      "catalog_capability": "板块资金流、个股资金和历史轨迹",
+      "catalog_row": 9,
+      "business": [
+        "market.sector_theme"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.10",
+      "catalog_capability": "热力图、历史日期与盘中回放",
+      "catalog_row": 10,
+      "business": [
+        "market.structure_sentiment"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.11",
+      "catalog_capability": "新闻电报、公告、同步与时间线",
+      "catalog_row": 11,
+      "business": [
+        "market.news_event",
+        "market.corporate_action"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.worker"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.12",
+      "catalog_capability": "新闻主题、股票/板块映射与关联",
+      "catalog_row": 12,
+      "business": [
+        "market.news_event"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.ai_workflow"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.13",
+      "catalog_capability": "新闻详情、收藏/已读与规则评分",
+      "catalog_row": 13,
+      "business": [
+        "market.news_event",
+        "personal.research_management"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "engineering.security_ops",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.14",
+      "catalog_capability": "单条新闻 AI 解读",
+      "catalog_row": 14,
+      "business": [
+        "market.news_event"
+      ],
+      "implementation": [
+        "engineering.ai_workflow",
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.15",
+      "catalog_capability": "未来大事件、消息/流言与结束状态",
+      "catalog_row": 15,
+      "business": [
+        "market.news_event",
+        "market.corporate_action"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.worker"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "report.adversarial_review"
+      ]
+    },
+    {
+      "id": "catalog.16",
+      "catalog_capability": "股票搜索、股票池和名单配置",
+      "catalog_row": 16,
+      "business": [
+        "personal.research_management"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "engineering.security_ops",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.17",
+      "catalog_capability": "个人研究笔记、标签与上下文",
+      "catalog_row": 17,
+      "business": [
+        "personal.research_management"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "engineering.security_ops",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.18",
+      "catalog_capability": "实时/日 K/分钟行情和个股资料",
+      "catalog_row": 18,
+      "business": [
+        "market.technical"
+      ],
+      "implementation": [
+        "data.source_ingestion",
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.19",
+      "catalog_capability": "压力/支撑监控、阈值与提醒确认",
+      "catalog_row": 19,
+      "business": [
+        "personal.monitor_alerts"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.worker",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.20",
+      "catalog_capability": "对子数价格提醒及特殊观察规则",
+      "catalog_row": 20,
+      "business": [
+        "personal.monitor_alerts",
+        "market.technical"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.worker"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.21",
+      "catalog_capability": "个股分析、技术筛选与选股实验",
+      "catalog_row": 21,
+      "business": [
+        "market.technical"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.22",
+      "catalog_capability": "龙虎榜、公告与个股消息证据",
+      "catalog_row": 22,
+      "business": [
+        "market.fund_flow_lhb",
+        "market.corporate_action",
+        "market.news_event"
+      ],
+      "implementation": [
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.23",
+      "catalog_capability": "情绪时间线、趋势阶段和情绪板",
+      "catalog_row": 23,
+      "business": [
+        "market.structure_sentiment",
+        "market.method_validation"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.24",
+      "catalog_capability": "风险/机遇指数及模型建议仓位",
+      "catalog_row": 24,
+      "business": [
+        "market.method_validation"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.ai_workflow"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "quant.independent_evaluation"
+      ]
+    },
+    {
+      "id": "catalog.25",
+      "catalog_capability": "本金/融资仓位和用户持仓口径",
+      "catalog_row": 25,
+      "business": [
+        "personal.research_management"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "engineering.security_ops",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.26",
+      "catalog_capability": "今日/月度平均收益参考线",
+      "catalog_row": 26,
+      "business": [
+        "market.method_validation"
+      ],
+      "implementation": [
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.27",
+      "catalog_capability": "赚钱/亏钱效应与市场结构指标",
+      "catalog_row": 27,
+      "business": [
+        "market.structure_sentiment"
+      ],
+      "implementation": [
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.28",
+      "catalog_capability": "拥挤度、大盘/板块/个股观察列表",
+      "catalog_row": 28,
+      "business": [
+        "market.structure_sentiment",
+        "market.technical"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "data.time_provenance"
+      ]
+    },
+    {
+      "id": "catalog.29",
+      "catalog_capability": "题材主线、强弱领导和轮动日历",
+      "catalog_row": 29,
+      "business": [
+        "market.sector_theme"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "market.method_validation",
+        "data.time_provenance"
+      ]
+    },
+    {
+      "id": "catalog.30",
+      "catalog_capability": "宝妈指数等社区情绪实验",
+      "catalog_row": 30,
+      "business": [
+        "market.method_validation"
+      ],
+      "implementation": [
+        "engineering.worker",
+        "engineering.ai_workflow"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.31",
+      "catalog_capability": "盘前/盘中/盘后策略报告",
+      "catalog_row": 31,
+      "business": [
+        "report.pre_open",
+        "report.intraday",
+        "report.post_close"
+      ],
+      "implementation": [
+        "engineering.ai_workflow",
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "report.editorial_final"
+      ]
+    },
+    {
+      "id": "catalog.32",
+      "catalog_capability": "08:50 盘前预测冻结与结算",
+      "catalog_row": 32,
+      "business": [
+        "report.pre_open",
+        "report.prediction_settlement"
+      ],
+      "implementation": [
+        "engineering.worker",
+        "engineering.ai_workflow"
+      ],
+      "acceptance": [
+        "data.time_provenance",
+        "report.editorial_final"
+      ]
+    },
+    {
+      "id": "catalog.33",
+      "catalog_capability": "交易模型文档和个人方法资产",
+      "catalog_row": 33,
+      "business": [
+        "report.editorial_final",
+        "personal.research_management"
+      ],
+      "implementation": [
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.34",
+      "catalog_capability": "日内 T 观察、动作卡片与纪律规则",
+      "catalog_row": 34,
+      "business": [
+        "report.intraday",
+        "personal.monitor_alerts"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "report.adversarial_review",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.35",
+      "catalog_capability": "交易记录与文本导入、复盘关联",
+      "catalog_row": 35,
+      "business": [
+        "personal.trade_record_discipline"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance": [
+        "engineering.security_ops",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.36",
+      "catalog_capability": "提醒通知、已确认状态",
+      "catalog_row": 36,
+      "business": [
+        "personal.monitor_alerts"
+      ],
+      "implementation": [
+        "engineering.worker",
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.37",
+      "catalog_capability": "桌面通知、外部消息推送",
+      "catalog_row": 37,
+      "business": [
+        "personal.monitor_alerts"
+      ],
+      "implementation": [
+        "engineering.worker",
+        "engineering.security_ops"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.architecture"
+      ]
+    },
+    {
+      "id": "catalog.38",
+      "catalog_capability": "Skill 蓝图、文档注册与依赖治理",
+      "catalog_row": 38,
+      "business": [
+        "pm"
+      ],
+      "implementation": [
+        "engineering.architecture",
+        "engineering.integration_release"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.39",
+      "catalog_capability": "项目 Skill 目录与注册表",
+      "catalog_row": 39,
+      "business": [
+        "engineering.architecture"
+      ],
+      "implementation": [
+        "engineering.integration_release"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.40",
+      "catalog_capability": "正式版本、标签、Release 与最终通知",
+      "catalog_row": 40,
+      "business": [
+        "pm"
+      ],
+      "implementation": [
+        "engineering.integration_release",
+        "engineering.security_ops"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "boss"
+      ]
+    },
+    {
+      "id": "catalog.41",
+      "catalog_capability": "多 Agent 研究、审校与报告记录",
+      "catalog_row": 41,
+      "business": [
+        "report.adversarial_review",
+        "report.editorial_final"
+      ],
+      "implementation": [
+        "engineering.ai_workflow",
+        "engineering.backend_api"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "data.time_provenance"
+      ]
+    },
+    {
+      "id": "catalog.42",
+      "catalog_capability": "量化因子、回测与模拟交易",
+      "catalog_row": 42,
+      "business": [
+        "quant.strategy_research",
+        "quant.strategy_implementation",
+        "quant.backtest_engine",
+        "quant.experiment_execution",
+        "quant.independent_evaluation",
+        "quant.paper_trading_drift",
+        "quant.portfolio_risk"
+      ],
+      "implementation": [
+        "engineering.worker",
+        "engineering.database",
+        "engineering.ai_workflow"
+      ],
+      "acceptance": [
+        "quant.independent_evaluation",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.43",
+      "catalog_capability": "真实订单执行与长期策略维护",
+      "catalog_row": 43,
+      "business": [
+        "execution.order_engineering",
+        "execution.independent_risk",
+        "execution.strategy_operations"
+      ],
+      "implementation": [
+        "engineering.backend_api",
+        "engineering.worker",
+        "engineering.security_ops"
+      ],
+      "acceptance": [
+        "engineering.qa_review",
+        "engineering.architecture"
+      ]
+    }
+  ]
+}
