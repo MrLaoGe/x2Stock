@@ -4,7 +4,7 @@
 
 每项需求独立 PM；老板明确范围与任务内创建、消息、发布授权，确认真实 PM 对话后释放。PM 按依赖创建持久专业任务对话、自主安排并行，明确业务专责、实现、独立验收三责，处理退回与复验后自动集成已授权发布，主动返回老板。模板与本地协调工具见 [multi-dialogue-development](../../.agents/skills/multi-dialogue-development/SKILL.md)，职责与逐项覆盖见 [覆盖表](agent-coverage.md)。
 
-执行者不得发布的规则不取消用户指定 PM 的发布责任。真实对话都是独立持久线程，关系记在任务记录；短 subagent 只能辅助。创建前 list_projects，选 XXStock 隔离 worktree，默认远端 main；执行角色从 PM 已提交基线接入自己的分支，新对话不指定模型覆盖。
+执行者不得发布的规则不取消用户指定 PM 的发布责任。真实对话都是独立持久线程，关系记在任务记录；短 subagent 只能辅助。创建前 list_projects，选 x2Stock 隔离 worktree，默认远端 main；执行角色从 PM 已提交基线接入自己的分支，新对话不指定模型覆盖。
 
 异步创建先保存 client/operation 标识为 pending_creation，确认真实 threadId 后才跟进；状态不明核对原操作，不重复派发。取消先记录请求，执行者确认停止后才解除文件占用。缺失数据、证据冲突、工具失败报告 PM，保留原有效产物。
 

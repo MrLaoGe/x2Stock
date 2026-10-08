@@ -18,7 +18,7 @@
 | 工程执行 | `01a11b23-b536-73e0-8c58-7be39c20cb7a` | 状态脚本、行为测试与使用契约；对话附件 `4104`，实际隔离实现 worktree `orchestration-helper`，分支 `codex/orchestration-helper` |
 | 独立审查 | `01a11b26-ccfd-7191-8705-80d03f3a9f0a` | 真实需求 forward-test、行为和发布场景审查，worktree `34cf`，只读候选 |
 
-专业对话使用 create_thread 创建，先 list_projects 选择 XXStock，未覆盖模型。异步阶段保存 client ID，核实真实 ID 后才消息跟进，未重复创建。原远端基线 `a88d905`，实现约定基线 `0705cf6`；执行者只提交局部成果，由 PM 集成。老板结束时专业工作仍在进行，可由原轮 completedAt `1791456750` 和专业对话后续交付时间核对。
+专业对话使用 create_thread 创建，先 list_projects 选择 x2Stock，未覆盖模型。异步阶段保存 client ID，核实真实 ID 后才消息跟进，未重复创建。原远端基线 `a88d905`，实现约定基线 `0705cf6`；执行者只提交局部成果，由 PM 集成。老板结束时专业工作仍在进行，可由原轮 completedAt `1791456750` 和专业对话后续交付时间核对。
 
 实时记录位于 Git 公共目录下忽略的 `.local/orchestration`，含完整路径、授权、依赖、文件归属、产物和评审；公开文档只保存演练事实摘要，不复制运行数据库或私有材料。业务 snapshot/cutoff/方法策略版本本轮不适用，工具字段预留。
 
