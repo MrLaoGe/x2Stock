@@ -2,7 +2,8 @@
 
 - VERSION 使用无前导零的三段整数；默认首次 0.1.0，此后末位 +1。中间段、主版本及非连续调整必须有明确用户指令和 reason。按整数比较版本。
 - `docs/releases/<version>.md` 是规范中文正文；同名 JSON 记录 version、previous_version、change（initial/patch/explicit）、reason、repository。CHANGELOG 保存版本摘要和说明链接。
-- 标签 `v<version>`，标题 `XXStock <version>`。0.x 必须 prerelease 且 make_latest=false；稳定主版本只能用户明确开启。
+- 标签 `v<version>`，标题 `x2Stock <version>`。0.x 必须 prerelease 且 make_latest=false；稳定主版本只能用户明确开启。
+- 已发布 0.1.0 保留原名称、说明及元数据，作为冻结历史验证；后续版本不接受旧名称，仓库改名不能绕过标题、正文或 exact SHA 检查。
 - 比较链接为上次标签到本次标签；首次使用本次标签的提交历史链接。
 - prepare 仅操作本地文件，不提交、不推送、不写远端，已有材料不覆盖。check 校验版本、来源版本、说明、索引；主线使用 push.before，遗漏升版失败。
 - publish 只接受 GitHub Actions 的 push/main、匹配 event.after 的干净 HEAD 和指定仓库；标签始终指向这次 SHA。前一版本必须已发布且位于本次历史中。非快进主线停止发布，所有历史版本说明与元数据不可修改或删除。

@@ -6,10 +6,14 @@
 
 - 根目录 [VERSION](../../VERSION) 是当前版本的唯一事实源，格式为 `X.Y.Z`。首次从 `0.1.0` 开始；已有版本时，每批正式发布默认 patch 加一，一批可包含多个提交。
 - 只有用户明确指定版本级别或目标版本时，才改变 minor/major。显式版本需使用 `--version` 与 `--allow-version-change`，不能根据 Agent 对变更大小的判断自行升级。
-- [CHANGELOG.md](../../CHANGELOG.md) 保存发布索引，由准备工具维护；正式说明存于 `docs/releases/<version>.md`，首行标题为 `# XXStock <version>`。说明写变化、验证与实际限制，不写虚构的业务能力。
-- Git 标签为 `v<version>`，GitHub Release 名称为 `XXStock <version>`。`0.x` 发布设为 prerelease 且不标为 latest；它发布设计/运维成果，不表示业务应用可用。
+- [CHANGELOG.md](../../CHANGELOG.md) 保存发布索引，由准备工具维护；正式说明存于 `docs/releases/<version>.md`，首行标题为 `# x2Stock <version>`。说明写变化、验证与实际限制，不写虚构的业务能力。
+- Git 标签为 `v<version>`，GitHub Release 名称为 `x2Stock <version>`。`0.x` 发布设为 prerelease 且不标为 latest；它发布设计/运维成果，不表示业务应用可用。
+
+已发布 `0.1.0` 使用原名称，其说明、元数据和 Release 标题保持冻结；改名后的发布工具验证这一历史记录，后续版本仅使用 `x2Stock`。见 [改名决策](../adr/0009-project-name.md)。
 
 ## 准备与检查
+
+多 PM 先 fetch 最新 origin/main、集成本轮成果并独立验收源候选，再使用 [多对话协调工具](../../.agents/skills/multi-dialogue-development/references/orchestration.md) 取得 task/PM 绑定的发布锁；取锁再次核对最新基线，旧主线候选必须重新集成与验收。锁不授予发布权限，也不因超时被抢占。持锁后按远端 VERSION 准备下一 patch，不提前固定版本。收据分别记录已审源候选和加入版本材料后的最终发布 SHA；源内容变化不能复用旧验收。异常先核对持有者、Git、Actions、标签、Release 和通知，结果歧义保留锁，禁止盲目再次 prepare 或重发。
 
 先写好本批说明，再准备本地材料：
 

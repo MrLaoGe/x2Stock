@@ -2,6 +2,8 @@
 
 日期：2026-10-08。任务：S0-001 至 S0-007。
 
+历史交接保留。其“下一轮数据中心与迁移”安排已由 [ADR 0006](../../adr/0006-module-first-new-project.md) 替代；当前入口为[最小应用骨架](../../modules/application-skeleton.md)，默认不迁移，业务模块由用户选择。下文记录原批次事实，不作为当前执行顺序。
+
 ## 最终状态
 
 本轮交付独立文档仓库、整体设计、数据/接口边界、Agent 协作规范与配置模板。32 个公开资产通过校验；已完成独立审查和相关修复，统一以 [任务台账](../task-ledger.md) 记录发布状态。
@@ -22,10 +24,12 @@
 
 ## 发布
 
-[MrLaoGe/XXStock](https://github.com/MrLaoGe/XXStock) 已创建为公开 MIT 文档仓库，使用全新提交历史。首次远端main与本地提交及32个公开文件一致；[首次CI](https://github.com/MrLaoGe/XXStock/actions/runs/37754656719)通过。全新克隆无需旧项目、业务依赖或用户密钥即可运行仓库校验。当前交接记录随后提交，最新流水线结果见仓库Actions。
+[MrLaoGe/x2Stock](https://github.com/MrLaoGe/x2Stock) 已创建为公开 MIT 文档仓库，使用全新提交历史。首次远端main与本地提交及32个公开文件一致；[首次CI](https://github.com/MrLaoGe/x2Stock/actions/runs/37754656719)通过。全新克隆无需旧项目、业务依赖或用户密钥即可运行仓库校验。当前交接记录随后提交，最新流水线结果见仓库Actions。
 
 ## 审查和验证
 
 独立审查修正 CI 干净checkout空白检查无效的问题，以及worker租约过期后旧执行者的写入约束。CI现在比较实际base/head；worker设计使用领取代次和fencing token，但运行行为需后续代码验证。迁移回滚通过不可变revision及正式指针检查保护后续采集，仍是设计，未宣称实测。
 
 公开资产验证、配置一致性和12项校验函数行为核验通过；隔离临时Git仓库验证尾随空白提交能被新版CI检查发现。仓库无真实凭据、数据库、缓存或个人研究资料。
+
+名称说明：本文仓库链接使用项目现名；初次交付使用原名，既有提交、标签和发布记录未改写。

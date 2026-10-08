@@ -1,4 +1,4 @@
-name: Verify and release XXStock
+name: Verify and release x2Stock
 
 on:
   push:
@@ -64,7 +64,7 @@ jobs:
       - name: Publish or recover exact-commit Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python .agents/skills/github-release/scripts/release.py publish --receipt "$RUNNER_TEMP/xxstock-release.json"
+        run: python .agents/skills/github-release/scripts/release.py publish --receipt "$RUNNER_TEMP/x2stock-release.json"
       - name: Notify channel after verified Release
         env:
           VOCECHAT_ENABLED: ${{ vars.VOCECHAT_ENABLED }}
@@ -73,4 +73,4 @@ jobs:
           VOCECHAT_GROUP_ID: ${{ vars.VOCECHAT_GROUP_ID || '19' }}
           VOCECHAT_API_PREFIX: ${{ vars.VOCECHAT_API_PREFIX || '/api/bot' }}
           VOCECHAT_TIMEOUT_SECONDS: ${{ vars.VOCECHAT_TIMEOUT_SECONDS || '15' }}
-        run: python scripts/vocechat_notify.py --release-file "$RUNNER_TEMP/xxstock-release.json"
+        run: python scripts/vocechat_notify.py --release-file "$RUNNER_TEMP/x2stock-release.json"

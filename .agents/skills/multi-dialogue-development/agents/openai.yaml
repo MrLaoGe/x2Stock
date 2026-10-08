@@ -1,0 +1,4 @@
+interface:
+  display_name: "x2Stock 多对话开发"
+  short_description: "按独立 PM 与专业对话协调职责、依赖、验收返工和串行发布"
+  default_prompt: "使用 $multi-dialogue-development 完成 x2Stock 本轮任务的专业对话派发、独立验收与已授权发布。"

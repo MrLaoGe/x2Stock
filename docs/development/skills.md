@@ -1,6 +1,6 @@
 # 项目 Skill 组织与维护
 
-XXStock 的项目 Skill 统一放在 `.agents/skills/<name>/`，入口为 `SKILL.md`；公开注册表是 [.agents/skills/registry.json](../../.agents/skills/registry.json)。项目级 Skill 随仓库版本演进，不依赖作者的个人 Skill 目录。使用前先读取入口及其引用，不能只凭名字推断流程或权限。
+x2Stock 的项目 Skill 统一放在 `.agents/skills/<name>/`，入口为 `SKILL.md`；公开注册表是 [.agents/skills/registry.json](../../.agents/skills/registry.json)。项目级 Skill 随仓库版本演进，不依赖作者的个人 Skill 目录。使用前先读取入口及其引用，不能只凭名字推断流程或权限。
 
 ## 分类与登记
 
@@ -14,6 +14,8 @@ XXStock 的项目 Skill 统一放在 `.agents/skills/<name>/`，入口为 `SKILL
 一个 Skill 只承担明确任务。入口写触发条件、输入、输出、边界与验收；长说明放 `references/`，必要的可复用工具放 `scripts/`。新增或修改后同步注册表、文档入口与合成行为测试；废弃时保留替代方式和理由，避免其他任务继续引用旧入口。
 
 ## 本轮 Skill
+
+[multi-dialogue-development](../../.agents/skills/multi-dialogue-development/SKILL.md) 属于 development，提供五种接入模式、具体角色模板、任务交接与本地协调脚本。它维护任务与发布锁状态，不调用跨对话创建 API，不运行金融业务；实际对话操作使用 Codex 工具并继承本任务人类授权。
 
 [github-release](../../.agents/skills/github-release/SKILL.md) 属于开发类，负责准备发布材料、检查版本与说明，以及供 GitHub Actions 在受限环境中发布。版本策略和错误恢复见 [发布规范](releases.md)。它不实现行情、业务 Agent 或交易执行，也不读取旧项目配置。
 

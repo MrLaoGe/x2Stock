@@ -1,5 +1,17 @@
 # 多 Agent、多对话开发协作
 
+## 老板与独立 PM
+
+每项需求独立 PM；老板明确范围与任务内创建、消息、发布授权，确认真实 PM 对话后释放。PM 按依赖创建持久专业任务对话、自主安排并行，明确业务专责、实现、独立验收三责，处理退回与复验后自动集成已授权发布，主动返回老板。模板与本地协调工具见 [multi-dialogue-development](../../.agents/skills/multi-dialogue-development/SKILL.md)，职责与逐项覆盖见 [覆盖表](agent-coverage.md)。
+
+执行者不得发布的规则不取消用户指定 PM 的发布责任。真实对话都是独立持久线程，关系记在任务记录；短 subagent 只能辅助。创建前 list_projects，选 x2Stock 隔离 worktree，默认远端 main；执行角色从 PM 已提交基线接入自己的分支，新对话不指定模型覆盖。
+
+异步创建先保存 client/operation 标识为 pending_creation，确认真实 threadId 后才跟进；状态不明核对原操作，不重复派发。取消先记录请求，执行者确认停止后才解除文件占用。缺失数据、证据冲突、工具失败报告 PM，保留原有效产物。
+
+实时状态在 Git 公共目录下被忽略的 `.local/orchestration`，全 worktree 共享；包含授权、依赖、阶段、三责、对话 ID、分支/worktree/基线、文件归属、产物与候选评审。业务任务预留快照、截止和方法/策略版本，运行数据不能写入 Skill 或公开仓库。
+
+多个 PM 可以并行，祖先/子目录共享路径也须明确所有者。先 fetch 最新 origin/main、集成并独立验收源候选；取得 task/PM 发布锁时再次核对远端基线，旧基线结果必须重新集成复验。锁无超时抢占，持锁后按远端 VERSION 协调下一 patch，并记录最终发布 SHA。源内容变化不能借版本准备复用旧评审。异常恢复核对原持有者、远端 Git/Actions/标签/Release/通知，不凭本地进程退出猜测失败；存在歧义保留锁。禁止 force push 和覆盖历史发布材料。
+
 ## 一轮任务的最小记录
 
 开始时主 Agent 阅读总方案、台账和模块，核对当前 Git 状态；确定目标、验收、文件所有者与共享契约。无法从代码/文档确认的产品取舍再向用户询问，已确认决策不重复征求许可。
@@ -29,7 +41,7 @@
 建议新对话请求：
 
 ```text
-接入 XXStock，先读 README.md、AGENTS.md、docs/development/task-ledger.md
+接入 x2Stock，先读 README.md、AGENTS.md、docs/development/task-ledger.md
 和本轮模块文档，核对 Git 状态。按已确认架构完成本轮授权工作，
 记录输入输出、来源和验证结果，更新台账与交接，不修改旧项目。
 本轮模块：[填写模块/任务 ID]

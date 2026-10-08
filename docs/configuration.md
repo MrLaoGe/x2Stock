@@ -1,6 +1,6 @@
 # 配置与用户接入设计
 
-状态：应用配置为设计；独立 Git 通知工具已实现其 `notifications.vocechat` 子集的读取与脱敏。公开模板为 [config.example.json](../config/config.example.json) 与 [.env.example](../.env.example)。模板不是真实用户配置，也不触发网络访问。
+状态：应用配置为设计；独立 Git 通知工具已实现其 `notifications.vocechat` 子集的读取与脱敏。公开模板为 [config.example.json](../config/config.example.json) 与 [.env.example](../.env.example)。模板不是真实用户配置，也不触发网络访问。配置项列出长期契约，不代表对应模块已选或默认部署。骨架无旧项目、数据源凭据和 AI 也能启动；未选模块不初始化业务表、不部署采集/导入任务。
 
 ## 配置位置和优先级
 
@@ -14,13 +14,13 @@
 
 | 配置 | 默认 | 含义 |
 | --- | --- | --- |
-| `XXSTOCK_BIND_HOST` | `127.0.0.1` | 单用户仅本机访问 |
-| `XXSTOCK_WEB_PORT` | `8080` | 后续生产静态网页与同源 API 代理 |
-| `XXSTOCK_API_PORT` | `8140` | 原生开发 API，避开旧服务端口 |
-| `XXSTOCK_DEV_WEB_PORT` | `5180` | Vite 开发端口 |
-| `XXSTOCK_TIMEZONE` | `Asia/Shanghai` | 交易时段及用户展示时间 |
-| `XXSTOCK_LOCAL_USER_ID` / `XXSTOCK_LOCAL_WORKSPACE_ID` | `local` / `local` | 服务端身份上下文；不是访问令牌 |
-| `XXSTOCK_DATA_DIR` | `.local/data` | 新版私有数据，不指向旧目录 |
+| `X2STOCK_BIND_HOST` | `127.0.0.1` | 单用户仅本机访问 |
+| `X2STOCK_WEB_PORT` | `8080` | 后续生产静态网页与同源 API 代理 |
+| `X2STOCK_API_PORT` | `8140` | 原生开发 API，避开旧服务端口 |
+| `X2STOCK_DEV_WEB_PORT` | `5180` | Vite 开发端口 |
+| `X2STOCK_TIMEZONE` | `Asia/Shanghai` | 交易时段及用户展示时间 |
+| `X2STOCK_LOCAL_USER_ID` / `X2STOCK_LOCAL_WORKSPACE_ID` | `local` / `local` | 服务端身份上下文；不是访问令牌 |
+| `X2STOCK_DATA_DIR` | `.local/data` | 新版私有数据，不指向旧目录 |
 | `DATABASE_URL` | 未配置 | 独立 PostgreSQL，不连接旧库 |
 
 Compose 基线只把 web 映射到 `127.0.0.1:8080`；API、worker、PostgreSQL 使用内部网络。PostgreSQL 容器内为 `5432`，默认不映射到宿主机。密码由使用者设置；不提供公共默认密码。原生开发 API/Vite 也绑定本机，CORS 只开放实际开发来源。
@@ -29,7 +29,7 @@ Compose 基线只把 web 映射到 `127.0.0.1:8080`；API、worker、PostgreSQL 
 
 ## 数据源配置
 
-Tushare 使用 `TUSHARE_TOKEN`，通过 SDK 或固定官方 HTTP 地址访问。缺 token 不导致空数据覆盖，也不自动探测收费数据；在能力列表显示 `missing_credential`。权限核验逐接口、最小请求、显式触发，记录核验时间和结果。
+Tushare 使用 `TUSHARE_TOKEN`，通过 SDK 或固定官方 HTTP 地址访问。缺 token 不导致空数据覆盖，也不自动探测收费数据；在已启用能力列表显示 `missing_credential`，骨架仅显示安全的配置状态。权限核验逐接口、最小请求、显式触发，记录核验时间和结果。
 
 东方财富与财联社适配器也要独立记录端点、口径、限频、最近成功和结构变化；“公开接口”不代表有可保证的 SLA。三类来源开关不能改变准入规则。此阶段不会创建 zhitu、mairuiapi 或其他来源配置。
 
@@ -66,13 +66,13 @@ OpenAI 官方 SDK 支持 Responses 和可配置客户端；第三方兼容性需
 
 ## 迁移配置
 
-`LEGACY_SOURCE_PATH` 默认为空，只供用户主动运行的本地迁移工具使用。正常服务启动不读取它、不扫描旧目录。工具必须验证源、目标不是同一个库或目录，并把只读连接、一致性快照和导入报告作为独立操作。
+`LEGACY_SOURCE_PATH` 默认为空，只供用户选定模块、数据集、字段、证券/日期范围及批次并另行批准的本地迁移工具使用；默认不迁移，评估不构成导入授权。该工具未实现，不是骨架交付前置。正常服务启动不读取它、不扫描旧目录。工具必须验证源、目标不是同一个库或目录，并把只读连接、一致性快照和导入报告作为独立操作。
 
 ## 配置验收
 
-验证未配置、不合法、缺凭据、权限不足、协议不兼容、价格缺失与预算耗尽。确认前端、日志、任务错误和导出均无秘密；实际本地配置不会被 `git add .` 纳入。未来具体解析代码和设置界面随数据模块/AI模块实现。
+验证未配置、不合法、缺凭据、权限不足、协议不兼容、价格缺失与预算耗尽。确认前端、日志、任务错误和导出均无秘密；实际本地配置不会被 `git add .` 纳入。自身配置与健康随骨架实施；provider/AI 探测、权限及预算验收随相应已选模块启用，不强加骨架。
 
+## Windows 首包与分发边界
 
-## Windows 首包边界
 
 Windows EXE 是产品入口，浏览器仅用于开发/视觉调试。免安装包解压到用户选择目录；它不启动 Docker、PostgreSQL、Python worker 或外置 API。程序目录、用户数据、未来更新下载临时目录和缓存必须独立，更新不能覆盖研究资产。Runtime 更新器尚未实现；当前首包没有更新 UI 或操作。未来 Release 更新器的签名/完整性公钥可随程序发布，私钥只在 CI secret；渲染器不接触 token。

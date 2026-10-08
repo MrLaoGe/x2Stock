@@ -20,7 +20,7 @@ def config():
 
 def event():
     return {
-        "repository": {"full_name": "example/XXStock"}, "ref": "refs/heads/main",
+        "repository": {"full_name": "example/x2Stock"}, "ref": "refs/heads/main",
         "before": "a" * 40, "after": "b" * 40, "pusher": {"name": "example-user"},
         "commits": [{"message": "docs: 更新设计\n\nLong body not sent"}],
     }

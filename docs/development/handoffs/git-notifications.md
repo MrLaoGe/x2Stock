@@ -15,7 +15,7 @@
 
 23测试通过，独立审查及定向复核通过；非法HTTP响应可能逃出CLI泄露原文的问题已修复。公开资产校验和差异检查通过。
 
-功能提交 `979b3fc` 的实际push触发[通知工作流](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)，安全回执显示 `status=sent`、`channel=19`、`http_status=200`。同次[开发校验](https://github.com/MrLaoGe/XXStock/actions/runs/37757570653)成功。此交接记录随后推送，将产生自己的通知事件。
+功能提交 `979b3fc` 的实际push触发[通知工作流](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，安全回执显示 `status=sent`、`channel=19`、`http_status=200`。同次[开发校验](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570653)成功。此交接记录随后推送，将产生自己的通知事件。
 
 ## 维护与边界
 
@@ -24,3 +24,5 @@
 通知代表Git变更已经推送，不表示开发测试或部署一定成功；不自动重试歧义超时，人工重跑可能重复，先核对频道。专用工作流失败不会回滚Git成功状态。后续Agent每次授权推送后分别核验通知和开发校验。
 
 下一业务模块仍为[数据中心与迁移](../../modules/data-center.md)。本轮没有新增A股采集、数据库或交易业务。
+
+名称说明：历史验收链接使用改名后的仓库地址；当时消息与提交保留原始名称记录。

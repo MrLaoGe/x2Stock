@@ -5,6 +5,8 @@
 | Skill | 分类 | 状态 | 用途 | 依赖 |
 | --- | --- | --- | --- | --- |
 | [github-release](github-release/SKILL.md) | development | active | 版本、中文说明、GitHub Release 与频道通知 | Git、Python 3.11、GitHub Actions、现有 VoceChat 客户端 |
+| [multi-dialogue-development](multi-dialogue-development/SKILL.md) | development | active | 独立 PM、持久专业对话、任务状态、独立验收与发布协调 | Git、Python 3.11、Codex 对话工具、github-release |
+
 | [frontend-style](frontend-style/SKILL.md) | development | active | 固定 React/Electron 可复用界面风格、token、组件与视觉验收 | frontend canonical tokens 与共享组件 |
 
 业务 Skill 按模块逐个新增，业务代码遵循后端服务和数据访问架构。不得将秘密、运行数据或旧项目 Skill 整包放入本目录。

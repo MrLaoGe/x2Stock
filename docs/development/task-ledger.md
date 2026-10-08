@@ -13,14 +13,20 @@
 | S0-007 | 创建并发布 MrLaoGe/x2Stock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/x2Stock)，MIT；初次远端main提交和32文件与本地一致 |
 | S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
+| S0-010 | 多对话开发 Skill 与金融专业角色体系 | 独立 PM / 角色专责 / 工程 / 独立审查 | in_progress | 42角色契约、44能力逐项三责；角色与工程候选已独立 PASS，等待 x2Stock 更名后的最终集成和发布 |
+| S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；初稿独审无阻断；A/B整合68资产/69测试和差异检查通过，已含更名与ADR0009；等待最终一致性复核及 A/B/C 全部 ready；[交接](handoffs/module-first-roadmap.md) |
 | UI-001 | x2Stock 空白工作台、Windows 三语首包与固定前端风格 Skill | 独立前端 PM / 前端 / 桌面 / Skill / 独立 QA | in_progress | 新名 ZIP/EXE 本地交付和独立 QA 完成，源5554d196；品牌/旧设置兼容/三语/重启/离线/390px/CDP页截图通过。物理系统缩放未验收，Runtime 更新器未实现。旧包保留 obsolete；正式发布仍等待 A→B→桌面并保留主线 rename/ADR0009/新增测试。见 [UI-001 交接](handoffs/frontend-style.md) |
-| S1-001 | 数据中心与迁移详细实施 | 后续对话 | planned | 先模块范围和验收，再骨架/数据代码 |
+| S1-001 | 最小应用骨架 | 后续对话 | planned | 独立前后端/PG、显式结构升级、配置健康、空工作台与部署；仅规划未实现 |
 
 ## 下一轮入口
 
-UI-001 分工：前端 Agent 在独立分支仅实现 `frontend/`；Skill Agent 在独立分支仅实现 `.agents/skills/frontend-style/`；PM 负责设计文档、注册、CI、集成和发布；独立 QA 在固定候选上检查真实页面、代码，并在隔离位置使用 Skill 创建中性样例。未建设后端、业务模块、数据库或迁移程序。
+下一项本体任务为[最小应用骨架](../modules/application-skeleton.md)，当前仅规划，未实现数据库、采集、迁移、API、业务页面、产品 Agent、回测或交易执行。骨架无需旧项目/来源凭据/AI，结构升级与旧数据导入分开。其后业务模块由用户逐个选择，无固定队列；默认不迁移旧数据，评估不等于执行授权，未选模块不建业务表、不部署采集/导入任务。
 
-[数据中心与迁移](../modules/data-center.md) 是下一轮首个 A 股业务模块。用户已先追加 Git通知运维任务 S0-008；当前未实现数据库、采集、迁移、API、业务页面、产品 Agent、回测或交易执行。
+数据中心随已启用模块增长。每模块分别记录功能、数据取得、迁移状态；新采集满足需求即可上线，不等待可选迁移。旧 S0-001 至 S0-004 为历史盘点/设计完成，不表示旧数据已导入或当前首模块已选。路线决定见 [ADR 0006](../adr/0006-module-first-new-project.md)。
+
+## 路线调整（S0-011）
+
+本轮只交付文档；本地验证、独立审查与外部发布分别验收。与 S0-010 Skill 和桌面任务并行本地验收，按最新 all-ready 门槛整合固定候选，不要求前任务先单独发布。A 负责最终集成与独立审查，A/B/C 全部 ready 后统一正式批次并核验 Git、Release、Actions、#19；B 不单独 push 或预占版本。角色模板、协调脚本、行为测试和发布流水线不属本轮修改范围，前任务成果须完整保留。旧项目和真实业务数据未修改。当前审查/验证进度见[本轮交接](handoffs/module-first-roadmap.md)。
 
 ## 本轮验证
 
@@ -34,7 +40,7 @@ UI-001 分工：前端 Agent 在独立分支仅实现 `frontend/`；Skill Agent 
 
 ## Skill 与正式发布（S0-009）
 
-本轮 Skill、登记、版本 helper、说明、工作流和规范已在本地完成。43 项合成测试、51 个公开资产校验、Skill frontmatter 与引用、版本材料及差异检查通过；独立审查已复核历史材料不可改写、非快进主线拒绝发布、精确标签路由与 UTF-8。尚未据此验收 `0.1.0` GitHub Release 或本批 #19 最终通知，等待本次推送后的工作流。正式发布结果在 Actions 与用户输出中报告，不为写成功记录追加发布提交。见 [交接](handoffs/skill-releases.md)。
+S0-009 本地交付包括 Skill、登记、版本 helper、说明、工作流和规范；43 项合成测试、51 个公开资产校验、版本材料及差异检查通过。独立审查已复核历史材料不可改写、非快进主线拒绝发布、精确标签路由与 UTF-8。本轮接入只读核实 `0.1.0` 为 prerelease、标签绑定 `a88d905`，[工作流](https://github.com/MrLaoGe/XXStock/actions/runs/37762565978) 的验证、发布与最终通知步骤均成功。历史交接保留推送前记录；本轮结果只在 Actions 与用户输出中报告，不为写成功记录追加发布提交。见 [交接](handoffs/skill-releases.md)。
 
 ## Git 通知验收（S0-008，历史记录）
 
@@ -43,3 +49,7 @@ UI-001 分工：前端 Agent 在独立分支仅实现 `frontend/`；Skill Agent 
 - 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
 - 同次[开发校验](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；本轮 S0-009 将正式 main 改为同一发布工作流最终通知，其他 push 的行为见当前通知规范。
 - 配置、限制和失败处理见[通知说明](git-notifications.md)，本轮交接见[通知交接](handoffs/git-notifications.md)。
+
+## 项目改名交接
+
+当前名称统一为 x2Stock，目标仓库 MrLaoGe/x2Stock。GitHub 仓库已通过 API 改名，仓库身份与主线、历史标签保持不变，origin 已更新。独立审查和 45 项合成测试、53 个公开资产校验通过；本地补丁已更新当前文档、Skill、发布与通知工具、测试及配置前缀；保留已发布 0.1.0 的不可改材料。此补丁交由前序 PM 集成，主线版本和正式发布结果等待原队列，未据此宣布新版本发布。详见 [改名决策](../adr/0009-project-name.md)。

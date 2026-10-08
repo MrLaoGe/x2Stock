@@ -35,6 +35,16 @@ REQUIRED = (
     ".agents/skills/github-release/scripts/release.py", ".agents/skills/github-release/references/release-contract.md",
     "tests/test_github_release.py", "docs/development/skills.md", "docs/development/releases.md",
     "docs/development/handoffs/skill-releases.md",
+    ".agents/skills/multi-dialogue-development/SKILL.md",
+    ".agents/skills/multi-dialogue-development/agents/openai.yaml",
+    ".agents/skills/multi-dialogue-development/references/roles.md",
+    ".agents/skills/multi-dialogue-development/references/orchestration.md",
+    ".agents/skills/multi-dialogue-development/references/task-template.md",
+    ".agents/skills/multi-dialogue-development/scripts/orchestration.py",
+    "docs/development/agent-coverage.md", "docs/development/agent-coverage.json",
+    "docs/development/handoffs/multi-dialogue-development.md",
+    "docs/adr/0005-multi-dialogue-development.md",
+    "tests/test_orchestration.py", "tests/test_agent_coverage.py",
 )
 PRIVATE_ROOTS = {".local", ".worktrees", "runtime", "data", "logs", "outputs", "backups"}
 PRIVATE_SUFFIXES = {
@@ -152,9 +162,81 @@ def config_issues(config: dict, env_text: str) -> list[str]:
         if str(bot.get(field, "")) != env.get(env_name):
             issues.append(f"notification defaults disagree for {field}")
     for key, value in config.get("deployment", {}).get("ports", {}).items():
-        env_key = {"web": "XXSTOCK_WEB_PORT", "api": "XXSTOCK_API_PORT", "dev_web": "XXSTOCK_DEV_WEB_PORT"}.get(key)
+        env_key = {"web": "X2STOCK_WEB_PORT", "api": "X2STOCK_API_PORT", "dev_web": "X2STOCK_DEV_WEB_PORT"}.get(key)
         if env_key is None or env.get(env_key) != str(value):
             issues.append(f"port defaults disagree for {key}")
+    return issues
+
+
+def coverage_issues(catalog: str, coverage: dict) -> list[str]:
+    """Validate actual catalog coverage and responsibility references."""
+    issues = []
+    section = catalog.split("## 功能与导航归并", 1)[1].split("## 模块设计与迁移顺序", 1)[0]
+    expected = [line.split("|")[1].strip() for line in section.splitlines()
+                if line.startswith("| ") and not line.startswith(("| 能力 |", "| ---"))]
+    roles = coverage.get("roles", [])
+    capabilities = coverage.get("capabilities", [])
+    if coverage.get("schema_version") != 1 or not isinstance(roles, list) or not isinstance(capabilities, list):
+        return ["role coverage schema invalid"]
+    identifiers = [role.get("id") for role in roles]
+    if len(set(identifiers)) != len(identifiers) or None in identifiers:
+        issues.append("role IDs missing or duplicated")
+    role_ids = set(identifiers)
+    expected_groups = {"data": 4, "market": 8, "report": 6, "personal": 3,
+                       "quant": 7, "execution": 3, "engineering": 9, "coordination": 2}
+    actual_groups = {group: sum(role.get("group") == group for role in roles) for group in expected_groups}
+    if actual_groups != expected_groups or len(roles) != sum(expected_groups.values()):
+        issues.append("approved role pool coverage incomplete")
+    for role in roles:
+        for field in ("name", "group", "mode", "responsibility", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
+            if not role.get(field):
+                issues.append(f"role contract missing {field}")
+        if type(role.get("stage")) is not int or not 0 <= role["stage"] <= 5:
+            issues.append("role stage must be an integer from 0 to 5")
+        reviewers = role.get("reviewer_role_ids", [])
+        if not isinstance(reviewers, list) or not set(reviewers) <= role_ids or role.get("id") in reviewers:
+            issues.append("role reviewer missing, unknown or self-review")
+    actual = [item.get("catalog_capability") for item in capabilities]
+    if actual != expected:
+        issues.append("catalog capability coverage missing, duplicated or out of order")
+    ids = [item.get("id") for item in capabilities]
+    if len(ids) != len(set(ids)) or None in ids:
+        issues.append("capability IDs missing or duplicated")
+    for row, item in enumerate(capabilities, 1):
+        if item.get("catalog_row") != row:
+            issues.append("catalog row reference invalid")
+        for field in ("business_role_ids", "implementation_role_ids", "acceptance_role_ids"):
+            value = item.get(field)
+            if not isinstance(value, list) or not value or not set(value) <= role_ids:
+                issues.append(f"capability responsibility invalid: {field}")
+        if set(item.get("implementation_role_ids", [])) & set(item.get("acceptance_role_ids", [])):
+            issues.append("capability implementer cannot independently accept itself")
+    return issues
+
+
+def coverage_reference_issues(coverage: dict, matrix: str, templates: str) -> list[str]:
+    """Keep human routing and callable template references aligned with JSON."""
+    issues = []
+    rows = []
+    for line in matrix.splitlines():
+        cells = [cell.strip() for cell in line.split("|")[1:-1]]
+        if len(cells) == 5 and cells[0].isdigit():
+            rows.append((int(cells[0]), cells[1], *[
+                re.findall(r"`([^`]+)`", cell) for cell in cells[2:]
+            ]))
+    expected = [(item["catalog_row"], item["catalog_capability"],
+                 item["business_role_ids"], item["implementation_role_ids"],
+                 item["acceptance_role_ids"]) for item in coverage["capabilities"]]
+    if rows != expected:
+        issues.append("human coverage matrix disagrees with JSON routing")
+    anchors = re.findall(r'<a id="([^"]+)"></a>', templates)
+    for role in coverage["roles"]:
+        anchor = role["id"].replace(".", "-").replace("_", "-")
+        expected_ref = ".agents/skills/multi-dialogue-development/references/roles.md#" + anchor
+        if role.get("template_ref") != expected_ref or anchors.count(anchor) != 1:
+            issues.append("role template reference missing, duplicated or noncanonical")
+        if f'### `{role["id"]}`：{role["name"]}' not in templates:
+            issues.append("role template identity disagrees with JSON")
     return issues
 
 
@@ -217,6 +299,15 @@ def verify() -> int:
         issues.extend(config_issues(config, env_text))
     except (OSError, ValueError, TypeError, AttributeError):
         issues.append("configuration templates are missing or malformed")
+    try:
+        coverage = json.loads((ROOT / "docs/development/agent-coverage.json").read_text(encoding="utf-8"))
+        catalog = (ROOT / "docs/modules/catalog.md").read_text(encoding="utf-8")
+        issues.extend(coverage_issues(catalog, coverage))
+        matrix = (ROOT / "docs/development/agent-coverage.md").read_text(encoding="utf-8")
+        templates = (ROOT / ".agents/skills/multi-dialogue-development/references/roles.md").read_text(encoding="utf-8")
+        issues.extend(coverage_reference_issues(coverage, matrix, templates))
+    except (OSError, ValueError, TypeError, AttributeError, KeyError, IndexError):
+        issues.append("role coverage missing or malformed")
     try:
         registry = json.loads((ROOT / ".agents/skills/registry.json").read_text(encoding="utf-8"))
         if registry.get("schema_version") != 1 or not isinstance(registry.get("skills"), list):

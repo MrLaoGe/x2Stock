@@ -15,6 +15,21 @@
       ]
     },
     {
+      "id": "multi-dialogue-development",
+      "path": ".agents/skills/multi-dialogue-development/SKILL.md",
+      "category": "development",
+      "status": "active",
+      "purpose": "独立 PM 与持久专业对话、三责验收和本地发布协调",
+      "dependencies": [
+        "github-release"
+      ],
+      "resources": [
+        "docs/agents.md",
+        "docs/development/agent-coverage.json",
+        ".agents/skills/multi-dialogue-development/scripts/orchestration.py"
+      ]
+    },
+    {
       "id": "frontend-style",
       "path": ".agents/skills/frontend-style/SKILL.md",
       "category": "development",

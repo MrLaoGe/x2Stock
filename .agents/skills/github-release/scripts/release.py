@@ -89,9 +89,20 @@ def transition(previous: Version | None, version: Version, explicit: bool, reaso
     return "explicit"
 
 
+def release_title(version: Version, notes: str) -> str:
+    """Read the canonical title; the published initial release keeps its old name."""
+    current = f"x2Stock {version}"
+    if notes.startswith(f"# {current}\n"):
+        return current
+    if version == Version(0, 1, 0) and notes.startswith(f"# XXStock {version}\n"):
+        return f"XXStock {version}"
+    raise ReleaseError("Release note title does not match VERSION or project name")
+
+
 def validate_notes(version: Version, notes: str) -> None:
-    if not notes.startswith(f"# XXStock {version}\n"):
+    if not isinstance(notes, str):
         raise ReleaseError("Release note title does not match VERSION")
+    release_title(version, notes)
     if re.search(r"\bTODO\b|\bTBD\b|待填写|占位", notes, re.I):
         raise ReleaseError("Release notes contain placeholders")
     if "## 验证结果" not in notes or not any(f"## {name}" in notes for name in ("新增功能", "优化改进", "问题修复", "兼容与升级说明")):
@@ -111,7 +122,7 @@ def prepare(root: Path, source: Path, repository: str | None = None, requested: 
     if note_path.exists() or meta_path.exists():
         raise ReleaseError("Release materials already exist; recover instead of overwriting")
     notes = source.read_text(encoding="utf-8-sig").replace("\r\n", "\n").strip()
-    title = f"# XXStock {version}"
+    title = f"# x2Stock {version}"
     if notes.startswith(title + "\n"):
         notes = notes[len(title):].lstrip()
     notes = f"{title}\n\n{notes}\n\n[版本比较／提交历史]({compare_url(repository, previous, version)})\n"
@@ -218,7 +229,7 @@ def tag_commit(api, tag: str) -> str | None:
 
 
 def validate_release(release: dict, version: Version, notes: str) -> None:
-    expected = {"tag_name": f"v{version}", "name": f"XXStock {version}", "body": notes,
+    expected = {"tag_name": f"v{version}", "name": release_title(version, notes), "body": notes,
                 "draft": False, "prerelease": version.major == 0}
     if any(release.get(key) != value for key, value in expected.items()):
         raise ReleaseError("Existing Release conflicts with canonical materials; no overwrite allowed")
@@ -274,7 +285,7 @@ def publish(root: Path, environment: dict, api=None) -> dict:
             api.request("POST", "/git/refs", {"ref": f"refs/tags/{tag}", "sha": sha})
         if tag_commit(api, tag) != sha:
             raise ReleaseError("Tag verification failed")
-        api.request("POST", "/releases", {"tag_name": tag, "target_commitish": sha, "name": f"XXStock {version}",
+        api.request("POST", "/releases", {"tag_name": tag, "target_commitish": sha, "name": f"x2Stock {version}",
             "body": notes, "draft": False, "prerelease": version.major == 0, "make_latest": "false" if version.major == 0 else "true"})
     release = api.request("GET", f"/releases/tags/{tag}")
     validate_release(release, version, notes)

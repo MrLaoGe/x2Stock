@@ -169,7 +169,7 @@ def build_message(event: dict, env: dict[str, str], config: BotConfig) -> str:
     actor = (event.get("pusher") or {}).get("name") or env.get("GITHUB_ACTOR", "unknown")
     operation = "删除" if event.get("deleted") else "创建" if event.get("created") else "强制更新" if event.get("forced") else "更新"
     title = "Git 推送通知" if event_name == "push" else "通知链路手动验证（非 Git 推送）"
-    lines = [f"### XXStock {title}", "", f"- 仓库：{repository}",
+    lines = [f"### x2Stock {title}", "", f"- 仓库：{repository}",
              f"- {ref_type}：{safe_label(short_ref, config)}", f"- 操作：{operation}",
              f"- 推送者：{safe_label(actor, config)}", f"- 提交：`{after[:12]}`"]
     commits = event.get("commits") or []
@@ -228,12 +228,12 @@ def build_release_message(receipt: dict, env: dict[str, str], config: BotConfig)
             or not comparison.endswith("v" + version)):
         raise NotificationError("invalid_release_links")
     notes = receipt.get("notes", "")
-    if not isinstance(notes, str) or not notes.startswith(f"# XXStock {version}\n"):
+    if not isinstance(notes, str) or not notes.startswith(f"# x2Stock {version}\n"):
         raise NotificationError("invalid_release_notes")
     body = notes.splitlines()[2:]
     overview = next((line for line in body if line.strip() and not line.startswith("#")), "")
     bullets = [line[2:] for line in body if line.startswith("- ")][:5]
-    lines = [f"### XXStock {version} 已发布", "", safe_label(overview, config, 400), "", "更新摘要："]
+    lines = [f"### x2Stock {version} 已发布", "", safe_label(overview, config, 400), "", "更新摘要："]
     lines.extend("- " + safe_label(item, config, 240) for item in bullets)
     lines.extend(["", f"- 提交：`{sha[:12]}`", f"[查看 Release]({release_url})", f"[查看版本差异／首次提交历史]({comparison})"])
     run_id = env.get("GITHUB_RUN_ID", "")
@@ -250,7 +250,7 @@ def send_message(config: BotConfig, message: str) -> int:
         raise NotificationError("empty_notification")
     url = config.base_url + "/" + config.api_prefix.strip("/") + "/send_to_group/" + quote(config.group_id, safe="")
     request = urllib.request.Request(url, data=message.encode("utf-8"), method="POST", headers={
-        "Content-Type": "text/markdown", "x-api-key": config.api_key, "User-Agent": "xxstock-git-notifier/1.0",
+        "Content-Type": "text/markdown", "x-api-key": config.api_key, "User-Agent": "x2stock-git-notifier/1.0",
     })
     opener = urllib.request.build_opener(NoRedirect())
     try:
