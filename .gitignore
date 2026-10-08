@@ -11,11 +11,11 @@ config/secrets/
 # Private research, provider payloads, databases and local tooling
 .local/
 .worktrees/
-runtime/
-data/
-logs/
-outputs/
-backups/
+/runtime/
+/data/
+/logs/
+/outputs/
+/backups/
 *.db
 *.db-*
 *.sqlite

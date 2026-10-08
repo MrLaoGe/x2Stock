@@ -1,0 +1,190 @@
+"""Validate public documentation assets without network or runtime dependencies."""
+
+from __future__ import annotations
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import unquote, urlsplit
+
+
+ROOT = Path(__file__).resolve().parents[1]
+REQUIRED = (
+    "README.md", "AGENTS.md", "CONTRIBUTING.md", "LICENSE", ".env.example",
+    "config/config.example.json", "docs/README.md", "docs/project-plan.md",
+    "docs/architecture.md", "docs/contracts.md", "docs/configuration.md",
+    "docs/ui-design.md", "docs/agents.md", "docs/roadmap.md",
+    "docs/data/sources.md", "docs/data/legacy-audit.md", "docs/data/migration.md",
+    "docs/modules/catalog.md", "docs/modules/data-center.md",
+    "docs/development/collaboration.md", "docs/development/task-ledger.md",
+    "docs/development/handoff-template.md", "docs/development/handoffs/phase-0.md",
+    "docs/adr/0001-project-boundary.md", "docs/adr/0002-stack-and-deployment.md",
+    "docs/adr/0003-provenance-and-migration.md", "docs/adr/0004-agent-and-execution.md",
+    ".github/workflows/verify-docs.yml", "scripts/verify_repository.py",
+)
+PRIVATE_ROOTS = {".local", ".worktrees", "runtime", "data", "logs", "outputs", "backups"}
+PRIVATE_SUFFIXES = {
+    ".db", ".sqlite", ".sqlite3", ".duckdb", ".parquet", ".csv", ".xlsx",
+    ".xls", ".docx", ".pdf", ".log", ".pem", ".key",
+}
+TEXT_SUFFIXES = {".md", ".json", ".py", ".yml", ".yaml", ".toml", ".example"}
+LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+[\"'][^\n]*[\"'])?\s*\)")
+SECRET_RULES = (
+    ("API key pattern", re.compile(r"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}\b")),
+    ("GitHub credential pattern", re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b")),
+    ("long hexadecimal secret or payload", re.compile(r"\b[0-9a-fA-F]{48,128}\b")),
+    ("credential in URL", re.compile(r"[?&](?:token|api_key|access_token|key)=[^\s&<>\"')]+", re.I)),
+    ("private key material", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
+    ("credential in connection URI", re.compile(r"(?:postgres(?:ql)?(?:\+\w+)?|https?)://[^\s/:]+:[^\s/@]+@", re.I)),
+)
+SECRET_ASSIGNMENT = re.compile(
+    r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
+    r"[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_./+=:-]{12,})"
+)
+ENV_REFERENCE = re.compile(r"^[A-Z][A-Z0-9_]+$")
+
+
+def repository_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=ROOT, check=True, capture_output=True,
+    )
+    return sorted(set(result.stdout.decode("utf-8").split("\0")) - {""})
+
+
+def secret_issues(text: str) -> list[str]:
+    # Only print category/line, never the credential or matching source line.
+    issues = []
+    for label, pattern in SECRET_RULES:
+        for match in pattern.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            issues.append(f"{label} at line {line}")
+    for match in SECRET_ASSIGNMENT.finditer(text):
+        value = match.group(1)
+        if ENV_REFERENCE.fullmatch(value) or value.lower().startswith(("example", "placeholder", "replace_")):
+            continue
+        line = text.count("\n", 0, match.start()) + 1
+        issues.append(f"nonempty secret assignment at line {line}")
+    return issues
+
+
+def link_issues(relative: str, content: str, files: set[str]) -> list[str]:
+    issues = []
+    # Code examples are not rendered Markdown links.
+    content = re.sub(r"```.*?```", "", content, flags=re.S)
+    for match in LINK.finditer(content):
+        target = match.group(1).strip("<>")
+        parts = urlsplit(target)
+        if parts.scheme:
+            if parts.scheme not in {"http", "https", "mailto"}:
+                issues.append("nonportable link scheme")
+            continue
+        if not parts.path:
+            continue
+        decoded = unquote(parts.path).replace("\\", "/")
+        if decoded.startswith("/"):
+            issues.append("absolute local link")
+            continue
+        path = (ROOT / relative).parent.joinpath(decoded).resolve()
+        try:
+            resolved = path.relative_to(ROOT).as_posix()
+        except ValueError:
+            issues.append("local link escapes repository")
+            continue
+        if resolved not in files or not path.is_file():
+            issues.append(f"local link target missing from public assets: {resolved}")
+    return issues
+
+
+def config_issues(config: dict, env_text: str) -> list[str]:
+    issues = []
+    if set(config.get("providers", {})) != {"tushare", "eastmoney", "cailianshe"}:
+        issues.append("provider set must equal approved sources")
+    if config.get("deployment", {}).get("bind_host") != "127.0.0.1":
+        issues.append("single-user template must bind localhost")
+    ai = config.get("ai", {})
+    if ai.get("enabled") is not False or ai.get("daily_budget_cny") != 0:
+        issues.append("AI template must be disabled with zero budget")
+    if ai.get("model") != "" or ai.get("protocol") not in {"responses", "chat_completions"}:
+        issues.append("AI model must be user supplied with explicit supported protocol")
+    env = {}
+    for line in env_text.splitlines():
+        if line and not line.startswith("#") and "=" in line:
+            key, value = line.split("=", 1)
+            env[key] = value
+    for key in ("POSTGRES_PASSWORD", "DATABASE_URL", "TUSHARE_TOKEN", "AI_API_KEY", "AI_MODEL", "LEGACY_SOURCE_PATH"):
+        if env.get(key) != "":
+            issues.append(f"environment template must leave {key} empty")
+    if env.get("AI_ENABLED") != "false" or env.get("AI_DAILY_BUDGET_CNY") != "0":
+        issues.append("environment AI defaults must be disabled")
+    identity = config.get("identity", {})
+    if identity != {"local_user_id": "local", "local_workspace_id": "local"}:
+        issues.append("single-user template identity must be local/local")
+    for key, value in config.get("deployment", {}).get("ports", {}).items():
+        env_key = {"web": "XXSTOCK_WEB_PORT", "api": "XXSTOCK_API_PORT", "dev_web": "XXSTOCK_DEV_WEB_PORT"}.get(key)
+        if env_key is None or env.get(env_key) != str(value):
+            issues.append(f"port defaults disagree for {key}")
+    return issues
+
+
+def verify() -> int:
+    try:
+        files = repository_files()
+    except (OSError, subprocess.CalledProcessError):
+        print("FAIL: verification requires a Git checkout and Git executable")
+        return 1
+    public = set(files)
+    issues = [f"missing required asset: {name}" for name in REQUIRED if name not in public]
+    for name in files:
+        path = ROOT / name
+        if path.is_symlink():
+            issues.append(f"{name}: symlink is not a public documentation asset")
+            continue
+        if not path.is_file():
+            issues.append(f"{name}: public asset missing from working tree")
+            continue
+        parts = Path(name).parts
+        fixture = name.startswith("tests/fixtures/")
+        if parts[0] in PRIVATE_ROOTS or "node_modules" in parts:
+            issues.append(f"{name}: private/runtime path in public assets")
+        if (path.suffix.lower() in PRIVATE_SUFFIXES and not fixture) or path.name in {"token.json", ".env"} or ".local." in path.name:
+            issues.append(f"{name}: private file type or configuration")
+        if name.startswith(".env.") and name != ".env.example":
+            issues.append(f"{name}: real environment file")
+        if path.suffix.lower() not in TEXT_SUFFIXES and path.name not in {"LICENSE", ".gitignore", ".gitattributes", ".editorconfig"}:
+            continue
+        try:
+            content = path.read_text(encoding="utf-8")
+        except UnicodeError:
+            issues.append(f"{name}: text must be UTF-8")
+            continue
+        if not content.endswith("\n"):
+            issues.append(f"{name}: missing final newline")
+        issues.extend(f"{name}: {issue}" for issue in secret_issues(content))
+        if path.suffix.lower() == ".md":
+            issues.extend(f"{name}: {issue}" for issue in link_issues(name, content, public))
+        if path.suffix.lower() == ".json":
+            try:
+                json.loads(content)
+            except json.JSONDecodeError as exc:
+                issues.append(f"{name}: invalid JSON at line {exc.lineno}")
+    try:
+        config = json.loads((ROOT / "config/config.example.json").read_text(encoding="utf-8"))
+        env_text = (ROOT / ".env.example").read_text(encoding="utf-8")
+        issues.extend(config_issues(config, env_text))
+    except (OSError, ValueError, TypeError, AttributeError):
+        issues.append("configuration templates are missing or malformed")
+    if issues:
+        for issue in sorted(set(issues)):
+            print(f"FAIL: {issue}")
+        print(f"Verification failed: {len(set(issues))} issue(s); secret values are not printed.")
+        return 1
+    print(f"PASS: {len(files)} public assets; links, templates and common credential patterns checked.")
+    print("No network calls made. Manual publication review and data permission checks remain necessary.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(verify())

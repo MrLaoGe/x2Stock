@@ -1,0 +1,22 @@
+name: Verify documentation repository
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate public assets and configuration examples
+        run: python scripts/verify_repository.py
+      - name: Check whitespace
+        run: git diff --check HEAD
