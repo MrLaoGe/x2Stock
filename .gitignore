@@ -1,0 +1,53 @@
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+config/*.local.*
+config/token.json
+config/secrets/
+*.pem
+*.key
+
+# Private research, provider payloads, databases and local tooling
+.local/
+.worktrees/
+runtime/
+data/
+logs/
+outputs/
+backups/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.csv
+*.xlsx
+*.xls
+*.docx
+*.pdf
+*.log
+
+# Dependency/build caches
+node_modules/
+dist/
+build/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+.coverage
+*.egg-info/
+.DS_Store
+Thumbs.db
+
+# Synthetic fixtures may be explicitly tracked in future modules
+!tests/fixtures/
+!tests/fixtures/**

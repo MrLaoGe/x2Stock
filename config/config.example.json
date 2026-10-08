@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "deployment": {
+    "mode": "local_single_user",
+    "bind_host": "127.0.0.1",
+    "timezone": "Asia/Shanghai",
+    "ports": { "web": 8080, "api": 8140, "dev_web": 5180 }
+  },
+  "identity": { "local_user_id": "local", "local_workspace_id": "local" },
+  "storage": { "database_url_env": "DATABASE_URL", "data_dir": ".local/data" },
+  "providers": {
+    "tushare": { "enabled": true, "token_env": "TUSHARE_TOKEN", "transport": "http" },
+    "eastmoney": { "enabled": true },
+    "cailianshe": { "enabled": true }
+  },
+  "ai": {
+    "enabled": false,
+    "base_url": "https://api.openai.com/v1",
+    "api_key_env": "AI_API_KEY",
+    "model": "",
+    "protocol": "responses",
+    "timeout_seconds": 60,
+    "max_concurrent_requests": 1,
+    "max_output_tokens": 2048,
+    "daily_budget_cny": 0
+  }
+}
