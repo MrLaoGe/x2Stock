@@ -42,6 +42,14 @@ class CoverageTests(unittest.TestCase):
         role["outputs"] = []
         self.assertGreaterEqual(len(coverage_issues(self.catalog, self.coverage)), 2)
 
+    def test_stage_zero_is_valid_but_ambiguous_stage_is_rejected(self):
+        candidate = copy.deepcopy(self.coverage)
+        candidate["roles"][0]["stage"] = 0
+        self.assertNotIn("role stage must be an integer from 0 to 5", coverage_issues(self.catalog, candidate))
+        for stage in ("2/3", "0-5", -1, 6, True):
+            candidate["roles"][0]["stage"] = stage
+            self.assertIn("role stage must be an integer from 0 to 5", coverage_issues(self.catalog, candidate))
+
 
 if __name__ == "__main__":
     unittest.main()

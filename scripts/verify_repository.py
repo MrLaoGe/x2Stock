@@ -180,9 +180,11 @@ def coverage_issues(catalog: str, coverage: dict) -> list[str]:
     if actual_groups != expected_groups or len(roles) != sum(expected_groups.values()):
         issues.append("approved role pool coverage incomplete")
     for role in roles:
-        for field in ("name", "group", "stage", "mode", "responsibility", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
+        for field in ("name", "group", "mode", "responsibility", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
             if not role.get(field):
                 issues.append(f"role contract missing {field}")
+        if type(role.get("stage")) is not int or not 0 <= role["stage"] <= 5:
+            issues.append("role stage must be an integer from 0 to 5")
         reviewers = role.get("reviewer_role_ids", [])
         if not isinstance(reviewers, list) or not set(reviewers) <= role_ids or role.get("id") in reviewers:
             issues.append("role reviewer missing, unknown or self-review")
