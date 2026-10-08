@@ -13,7 +13,7 @@
 | S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
 | S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
-| S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | in_progress | ADR 0006、当前入口与迁移规则统一；本地候选待独立审查，等待 S0-010 发布后集成；[交接](handoffs/module-first-roadmap.md) |
+| S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；本地55资产/43测试通过，独立审查无阻断；等待 S0-010 发布后集成复验；[交接](handoffs/module-first-roadmap.md) |
 | S1-001 | 最小应用骨架 | 后续对话 | planned | 独立前后端/PG、显式结构升级、配置健康、空工作台与部署；仅规划未实现 |
 
 ## 下一轮入口
