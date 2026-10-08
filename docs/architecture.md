@@ -27,7 +27,7 @@ Electron满足现阶段无额外安装和渲染一致性；代价是386MB级完�
 
 用户下载整个公开项目；`desktop-runtime/win-x64`包含EXE、DLL、locale、app.asar、构建清单与Electron/Chromium许可证，不能只复制EXE。该目录严格白名单并通过Git LFS跟踪；其他exe、数据库、用户配置、provider文件不能藉此进入公开仓库。GitHub源码归档默认含LFS指针，需要管理员开启Archives include LFS，再实际下载确认PE二进制/完整资源/BAT离线启动；本地复制不算远端通过。[GitHub LFS归档规则](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-git-lfs-objects-in-archives-of-your-repository)。
 
-root VERSION是正式版本事实源。runtime清单记录version、build_source_sha、source_tree_hash、repository、win32/x64；编译二进制提交不能嵌入它自身的最终SHA，因此发布清单绑定最终tag/exact SHA并验证其源码treehash与runtime一致，不用预览parent SHA冒充tag SHA。源码treehash对tracked frontend/desktop/VERSION计算，排除构建中间产物，按相对POSIX路径排序每文件sha256再整体sha256。
+root VERSION是正式版本事实源。runtime清单记录version、build_source_sha、source_tree_hash、repository、win32/x64；编译二进制提交不能嵌入它自身的最终SHA，因此发布清单绑定最终tag/exact SHA并验证源码treehash与runtime一致，不用预览parent SHA冒充tag SHA。treehash对Git index tracked frontend/desktop/VERSION的canonical blob字节计算，排除构建中间产物，按相对POSIX路径排序每文件sha256再整体sha256；不用checkout CRLF字节，避免与archive LF不一致，真实源码修改需重新提交构建。
 
 普通新安装使用APPDATA/x2Stock；已有APPDATA/XXStock profile/session则安全复用，不复制live LevelDB、不删旧目录。新语言key优先，缺失才兼容读旧key。程序/resources、更新缓存、用户资料分开；真实物理E:/XXStock/worktree保留，旧ZIP只是审计。旧名与新名进程不能同时占同一profile。只读/保护目录的更新必须拒绝并继续打开旧程序，不能要求管理员绕过权限。
 
@@ -39,7 +39,7 @@ Electron内置autoUpdater描述的是已安装Squirrel/MSIX形态，不能假设
 
 同Release受信JSON清单绑定final tag SHA、整项目codeload URL、archive大小与SHA、runtime路径及source_tree_hash。下载与解压有超时/限额，拒绝路径穿越、ADS、设备名、大小写冲突、符号链接、CRC错误和架构/版本/源码身份不符。只提取runtime到独立staging，再准备目标同卷sibling；源码/.git/.env/.local/AppData不参与替换。
 
-helper独立于renderer且在profile/单实例初始化前处理受限模式。等主进程退出后复核目标、digest、journal，current→backup、next→current各自rename；两次rename不是整体原子事务。保留backup；中断或第二次rename/重启失败从journal恢复。新进程必须确认本地非空renderer和预期manifest，不能只因title或did-finish-load成功就报告更新完成；健康确认超时回退旧runtime。网络/校验/写权限错误保持旧程序可用，不删除用户资料或在错误时宣称最新版。
+helper独立于renderer且在profile/单实例初始化前处理受限模式。等主进程退出后复核目标、digest、journal，current→backup、next→current各自rename；两次rename不是整体原子事务。先准备固定.recovery副本与受限pending入口，根BAT在mainEXE缺失时启动恢复副本；main存在但pending时也交独立恢复进程处理，不在当前EXE内重命名自身目录。保留backup；中断/替换/重启失败通过journal恢复。新进程须确认非空本地renderer和预期manifest，helper退出后仍须持续可见可用；健康超时回退。具体机制和真实未验项目见[桌面更新](development/desktop-updates.md)，不由函数单测代替进程证据。网络/校验/权限错误保持旧程序，不删除资料或声称最新版。
 
 ## 未来 Python 生命周期与接口
 

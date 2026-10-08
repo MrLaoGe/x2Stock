@@ -51,7 +51,7 @@ def smoke(root: Path) -> dict:
     # Development URLs and helper modes must never leak into the packaged QA.
     for key in ("X2STOCK_DEV_SERVER_URL", "ELECTRON_RUN_AS_NODE"):
         env.pop(key, None)
-    result = None
+    process = None
     try:
         project = realm / "中文 空格项目"
         project.mkdir()
@@ -100,6 +100,9 @@ def smoke(root: Path) -> dict:
         result.update({"offline_fixture": True, "fresh_profile_verified": True, "runtime_files": len(files), "exe_sha256": expected["x2Stock.exe"]})
         return result
     finally:
+        if process is not None and process.poll() is None:
+            process.terminate()
+            process.wait(timeout=5)
         for pid in owned_pids(executable, env):
             subprocess.run(["taskkill.exe", "/PID", str(pid), "/T", "/F"], creationflags=subprocess.CREATE_NO_WINDOW,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15, check=False)

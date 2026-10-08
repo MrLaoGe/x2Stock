@@ -91,10 +91,34 @@ def hash_file(path: Path) -> str:
 
 
 def canonical_source_hash(root: Path) -> str:
-    names = subprocess.check_output(["git", "ls-files", "-z", "--", "frontend", "desktop", "VERSION"], cwd=root).decode("utf-8").split("\0")
+    records = subprocess.check_output(["git", "ls-files", "--stage", "-z", "--", "frontend", "desktop", "VERSION"], cwd=root).split(b"\0")
     def source(name: str) -> bool:
         return bool(name) and not (set(name.split("/")) & {"node_modules", "dist", "release", "renderer", "build", "__pycache__"}) and not name.endswith((".pyc", ".tsbuildinfo"))
-    lines = "".join(f"{hash_file(root / name)}  {name}\n" for name in sorted(filter(source, names), key=lambda value: value.encode("utf-8")))
+    names = {}
+    for record in filter(None, records):
+        metadata, raw_name = record.split(b"\t", 1)
+        mode, oid, stage = metadata.split()
+        name = raw_name.decode("utf-8")
+        if stage != b"0" or mode not in {b"100644", b"100755"}:
+            raise ValueError("source index has unmerged entries")
+        if source(name):
+            names[name] = oid.decode("ascii")
+    identifiers = sorted(set(names.values()))
+    request = ("\n".join(identifiers) + "\n").encode()
+    checked = subprocess.check_output(["git", "cat-file", "--batch-check"], cwd=root, input=request)
+    sizes = [line.split() for line in checked.splitlines()]
+    if any(len(line) != 3 or line[1] != b"blob" or int(line[2]) > 8 * 1024 * 1024 for line in sizes) or sum(int(line[2]) for line in sizes) > 64 * 1024 * 1024:
+        raise ValueError("source blobs exceed archive identity limits")
+    blobs = subprocess.check_output(["git", "cat-file", "--batch"], cwd=root, input=request)
+    position, hashes = 0, {}
+    for _ in identifiers:
+        end = blobs.index(b"\n", position)
+        oid, _, length = blobs[position:end].split()
+        position = end + 1
+        size = int(length)
+        hashes[oid.decode()] = hashlib.sha256(blobs[position:position + size]).hexdigest()
+        position += size + 1
+    lines = "".join(f"{hashes[names[name]]}  {name}\n" for name in sorted(names, key=lambda value: value.encode("utf-8")))
     return hashlib.sha256(lines.encode("utf-8")).hexdigest()
 
 
@@ -183,6 +207,9 @@ def verify_runtime(root: Path, files: list[str], *, materialized: bool = False) 
             value = json.loads(path.read_bytes())
             if isinstance(value, dict) and value.get("source_tree_hash") != canonical_source_hash(root):
                 issues.append("runtime source identity does not match tracked frontend/desktop/VERSION")
+            dirty = subprocess.run(["git", "diff", "--quiet", "--", "frontend", "desktop", "VERSION"], cwd=root, capture_output=True)
+            if dirty.returncode:
+                issues.append("runtime source identity cannot accept modified working source files")
             if isinstance(value, dict) and isinstance(value.get("build_source_sha"), str):
                 build = value["build_source_sha"]
                 ancestry = subprocess.run(["git", "merge-base", "--is-ancestor", build, "HEAD"], cwd=root, capture_output=True)

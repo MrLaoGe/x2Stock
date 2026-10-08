@@ -33,6 +33,6 @@ Hash 路由在开发地址后使用 `#/style-preview`。未来模块目录是候
 
 ## Windows 桌面目标与持续验收
 
-当前产品是 Windows x64 免安装应用：默认 zip 解压后双击 EXE，不要求管理员权限。EXE 是首要交付和验收基线；浏览器只供开发/视觉调试，不作为独立 Web 产品发布。Electron 本地设置目录与解压位置分离；当前没有 Runtime 自动更新器，也没有可点击的虚构更新状态。未来更新能力须按受信 SemVer/Windows 资产筛选，并在校验、替换、回退失败时继续打开旧版本。Tauri 2 资源对比可作为后续优化研究，不阻塞本轮 EXE 验收。SQLite WAL、SQLAlchemy/Alembic 与 DuckDB/Parquet 是待模块实施的单用户存储候选，PostgreSQL/Docker 保留未来服务器方案。
+当前产品是Windows x64免安装应用：下载完整项目后从根`启动.bat`启动随附EXE，不要求管理员权限。EXE为首要交付和验收基线，浏览器只供开发/视觉调试。Electron设置目录与项目位置分离；更新UI已实现真实IPC状态与用户确认，更新器及远端归档验收进度见[桌面交接](development/handoffs/frontend-style.md)，不把尚未完成的Release更新标为成功。更新固定受信SemVer/同Release metadata与整项目archive，失败保持旧程序。Tauri资源对比为后续研究；SQLite/Alembic与DuckDB/Parquet仍是待模块实施的存储候选，PG/Docker留未来服务器方案。
 
 命令及本机启动见 [前端开发](development/frontend.md)，未来页面创建或修改应用 [frontend-style Skill](../.agents/skills/frontend-style/SKILL.md)。类型检查、构建和样式检查只是部分证据，必须同时真实检查桌面/平板/手机、键盘焦点、控件行为、可读性、reduced-motion、blur 降级及 console。独立 QA 对固定候选验收，不能由作者单独宣布视觉一致。

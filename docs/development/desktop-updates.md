@@ -14,7 +14,7 @@ GitHub源码归档默认只含LFS指针。管理员须开启Archives include LFS
 
 根VERSION是正式版本唯一事实源。`resources/build-manifest.json`恰有7字段：`schema`、`repository`、`version`、`build_source_sha`、`source_tree_hash`、`platform`、`arch`。build SHA为构建时已存在的源码提交，不是之后二进制提交的自指SHA；本地验证要求它是HEAD祖先。
 
-source tree hash对Git跟踪的`frontend/`、`desktop/`、`VERSION`计算，排除node_modules、dist、release、renderer、build、Python缓存和构建缓存；相对POSIX路径按UTF-8字节排序，对每文件生成`摘要 + 两个空格 + 路径 + 换行`再整体SHA-256。归档单独重算相同源码身份，确保root VERSION与renderer/desktop源码匹配；不声称独立签名或可复现编译。
+source tree hash对Git index中`frontend/`、`desktop/`、`VERSION`的canonical blob字节计算，排除node_modules、dist、release、renderer、build、Python缓存和构建缓存；不使用Windows checkout的CRLF字节，以免与GitHub源码归档的LF字节不一致。构建源须已提交且干净，materialized gate拒绝真实working source差异。相对POSIX路径按UTF-8字节排序，对每文件生成`摘要 + 两个空格 + 路径 + 换行`再整体SHA-256。归档单独重算相同源码身份；不声称独立签名或可复现编译。
 
 同Release只允许一个`x2Stock-<version>-update.json`资产，最多16KiB，恰有9字段：
 

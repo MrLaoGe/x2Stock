@@ -6,7 +6,7 @@
 
 - [总体方案](project-plan.md)：已确认决策与首轮边界。
 - [旧功能参考目录](modules/catalog.md)：用户选模块的参考，不是任务队列。
-- [最小应用骨架](modules/application-skeleton.md)：下一项本体任务，只有规划与验收，未实现。
+- [最小应用骨架](modules/application-skeleton.md)：空桌面UI已实现；金融后台配置健康与按需存储仍规划。
 - [界面规范](ui-design.md)：桌面工作台与手机操作原则。
 - [阶段路线](roadmap.md)：各阶段交付与进入下一阶段的条件。
 

@@ -19,7 +19,7 @@ npm run dev
 - Electron 使用 contextIsolation/sandbox、nodeIntegration=false、受控 IPC 和受信导航；渲染器不接触 GitHub token、签名私钥或文件替换权限。
 - 页面文案来自集中带类型的 `zh-CN`、`zh-TW`、`en` 资源；默认简体中文，语言选择即时生效并持久化到本地设置，重启恢复。无有效值时回到简体中文；品牌名和版本标识不翻译。新增页面需补三语词条并运行缺键检查。
 - 语言选择器显示“简体中文 / 繁體中文 / English”。所有错误、确认、空状态、控件标签和无障碍名称跟随当前语言；繁体使用译文。字体用系统简繁中文和英文回退，不依赖远端字体。语言不影响时区、单位或数据契约。
-- 本轮 preview 不含 Runtime 自动更新器。未来更新功能只处理受信 GitHub Release，按整数 SemVer 筛选 0.x prerelease、Windows 资产、说明和校验信息；离线、下载、校验、替换失败必须继续打开旧版本。
+- 更新UI已实现三语状态与确认，桌面更新器正在集成验收；固定受信GitHub Release/整数SemVer/0.x prerelease/同Release metadata及整项目归档，失败保持旧程序。实现与真实远端验收分别见[桌面更新](desktop-updates.md)及[交接](handoffs/frontend-style.md)。
 
 ## 验证
 
@@ -29,6 +29,8 @@ npm ci
 npm run typecheck
 npm run build
 npm run lint:style
+npm run test:preferences
+npm run test:updates
 ```
 
 Windows 本地打包先生成前端产物，再从仓库根进入 desktop。`pack:dir` 会复制 `frontend/dist` 到被忽略的 `desktop/renderer`，使用锁文件中的 Electron/electron-builder 输出 x64 目录包；运行时无需开发工具。
@@ -36,12 +38,11 @@ Windows 本地打包先生成前端产物，再从仓库根进入 desktop。`pac
 ```text
 cd desktop
 npm ci
+npm test
 npm run pack:dir
-cd ..
-python desktop/scripts/make_artifact.py
 ```
 
-本地 preview helper 使用源 Git SHA 命名 ZIP/sidecar，拒绝覆盖同名产物；默认输出 `E:\XXStock\.local\artifacts\windows-preview`。它是开发本地 helper，不是产品的路径依赖或发布器。Windows `file://` 打包必须保留 Vite `base: './'`，Hash 路由与本地资源需在精确 ZIP 的解压副本实际核验，不能只测试 dev server。
+常规交付将`desktop/release/win-unpacked`完整资源放入公开批准的`desktop-runtime/win-x64`，经Git LFS暂存、materialized验证、根BAT及独立QA后再交给A统一发布；不再每版调用旧make_artifact ZIP helper，旧产物保留审计。root VERSION提供打包版本；新版本需重建manifest并与最终源码treehash一致。Windows `file://` 打包保留 Vite `base: './'`，Hash路由与本地资源在精确项目树实际核验，不能只测试dev server。
 
 产品名为 `x2Stock`，npm/配置标识为 `x2stock` / `X2STOCK`，调试服务环境变量是 `X2STOCK_DEV_SERVER_URL`。新安装写入 `%APPDATA%\x2Stock`；如果旧 `%APPDATA%\XXStock` 已有 profile 或 session，则安全复用该根目录，不复制、不删除、不覆盖资料。不要同时运行旧名和更名包共享同一旧 profile。语言设置以 `x2stock.language` 优先，仅在新值不存在时兼容读取 `xxstock.language`，随后保存新 key，旧 key 保留。
 
@@ -54,6 +55,6 @@ cd ../desktop
 node --test tests/profile-compat.test.cjs
 ```
 
-桌面工程还需核对 npm registry 锁定版本、portable 构建、x64 exe 启动和用户数据保留。自动更新功能开发后，另验更新检测/确认、下载完整性、原子替换与失败回退。没有真实 Windows 或签名条件时，明确记录未验证。仓库根运行 python scripts/verify_repository.py、python -m unittest discover -s tests -p 'test_*.py' 与 git diff --check。样式和单元测试不能替代真实桌面与浏览器检查。
+桌面工程还核对锁定版本、完整资源、x64 exe启动、用户资料保留以及更新检测/确认、摘要、逐次rename与回退；两次rename不是整体原子替换。Windows进程及中断恢复证据与远端LFS/Release外验分别记录。仓库根运行python scripts/verify_repository.py、Python unittest及git diff --check；暂存runtime后运行python scripts/verify_desktop_runtime.py --materialized，随后python scripts/smoke_project_archive.py --root . 验根BAT。烟测需要研发Node24/Python/Windows，仅使用标记temp副本，产品使用者无需这些工具。
 
-独立 QA 以真实 Windows EXE 验收简体中文默认、繁体中文与英文切换、窗口标题一致、重启恢复、离线运行和英文长文本在缩放/窄窗下不裁切。浏览器不能替代这组检查。当前没有更新界面或 Runtime 更新器，不得展示可点击的假更新操作。
+独立 QA 以真实Windows EXE验收简体默认、繁体/英文、title、重启恢复、离线及窄窗/缩放；浏览器不能替代。更新状态与确认来自有限typed IPC，事件订阅跟随组件清理，不获取任意remote URL，不把源码和合成通过写成真实Release更新完成。

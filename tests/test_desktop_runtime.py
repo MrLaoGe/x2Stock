@@ -19,7 +19,7 @@ class DesktopRuntimeTests(unittest.TestCase):
         (root / "VERSION").write_bytes(b"0.1.0\n")
         (root / "frontend").mkdir()
         (root / "frontend/main.ts").write_bytes(b"export const synthetic = true\n")
-        (root / ".gitattributes").write_bytes(b"/desktop-runtime/win-x64/** filter=lfs diff=lfs merge=lfs -text\n")
+        (root / ".gitattributes").write_bytes(b"* text=auto\n/desktop-runtime/win-x64/** filter=lfs diff=lfs merge=lfs -text\n")
         git("add", "VERSION", "frontend", ".gitattributes")
         git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "core.hooksPath=none", "commit", "-qm", "synthetic source")
         sha = git("rev-parse", "HEAD").decode().strip()
@@ -55,6 +55,9 @@ class DesktopRuntimeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             names, value, git = self.staged_fixture(root)
+            self.assertEqual(verify_runtime(root, names, materialized=True), [])
+            (root / "frontend/main.ts").write_bytes(b"export const synthetic = true\r\n")
+            self.assertEqual(canonical_source_hash(root), value["source_tree_hash"])
             self.assertEqual(verify_runtime(root, names, materialized=True), [])
             self.restage_manifest(root, {**value, "source_tree_hash": "f" * 64}, git)
             self.assertTrue(any("source identity" in issue for issue in verify_runtime(root, names)))
