@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { readLanguagePreference, languageStorageKey, type Language } from './language-preferences'
 
-export type Language = 'zh-CN' | 'zh-TW' | 'en'
+export type { Language } from './language-preferences'
 type Messages = {
   metaDescription: string
   home: string; preview: string; navigation: string; localSpace: string; notConnected: string; stageNote: string
@@ -18,10 +19,10 @@ type Messages = {
 
 const messages: Record<Language, Messages> = {
   'zh-CN': {
-    metaDescription: 'XXStock 本机研究工作台',
+    metaDescription: 'x2Stock 本机研究工作台',
     home: '工作台', preview: '规范预览', navigation: '主导航', localSpace: '本机空间', notConnected: '未连接数据服务', stageNote: '本机研究空间 · 阶段 0 · 风格基线',
-    eyebrowHome: 'XXSTOCK / 本机工作台', homeTitle: '为值得验证的判断，留出一张干净的桌面。',
-    homeLede: '这里是 XXStock 的本机研究工作台。它现在保持空白，等待后续模块逐一接入；没有数据时，也不替你制造结论。',
+    eyebrowHome: 'x2Stock / 本机工作台', homeTitle: '为值得验证的判断，留出一张干净的桌面。',
+    homeLede: '这里是 x2Stock 的本机研究工作台。它现在保持空白，等待后续模块逐一接入；没有数据时，也不替你制造结论。',
     workspaceEmpty: '工作台尚未配置', emptyDescription: '当前版本只确定界面基线，数据服务和研究模块尚未启用。你可以先浏览组件规范，了解之后页面会遵循的视觉与交互约定。',
     emptyStatus: '空状态 · 设计阶段', browsePreview: '浏览规范预览', language: '界面语言', languageName: '简体中文',
     eyebrowPreview: '界面风格基线 / 01', previewTitle: '界面规范预览', previewDescription: '这是给后续页面使用的中性组件样例，不代表已经上线的业务设置或数据能力。交互状态可操作，也可以随时重置。', reset: '重置示例',
@@ -32,10 +33,10 @@ const messages: Record<Language, Messages> = {
     tableTitle: '表格层级', tableDescription: '表格允许在窄屏横向滚动，保留行列识别，不预填任何金融数据。', field: '示例字段', status: '状态', explanation: '说明', source: '数据源', unconfigured: '未配置', waitingForModule: '等待后续模块接入', updateTime: '更新时间', noRecords: '当前没有可展示记录', researchSpace: '研究空间', local: '本机', previewStage: '阶段 0 设计预览', notFoundTitle: '找不到这个页面', notFoundDescription: '当前地址没有对应的页面。请返回工作台。',
   },
   'zh-TW': {
-    metaDescription: 'XXStock 本機研究工作台',
+    metaDescription: 'x2Stock 本機研究工作台',
     home: '工作台', preview: '規範預覽', navigation: '主導覽', localSpace: '本機空間', notConnected: '未連接資料服務', stageNote: '本機研究空間 · 階段 0 · 風格基線',
-    eyebrowHome: 'XXSTOCK / 本機工作台', homeTitle: '為值得驗證的判斷，留一張乾淨的桌面。',
-    homeLede: '這裡是 XXStock 的本機研究工作台。目前保持空白，等待後續模組逐一接入；沒有資料時，也不替你製造結論。',
+    eyebrowHome: 'x2Stock / 本機工作台', homeTitle: '為值得驗證的判斷，留一張乾淨的桌面。',
+    homeLede: '這裡是 x2Stock 的本機研究工作台。目前保持空白，等待後續模組逐一接入；沒有資料時，也不替你製造結論。',
     workspaceEmpty: '工作台尚未設定', emptyDescription: '目前版本只確立介面基線，資料服務和研究模組尚未啟用。你可以先瀏覽元件規範，了解後續頁面會遵循的視覺與互動約定。',
     emptyStatus: '空狀態 · 設計階段', browsePreview: '瀏覽規範預覽', language: '介面語言', languageName: '繁體中文',
     eyebrowPreview: '介面風格基線 / 01', previewTitle: '介面規範預覽', previewDescription: '這是供後續頁面使用的中性元件範例，不代表已上線的業務設定或資料能力。互動狀態可操作，也可以隨時重設。', reset: '重設範例',
@@ -46,10 +47,10 @@ const messages: Record<Language, Messages> = {
     tableTitle: '表格層級', tableDescription: '表格可在窄螢幕橫向捲動，保留列欄辨識，不預填任何金融資料。', field: '範例欄位', status: '狀態', explanation: '說明', source: '資料來源', unconfigured: '未設定', waitingForModule: '等待後續模組接入', updateTime: '更新時間', noRecords: '目前沒有可顯示的記錄', researchSpace: '研究空間', local: '本機', previewStage: '階段 0 設計預覽', notFoundTitle: '找不到這個頁面', notFoundDescription: '目前網址沒有對應頁面。請返回工作台。',
   },
   en: {
-    metaDescription: 'Local XXStock research workspace',
+    metaDescription: 'Local x2Stock research workspace',
     home: 'Workspace', preview: 'Style guide', navigation: 'Main navigation', localSpace: 'Local workspace', notConnected: 'Data service not connected', stageNote: 'Local research space · Stage 0 · Style baseline',
-    eyebrowHome: 'XXSTOCK / LOCAL WORKSPACE', homeTitle: 'A clear desk for ideas worth testing.',
-    homeLede: 'This is the local XXStock research workspace. It is intentionally empty while future modules are being planned. It will not invent conclusions when no data is available.',
+    eyebrowHome: 'x2Stock / LOCAL WORKSPACE', homeTitle: 'A clear desk for ideas worth testing.',
+    homeLede: 'This is the local x2Stock research workspace. It is intentionally empty while future modules are being planned. It will not invent conclusions when no data is available.',
     workspaceEmpty: 'Workspace not configured', emptyDescription: 'This release establishes the visual baseline only. Data services and research modules are not enabled. Preview the neutral components to see the visual and interaction conventions for future pages.',
     emptyStatus: 'Empty state · Design phase', browsePreview: 'View style guide', language: 'Language', languageName: 'English',
     eyebrowPreview: 'INTERFACE STYLE BASELINE / 01', previewTitle: 'Interface style guide', previewDescription: 'These neutral components are examples for future pages. They do not represent live settings or data features. Interactions work locally and can be reset.', reset: 'Reset examples',
@@ -64,13 +65,11 @@ const messages: Record<Language, Messages> = {
 const languageOptions: { value: Language; label: string }[] = [
   { value: 'zh-CN', label: '简体中文' }, { value: 'zh-TW', label: '繁體中文' }, { value: 'en', label: 'English' },
 ]
-const storageKey = 'xxstock.language'
 const LanguageContext = createContext<{ language: Language; setLanguage: (value: Language) => void; t: Messages; languageOptions: typeof languageOptions } | null>(null)
 
 function getSavedLanguage(): Language {
   try {
-    const stored = localStorage.getItem(storageKey)
-    return languageOptions.some((option) => option.value === stored) ? stored as Language : 'zh-CN'
+    return readLanguagePreference(localStorage)
   } catch {
     return 'zh-CN'
   }
@@ -96,7 +95,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language
     document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', messages[language].metaDescription)
-    try { localStorage.setItem(storageKey, language) } catch { /* Storage may be disabled in private contexts. */ }
+    try { localStorage.setItem(languageStorageKey, language) } catch { /* Storage may be disabled in private contexts. */ }
   }, [language])
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>

@@ -7,7 +7,7 @@ export function AppShell() {
   const location = useLocation()
   useEffect(() => {
     const pageTitle = location.pathname === '/style-preview' ? t.previewTitle : location.pathname === '/' ? t.home : t.notFoundTitle
-    document.title = `XXStock | ${pageTitle}`
+    document.title = `x2Stock | ${pageTitle}`
   }, [location.pathname, t.home, t.previewTitle])
   const navigation = [
     { to: '/', label: t.home, icon: '○', end: true },
@@ -19,7 +19,7 @@ export function AppShell() {
       <aside className="app-sidebar" aria-label={t.navigation}>
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">X</span>
-          <span className="brand-name">XXStock</span>
+          <span className="brand-name">x2Stock</span>
         </div>
         <nav>
           <ul className="nav-list">
