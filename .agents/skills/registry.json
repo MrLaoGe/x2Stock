@@ -8,7 +8,26 @@
       "status": "active",
       "purpose": "整理变更、升版、验证、发布 GitHub Release 并通知频道",
       "dependencies": [],
-      "resources": ["VERSION", "CHANGELOG.md", "scripts/vocechat_notify.py"]
+      "resources": [
+        "VERSION",
+        "CHANGELOG.md",
+        "scripts/vocechat_notify.py"
+      ]
+    },
+    {
+      "id": "multi-dialogue-development",
+      "path": ".agents/skills/multi-dialogue-development/SKILL.md",
+      "category": "development",
+      "status": "active",
+      "purpose": "独立 PM 与持久专业对话、三责验收和本地发布协调",
+      "dependencies": [
+        "github-release"
+      ],
+      "resources": [
+        "docs/agents.md",
+        "docs/development/agent-coverage.json",
+        ".agents/skills/multi-dialogue-development/scripts/orchestration.py"
+      ]
     }
   ]
 }

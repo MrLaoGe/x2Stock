@@ -13,6 +13,7 @@
 | S0-007 | 创建并发布 MrLaoGe/x2Stock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/x2Stock)，MIT；初次远端main提交和32文件与本地一致 |
 | S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
+| S0-010 | 多对话开发 Skill 与金融专业角色体系 | 独立 PM / 角色专责 / 工程 / 独立审查 | in_progress | 42角色契约、44能力逐项三责；角色与工程候选已独立 PASS，等待 x2Stock 更名后的最终集成和发布 |
 | S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；本地55资产/43测试通过，独立审查无阻断；等待本地集成复验及 A/B/C 全部 ready；[交接](handoffs/module-first-roadmap.md) |
 | S1-001 | 最小应用骨架 | 后续对话 | planned | 独立前后端/PG、显式结构升级、配置健康、空工作台与部署；仅规划未实现 |
 
@@ -38,7 +39,7 @@
 
 ## Skill 与正式发布（S0-009）
 
-本轮 Skill、登记、版本 helper、说明、工作流和规范已在本地完成。43 项合成测试、51 个公开资产校验、Skill frontmatter 与引用、版本材料及差异检查通过；独立审查已复核历史材料不可改写、非快进主线拒绝发布、精确标签路由与 UTF-8。尚未据此验收 `0.1.0` GitHub Release 或本批 #19 最终通知，等待本次推送后的工作流。正式发布结果在 Actions 与用户输出中报告，不为写成功记录追加发布提交。见 [交接](handoffs/skill-releases.md)。
+S0-009 本地交付包括 Skill、登记、版本 helper、说明、工作流和规范；43 项合成测试、51 个公开资产校验、版本材料及差异检查通过。独立审查已复核历史材料不可改写、非快进主线拒绝发布、精确标签路由与 UTF-8。本轮接入只读核实 `0.1.0` 为 prerelease、标签绑定 `a88d905`，[工作流](https://github.com/MrLaoGe/XXStock/actions/runs/37762565978) 的验证、发布与最终通知步骤均成功。历史交接保留推送前记录；本轮结果只在 Actions 与用户输出中报告，不为写成功记录追加发布提交。见 [交接](handoffs/skill-releases.md)。
 
 ## Git 通知验收（S0-008，历史记录）
 
