@@ -1,4 +1,4 @@
-# 参与 XXStock
+# 参与 x2Stock
 
 ## 开始之前
 

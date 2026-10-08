@@ -1,6 +1,6 @@
 # 项目 Skill 组织与维护
 
-XXStock 的项目 Skill 统一放在 `.agents/skills/<name>/`，入口为 `SKILL.md`；公开注册表是 [.agents/skills/registry.json](../../.agents/skills/registry.json)。项目级 Skill 随仓库版本演进，不依赖作者的个人 Skill 目录。使用前先读取入口及其引用，不能只凭名字推断流程或权限。
+x2Stock 的项目 Skill 统一放在 `.agents/skills/<name>/`，入口为 `SKILL.md`；公开注册表是 [.agents/skills/registry.json](../../.agents/skills/registry.json)。项目级 Skill 随仓库版本演进，不依赖作者的个人 Skill 目录。使用前先读取入口及其引用，不能只凭名字推断流程或权限。
 
 ## 分类与登记
 
