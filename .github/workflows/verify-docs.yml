@@ -13,10 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Validate public assets and configuration examples
         run: python scripts/verify_repository.py
       - name: Check whitespace
-        run: git diff --check HEAD
+        env:
+          DOCS_EVENT_NAME: ${{ github.event_name }}
+          DOCS_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          DOCS_BEFORE_SHA: ${{ github.event.before }}
+          DOCS_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$DOCS_EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$DOCS_BASE_SHA" "$DOCS_HEAD_SHA"
+          elif [ -n "$DOCS_BEFORE_SHA" ] && [ "$DOCS_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            git diff --check "$DOCS_BEFORE_SHA" "$DOCS_HEAD_SHA"
+          else
+            DOCS_EMPTY_TREE=$(git hash-object -t tree --stdin < /dev/null)
+            git diff --check "$DOCS_EMPTY_TREE" "$DOCS_HEAD_SHA"
+          fi

@@ -30,6 +30,7 @@ PRIVATE_SUFFIXES = {
     ".xls", ".docx", ".pdf", ".log", ".pem", ".key",
 }
 TEXT_SUFFIXES = {".md", ".json", ".py", ".yml", ".yaml", ".toml", ".example"}
+DATABASE_FILE = re.compile(r"\.(?:db|sqlite|sqlite3)(?:-(?:wal|shm|journal))?$|\.duckdb(?:\.wal)?$", re.I)
 LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+[\"'][^\n]*[\"'])?\s*\)")
 SECRET_RULES = (
     ("API key pattern", re.compile(r"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}\b")),
@@ -41,9 +42,9 @@ SECRET_RULES = (
 )
 SECRET_ASSIGNMENT = re.compile(
     r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
-    r"[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_./+=:-]{12,})"
+    r"[\"']?[ \t]*[:=][ \t]*[\"']?([A-Za-z0-9_./+=:-]+)"
 )
-ENV_REFERENCE = re.compile(r"^[A-Z][A-Z0-9_]+$")
+ENV_REFERENCES = {"TUSHARE_TOKEN", "AI_API_KEY", "OPENAI_API_KEY", "POSTGRES_PASSWORD", "DATABASE_URL"}
 
 
 def repository_files() -> list[str]:
@@ -63,7 +64,7 @@ def secret_issues(text: str) -> list[str]:
             issues.append(f"{label} at line {line}")
     for match in SECRET_ASSIGNMENT.finditer(text):
         value = match.group(1)
-        if ENV_REFERENCE.fullmatch(value) or value.lower().startswith(("example", "placeholder", "replace_")):
+        if value in ENV_REFERENCES or value.lower().startswith(("example", "placeholder", "replace_")):
             continue
         line = text.count("\n", 0, match.start()) + 1
         issues.append(f"nonempty secret assignment at line {line}")
@@ -149,9 +150,9 @@ def verify() -> int:
         fixture = name.startswith("tests/fixtures/")
         if parts[0] in PRIVATE_ROOTS or "node_modules" in parts:
             issues.append(f"{name}: private/runtime path in public assets")
-        if (path.suffix.lower() in PRIVATE_SUFFIXES and not fixture) or path.name in {"token.json", ".env"} or ".local." in path.name:
+        if ((path.suffix.lower() in PRIVATE_SUFFIXES or DATABASE_FILE.search(path.name)) and not fixture) or path.name in {"token.json", ".env"} or ".local." in path.name:
             issues.append(f"{name}: private file type or configuration")
-        if name.startswith(".env.") and name != ".env.example":
+        if path.name.startswith(".env.") and path.name != ".env.example":
             issues.append(f"{name}: real environment file")
         if path.suffix.lower() not in TEXT_SUFFIXES and path.name not in {"LICENSE", ".gitignore", ".gitattributes", ".editorconfig"}:
             continue
