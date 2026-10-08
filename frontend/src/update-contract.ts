@@ -21,6 +21,7 @@ export interface UpdateStatus {
   errorCode?: UpdateError
 }
 export interface UpdateBridge {
+  onStatus(listener: (status: UpdateStatus) => void): () => void
   getStatus(): Promise<UpdateStatus>
   check(): Promise<UpdateStatus>
   install(request: { releaseId: number; version: string; confirmed: true }): Promise<UpdateStatus>

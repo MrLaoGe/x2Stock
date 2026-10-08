@@ -27,10 +27,13 @@ export function UpdateControl() {
 
   useEffect(() => {
     mounted.current = true
-    if (bridge) void bridge.getStatus().then(accept).catch(() => {
-      if (mounted.current) setFailed(true)
+    let stopped = false
+    const receive = (next: UpdateStatus) => { if (!stopped) accept(next) }
+    const unsubscribe = bridge?.onStatus(receive)
+    if (bridge) void bridge.getStatus().then(receive).catch(() => {
+      if (!stopped) setFailed(true)
     })
-    return () => { mounted.current = false }
+    return () => { stopped = true; mounted.current = false; unsubscribe?.() }
   }, [bridge, accept])
 
   // Poll only during active operations. Clean up on terminal status and unmount.
