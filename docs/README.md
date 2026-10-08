@@ -23,11 +23,16 @@
 
 - [Agent 设计](agents.md)：开发角色与未来产品研究角色。
 - [协作规范](development/collaboration.md)：分支、worktree、评审和集成。
-- [Git 推送到 VChat / VoceChat](development/git-notifications.md)：已实现通知、配置和脱敏。
+- [项目 Skill 组织](development/skills.md)：项目目录、注册表、开发/业务分类和权限边界。
+- [github-release Skill](../.agents/skills/github-release/SKILL.md)：本地准备/检查和受限 Actions 发布入口。
+- [版本与正式发布](development/releases.md)：版本、exact SHA、Release、最终通知与失败恢复。
+- [Git 与发布到 VChat / VoceChat](development/git-notifications.md)：通知分工、配置和脱敏。
 - [任务台账](development/task-ledger.md)：实际完成状态。
 - [交接模板](development/handoff-template.md)：每轮交付的最小交接。
 - [阶段 0 交接](development/handoffs/phase-0.md)：本轮已交付内容及下一轮入口。
-- [Git 通知交接](development/handoffs/git-notifications.md)：真实频道19投递验收与维护。
+- [Git 通知交接](development/handoffs/git-notifications.md)：此前真实频道19投递验收与维护。
+- [Skill 与发布交接](development/handoffs/skill-releases.md)：本轮本地完成和外部待验收状态。
+- [CHANGELOG](../CHANGELOG.md)：正式发布版本索引。
 
 ## 已接受的架构决策
 

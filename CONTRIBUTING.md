@@ -2,7 +2,7 @@
 
 ## 开始之前
 
-当前仓库只有整体设计。先阅读 [文档索引](docs/README.md)、[任务台账](docs/development/task-ledger.md) 和 [AGENTS.md](AGENTS.md)，确认任务所属阶段。首个实施模块是数据中心与迁移，不要求贡献者同时实现所有业务。
+当前仓库为业务设计与开发运维仓库，尚无 A 股业务应用。先阅读 [文档索引](docs/README.md)、[任务台账](docs/development/task-ledger.md) 和 [AGENTS.md](AGENTS.md)，确认任务所属阶段。首个实施模块是数据中心与迁移，不要求贡献者同时实现所有业务。
 
 ## 工作流程
 
@@ -13,6 +13,14 @@
 5. 更新任务台账、模块文档和交接记录，再提交可审查的变更。
 
 PR 描述先说明触发问题与变化后的行为，再列验证结果和实际限制。简洁变更不需要长篇流程记录。
+
+## Skill 与正式版本
+
+新增项目 Skill 使用 `.agents/skills/<name>/SKILL.md` 并同步注册表，注明开发/业务分类、用途、状态及依赖；具体规则见 [Skill 组织](docs/development/skills.md)。未来业务 Skill 调用后端领域能力，不把提示词当权限控制，也不整包移植旧项目。
+
+每批正式 main 发布先写说明，使用 [github-release](.agents/skills/github-release/SKILL.md) 的本地 `prepare/check`，再集成验证并提交。默认从 `0.1.0` 开始且每批 patch 加一；明确用户指定才改变 minor/major。版本材料不由 CI 临时补提交。发布权限和失败恢复见 [发布规范](docs/development/releases.md)。
+
+开发分支推送不会创建正式 Release；其 push 通知只说明推送结果。正式 main 发布验证、标签、Release 与最终频道通知在同一工作流。已有 Release 冲突不覆盖，失败恢复保持原版本，发布后不为成功记录再推一次。
 
 ## 公开材料
 

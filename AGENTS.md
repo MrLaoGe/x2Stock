@@ -11,7 +11,7 @@
 
 当前为阶段 0：整体设计与文档仓库。未经后续模块任务扩展，不开发业务网页、采集服务、迁移程序、Agent 运行器或交易接口。配置示例与仓库校验工具属于本阶段交付。
 
-用户已扩展授权独立的 Git push 运维通知：通过 GitHub Actions 向可配置的 VoceChat 频道发送公开变更摘要，当前默认 #19。每次已授权推送后核验通知工作流；Git成功而通知失败时报告实际状态，不宣称已经送达。不额外手动发送重复消息。机器人地址与密钥保持本地/.env或GitHub Secrets，不能输出或提交。
+用户已授权 Git/发布运维通知，当前默认 VoceChat #19。正式 main 批次由同一 `verify-docs` 工作流先验证、再发布 exact SHA 标签/Release、最后发送一次最终结果；main 与发布标签不另发 push 通知。开发分支与非发布标签保留 push 通知。推送后分别核验 Git、验证、Release 与通知结果，不额外手动发送重复消息。机器人地址与密钥保持本地/.env或GitHub Secrets，不能输出或提交。
 
 ## 数据与配置
 
@@ -28,6 +28,14 @@
 - 子 Agent 不自行推送、发布、改变阶段范围或修改旧项目；将结果和待解决问题交给主 Agent。
 - 审查 Agent 先独立检查交付，再核对实现者说明；发现问题应给出证据和可验证修复。
 - 开发 Agent 与未来产品内研究 Agent 是两套角色，不混用权限或状态。
+
+## 项目 Skill 与版本发布
+
+- 项目 Skill 放 `.agents/skills/<name>/SKILL.md`，在 `.agents/skills/registry.json` 登记分类、用途、状态和依赖；进入任务前查注册表并读取相应 Skill。规范见 [Skill 组织](docs/development/skills.md)。
+- 开发与业务 Skill 分开；业务逻辑仍在后端/worker，Skill 不授予工具、写入、密钥或交易权限。不整包移植旧 3.0 Skill。
+- 已授权正式 main 发布从 `0.1.0` 起每批默认 patch 加一，minor/major 需用户明确指定；根 VERSION 是唯一事实源。按 [github-release](.agents/skills/github-release/SKILL.md) 与 [发布规范](docs/development/releases.md) 准备版本及说明，并在提交前验证。
+- 远端发布限正式 main push 的 Actions 和 exact `GITHUB_SHA`；0.x 为 prerelease 且非 latest。已有版本匹配时复用，冲突不覆盖；失败重跑不升版，通知歧义不盲重试。
+- 推送前完成台账与交接并如实保留外部待验收状态；发布结果用 Actions 与用户输出报告，不追加成功记录提交触发下一版本。
 
 ## 技术和验证
 

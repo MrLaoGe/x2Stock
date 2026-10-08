@@ -1,12 +1,20 @@
-# Git 推送到 VChat / VoceChat 频道
+# Git 与发布通知到 VChat / VoceChat 频道
 
-状态：已实现独立运维通知工具；不依赖旧项目运行时、行情、数据库或产品 Agent。当前使用者频道默认 **#19**，其他部署可以修改频道与机器人。
+状态：Git push 通知此前已真实验收；本轮加入正式 main 发布最终通知，外部验收见 [S0-009 交接](handoffs/skill-releases.md)。工具不依赖旧项目运行时、行情、数据库或产品 Agent。当前频道默认 **#19**，其他部署可修改频道与机器人。
 
 ## 触发与消息
 
-[GitHub Actions 工作流](../../.github/workflows/notify-vocechat.yml) 监听仓库 `push` 事件，包含分支和标签，不限定 main。无变更的 `git push` 不产生事件；一次命令推送多个 ref 时可能分别通知，不以本地命令次数为计数单位。通知与业务校验分开执行，表示 Git 变更已推送，不表示测试或部署已成功。
+| 事件 | 工作流与消息 | 不代表的能力 |
+| --- | --- | --- |
+| 正式 main push | [verify-docs](../../.github/workflows/verify-docs.yml) 先验证、发布，再发一次最终结果 | 不表示业务应用已经部署 |
+| 开发分支 push | [独立通知](../../.github/workflows/notify-vocechat.yml) 报告 Git 推送 | 不表示测试通过或正式发布 |
+| 非发布标签 push | 独立通知报告标签操作 | 不创建正式 Release |
+| `v<version>` 发布标签 | 不额外发 push 通知 | 最终结果已由 main 发布链负责 |
+| 手动通知验证 | 标记“非 Git 推送”的链路检查 | 不发布版本 |
 
-消息含仓库、分支/标签、操作、推送者、提交短标识、至多五条提交标题、Git 变更和通知运行链接。不发送提交正文、文件diff、环境配置或机器人地址/密钥。标题转义 Markdown、屏蔽提醒标记，并对已知密钥模式及当前机器人秘密脱敏。
+main push 从独立通知中排除，避免早于校验的消息与发布最终消息重复。版本策略及 exact SHA 规则见 [发布规范](releases.md)。无变更的 `git push` 不产生事件；推送多个开发 ref 仍可产生多个事件，不以本地命令次数计数。
+
+开发 push 消息含仓库、分支/标签、操作、推送者、提交短标识、至多五条提交标题、Git 变更和通知运行链接。正式发布消息含版本、exact SHA、校验/发布结果及可用的 Release/Actions 链接；失败时明确失败阶段，不假称发布成功。不发送提交正文、文件diff、环境配置或机器人地址/密钥。标题转义 Markdown、屏蔽提醒标记，并对已知密钥模式及当前机器人秘密脱敏。
 
 手动触发 `workflow_dispatch` 用于链路验证，消息明确标为“非 Git 推送”。Actions 对极大量同时更新 ref 等场景存在平台限制，适用边界以 [GitHub push 事件说明](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#push) 为准。
 
@@ -25,7 +33,7 @@
 
 机器人必须已加入目标频道。只复用 3.0 的地址与机器人身份，不更改 3.0 的频道、定时计划或配置。实际秘密由加密 Secrets 接收，不上传旧配置文件；本地工具也不 import 旧应用。
 
-公开仓库的 fork 不携带原仓库 Secrets；使用者填写自己的配置后才能启用通知。通知工作流不在 PR 中注入机器人密钥，仅有只读仓库权限。关闭时把 `VOCECHAT_ENABLED` 改成 `false`，无需修改代码。
+公开仓库的 fork 不携带原仓库 Secrets；使用者填写自己的配置后才能启用通知。通知 job 不在 PR 中注入机器人密钥，仅有 `contents: read`；同一发布工作流的 release job 单独拥有 `contents: write`。关闭时把 `VOCECHAT_ENABLED` 改成 `false`，无需修改代码。
 
 ## 本地配置与检查
 
@@ -60,7 +68,7 @@ python scripts/vocechat_notify.py --check-config
 
 成功日志只输出 `sent`、频道和 HTTP 状态。错误只输出安全分类/HTTP 状态，不回显上游正文、地址、请求或原始异常。401/403 检查机器人密钥和频道成员权限；404 检查频道 ID 与前缀；网络超时检查服务从 GitHub runner 是否可达。
 
-通知失败会使专用工作流失败，不回滚已经成功的 Git 推送。不自动重试超时，因为该接口没有幂等键，服务器可能已经收到了消息。人工重跑显示相同运行标识和新的尝试号，可能产生重复，应先核对频道；不会声称 exactly-once。
+通知失败使对应通知 job 失败，不回滚已成功的 Git 推送或 Release。不自动重试超时，因为该接口没有幂等键，服务器可能已经收到了消息。人工重跑可能重复投递，应先核对频道与运行结果；不会声称 exactly-once。正式发布重跑核验并复用已有版本，不升级 VERSION、不覆盖冲突 Release。正常工作流只发送一次最终结果，不逐阶段发送消息。
 
 机器人服务必须能被 GitHub runner 访问；仅本机或局域网服务需要自行选用可达的 runner。独立研究网页的本机访问约束与此通知通道不同。
 
@@ -72,4 +80,4 @@ python scripts/verify_repository.py
 git diff --check
 ```
 
-合成测试覆盖配置优先级、秘密文件冲突、脱敏、真实 Bot 请求格式、频道、分支/标签、提交边界、错误正文不泄露、重定向拒绝与超时不盲目重试。真实发送以本次 Git 推送触发的 Actions 成功状态为验收，不在单元测试中调用实际频道。
+合成测试覆盖配置优先级、秘密文件冲突、脱敏、真实 Bot 请求格式、频道、分支/标签、提交边界、错误正文不泄露、重定向拒绝与超时不盲目重试。真实发送以对应 Actions 与安全发送结果为验收，不在单元测试中调用实际频道。正式发布同时核对确切 SHA、标签、Release 属性与最终通知；未跑工作流时只记录本地通过。发布后不为成功结果新增提交或推送。

@@ -23,7 +23,9 @@
 | 数据源和历史数据复用 | [来源能力矩阵](docs/data/sources.md)、[迁移设计](docs/data/migration.md) |
 | 多 Agent 接入与交接 | [开发约束](AGENTS.md)、[协作规范](docs/development/collaboration.md) |
 | 当前进度 | [任务台账](docs/development/task-ledger.md)、[阶段路线](docs/roadmap.md) |
-| Git 推送机器人通知 | [VChat / VoceChat 配置与脱敏](docs/development/git-notifications.md) |
+| 项目 Skill | [组织与注册规则](docs/development/skills.md)、[github-release](.agents/skills/github-release/SKILL.md) |
+| 版本与发布 | [发布规范](docs/development/releases.md)、[版本记录](CHANGELOG.md) |
+| Git 与发布机器人通知 | [VChat / VoceChat 配置与脱敏](docs/development/git-notifications.md) |
 
 ## 技术选型
 
@@ -42,6 +44,12 @@ git diff --check
 ```
 
 校验工具检查受版本管理的公开资产、相对链接、配置示例和常见凭据模式；它不能证明数据源授权或替代人工发布审查。
+
+## 正式发布
+
+版本以根 [VERSION](VERSION) 为准。main 每批已授权发布从 `0.1.0` 起默认 patch 加一；明确用户指定才改变 minor/major，`0.x` 为 prerelease 且非 latest。发布由同一 Actions 工作流先验证、再将标签绑定确切提交并创建 Release、最后通知配置频道（默认 #19）。开发分支与非发布标签继续发送 push 通知。
+
+失败重跑使用原版本，不覆盖冲突 Release；通知状态不明时先核对频道。Skill、工具与工作流的本地交付和外部发布验收分别记录在 [S0-009 交接](docs/development/handoffs/skill-releases.md)。尚无业务应用，版本号不表示 A 股功能已可运行。
 
 ## 参与开发
 

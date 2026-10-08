@@ -41,6 +41,8 @@ XXStock 是独立部署的 A 股研究工作台。近期目标是可信的数据
 
 2026-10-08 用户追加开发运维需求：先接入 3.0 VoceChat 机器人，对每个仓库 Git push 事件通知可配置频道，当前为 #19。该工具独立实现，地址/密钥脱敏；不扩大 A 股业务模块范围。见 [通知说明](development/git-notifications.md)。
 
+2026-10-08 用户继续批准项目 Skill 标准化与正式版本发布：统一 `.agents/skills/` 和分类注册表，main 每批从 `0.1.0` 起默认 patch 加一；明确指定才变更 minor/major。校验、exact SHA 标签、Release 与频道 #19 最终通知由同一工作流顺序完成，保留开发分支和非发布标签 push 通知。失败恢复不升版，冲突不覆盖，不为成功报告再提交。见 [Skill 组织](development/skills.md)、[发布规范](development/releases.md) 与 [S0-009 交接](development/handoffs/skill-releases.md)。本轮仍无 A 股业务代码。
+
 ## 推进方法
 
 每次对话选择一个模块，先核对旧实现与来源，再明确输入输出、展示、迁移和验收。完成实现后更新台账和交接；核心选择改变时新增 ADR，不静默改写历史决定。阶段路线与交付门槛见 [roadmap](roadmap.md)。
