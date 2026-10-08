@@ -56,3 +56,5 @@
 | [PostgreSQL 行安全](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) | 后续多用户的数据库防御层参考 |
 
 来源可公开访问不等于授权批量采集或再分发。仓库不携带真实市场数据和新闻正文。
+
+- [项目改名与历史兼容](adr/0009-project-name.md)。

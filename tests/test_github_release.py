@@ -14,11 +14,11 @@ from unittest.mock import MagicMock, patch
 
 from scripts import vocechat_notify as notify
 
-SPEC = importlib.util.spec_from_file_location("xxstock_release", Path(__file__).resolve().parents[1] / ".agents/skills/github-release/scripts/release.py")
+SPEC = importlib.util.spec_from_file_location("x2stock_release", Path(__file__).resolve().parents[1] / ".agents/skills/github-release/scripts/release.py")
 release = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = release
 SPEC.loader.exec_module(release)
-REPO = "example/XXStock"
+REPO = "example/x2Stock"
 NOTES = "建立项目设计和发布能力，尚无业务应用。\n\n## 新增功能\n\n- 项目 Skill 与中文发布说明。\n\n## 验证结果\n\n- 合成场景验证通过；真实远端验收由工作流完成。\n"
 
 
@@ -93,6 +93,40 @@ class LifecycleTests(unittest.TestCase):
         self.assertGreater(release.Version.parse("0.1.10"), release.Version.parse("0.1.9"))
         self.assertEqual(str(release.Version.parse("0.1.9").next_patch()), "0.1.10")
 
+    def test_initial_release_name_remains_immutable_after_rename(self):
+        version = release.Version(0, 1, 0)
+        notes = "# XXStock 0.1.0\n\n" + NOTES
+        release.validate_notes(version, notes)
+        historical = {"tag_name": "v0.1.0", "name": "XXStock 0.1.0", "body": notes,
+                      "draft": False, "prerelease": True}
+        release.validate_release(historical, version, notes)
+        with self.assertRaises(release.ReleaseError):
+            release.validate_release({**historical, "name": "x2Stock 0.1.0"}, version, notes)
+        with self.assertRaises(release.ReleaseError):
+            release.validate_notes(release.Version(0, 1, 1), notes.replace("0.1.0", "0.1.1"))
+
+    def test_rename_continues_publishing_without_rewriting_old_materials(self):
+        old_repo = "example/XXStock"
+        release.git(self.root, "remote", "set-url", "origin", f"https://github.com/{old_repo}.git")
+        release.prepare(self.root, self.source)
+        notes_path = self.root / "docs/releases/0.1.0.md"
+        notes_path.write_text(notes_path.read_text(encoding="utf-8").replace("# x2Stock 0.1.0", "# XXStock 0.1.0"), encoding="utf-8")
+        old_notes = notes_path.read_text(encoding="utf-8")
+        old_meta = (self.root / "docs/releases/0.1.0.json").read_bytes()
+        old_sha = self.commit()
+        self.api.tags["v0.1.0"] = old_sha
+        self.api.releases["v0.1.0"] = {"tag_name": "v0.1.0", "name": "XXStock 0.1.0", "body": old_notes,
+                                        "draft": False, "prerelease": True}
+        release.git(self.root, "remote", "set-url", "origin", f"https://github.com/{REPO}.git")
+        self.base = old_sha
+        env = self.batch()
+        result = release.publish(self.root, env, self.api)
+        self.assertEqual(result["version"], "0.1.1")
+        self.assertEqual(self.api.releases["v0.1.1"]["name"], "x2Stock 0.1.1")
+        self.assertEqual(self.api.tags["v0.1.1"], env["GITHUB_SHA"])
+        self.assertEqual(notes_path.read_text(encoding="utf-8"), old_notes)
+        self.assertEqual((self.root / "docs/releases/0.1.0.json").read_bytes(), old_meta)
+
     def test_explicit_upgrade_requires_flag_and_reason(self):
         release.prepare(self.root, self.source)
         for kwargs in ({"requested": "1.0.0"}, {"requested": "0.2.0", "allow_version_change": True}, {"requested": "0.1.0"}, {"requested": "0.1.01"}):
@@ -117,12 +151,12 @@ class LifecycleTests(unittest.TestCase):
     def test_material_mismatch_and_secret_notes_rejected(self):
         release.prepare(self.root, self.source)
         note = self.root / "docs/releases/0.1.0.md"
-        note.write_text(note.read_text(encoding="utf-8").replace("# XXStock 0.1.0", "# XXStock 0.1.1"), encoding="utf-8")
+        note.write_text(note.read_text(encoding="utf-8").replace("# x2Stock 0.1.0", "# x2Stock 0.1.1"), encoding="utf-8")
         with self.assertRaises(release.ReleaseError):
             release.check(self.root)
         for text in (NOTES.replace("新增功能", "待填写"), NOTES + "\n" + "sk-" + "X" * 24):
             with self.assertRaises(release.ReleaseError):
-                release.validate_notes(release.Version(0, 1, 0), "# XXStock 0.1.0\n\n" + text)
+                release.validate_notes(release.Version(0, 1, 0), "# x2Stock 0.1.0\n\n" + text)
 
     def test_publish_exact_sha_prerelease_not_latest_and_reuse(self):
         env = self.batch()
@@ -264,7 +298,7 @@ class SafetyTests(unittest.TestCase):
     def receipt(self):
         return {"version": "0.1.0", "repository": REPO, "sha": "a" * 40, "tag": "v0.1.0",
                 "release_url": f"https://github.com/{REPO}/releases/tag/v0.1.0", "compare_url": f"https://github.com/{REPO}/commits/v0.1.0",
-                "notes": "# XXStock 0.1.0\n\n" + NOTES}
+                "notes": "# x2Stock 0.1.0\n\n" + NOTES}
 
     def test_release_message_links_summary_identity_and_redaction(self):
         bot = notify.BotConfig(True, "https://example.invalid", "example-key")

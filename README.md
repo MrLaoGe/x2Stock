@@ -2,7 +2,9 @@
   <img src="docs/assets/readme-header.jpg" alt="项目趣图" width="270">
 </p>
 
-# XXStock
+# x2Stock
+
+项目名称现统一为 **x2Stock**，仓库为 [MrLaoGe/x2Stock](https://github.com/MrLaoGe/x2Stock)。当前正式产品目标是 Windows 免安装桌面应用，网页作为开发调试入口；桌面界面和首包正在独立任务中实施。已发布版本的原始名称保留为历史记录，见 [改名决策](docs/adr/0009-project-name.md)。
 
 面向 A 股投资者的开源研究工作台，逐步构建 **多 Agent 研究分析 → 量化验证 → 可审计执行** 的能力。
 
