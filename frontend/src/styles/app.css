@@ -53,7 +53,7 @@ h3 { font-size: 20px; }
 .button.secondary:hover { color: var(--color-text); }
 .text-input, .select-input { width: 100%; min-height: 40px; padding: 0 12px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-canvas); color: var(--color-text); transition: var(--transition-color); }
 .text-input::placeholder { color: var(--color-text-placeholder); }
-.text-input:focus, .select-input:focus { border-color: var(--color-border-strong); outline: 2px solid rgb(10 132 255 / 35%); outline-offset: 1px; }
+.text-input:focus, .select-input:focus { border-color: var(--color-border-strong); outline: 2px solid var(--color-focus); outline-offset: 1px; }
 .select-input { appearance: auto; }
 .field-label { display: block; margin-bottom: var(--space-2); color: var(--color-text-muted); font-size: 13px; }
 .field { display: block; min-width: 0; flex: 1 1 180px; }

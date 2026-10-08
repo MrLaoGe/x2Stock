@@ -16,7 +16,7 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar" aria-label={t.home}>
+      <aside className="app-sidebar" aria-label={t.navigation}>
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">X</span>
           <span className="brand-name">XXStock</span>
