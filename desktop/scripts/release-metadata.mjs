@@ -1,0 +1,28 @@
+// Read-only official archive verification; never tags, uploads or publishes.
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import network from '../updater/network.cjs';
+import archiveModule from '../updater/archive.cjs';
+import sourceTreeModule from '../updater/source-tree.cjs';
+const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const sourceSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repository }).toString().trim();
+const version = (await fs.readFile(path.join(repository, 'VERSION'), 'utf8')).trim();
+const treeHash = await sourceTreeModule.sourceTree(repository);
+const runtime = path.join(repository, 'desktop-runtime', 'win-x64');
+await archiveModule.validateBundle(runtime, { version, sourceTreeHash: treeHash });
+const scratch = path.join(repository, '.local', 'release-archive-check', randomUUID());
+await fs.mkdir(scratch, { recursive: true });
+const url = `https://codeload.github.com/MrLaoGe/x2Stock/zip/${sourceSha}`;
+const options = { kind: 'archive', limit: 512 * 1024 * 1024, timeout: 5 * 60 * 1000 };
+const first = await network.request(url, { ...options, file: path.join(scratch, 'official-source.zip') });
+const second = await network.request(url, { ...options, file: path.join(scratch, 'official-source-repeat.zip') });
+if (first.digest !== second.digest || first.size !== second.size) throw new Error('Official archive bytes changed; refuse update metadata');
+const extracted = path.join(scratch, 'runtime');
+await archiveModule.extract(path.join(scratch, 'official-source.zip'), extracted, { runtimeOnly: true, sourceTreeHash: treeHash, sourceSha });
+await archiveModule.validateBundle(extracted, { version, sourceTreeHash: treeHash });
+const output = path.join(scratch, `x2Stock-${version}-update.json`);
+await fs.writeFile(output, JSON.stringify({ schema: 1, repository: 'MrLaoGe/x2Stock', version, source_sha: sourceSha, source_tree_hash: treeHash, archive_url: url, archive_sha256: first.digest, archive_size: first.size, runtime_subdir: 'desktop-runtime/win-x64' }, null, 2) + '\n', { flag: 'wx' });
+console.log(output);

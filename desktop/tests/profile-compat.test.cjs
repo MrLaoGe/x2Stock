@@ -19,9 +19,12 @@ for (const legacyDirectory of [null, 'profile', 'session']) {
     };
     vm.runInNewContext(source, {
       __dirname: path.join(__dirname, '..'),
-      process: { env: {}, platform: 'win32' },
+      process: { env: {}, platform: 'win32', argv: [], execPath: path.join(parent, 'desktop-runtime', 'win-x64', 'x2Stock.exe') },
       require(name) {
         if (name === 'electron') return { app };
+        if (name === './updater/fixture.cjs') return { fixtureAppData: () => null };
+        if (name === './updater/raw-fs.cjs') return { existsSync: () => false };
+        if (name === './updater/recovery.cjs') return { pendingFile: () => 'synthetic-pending' };
         if (name === 'node:fs') return {
           existsSync: (candidate) => legacyDirectory !== null &&
             candidate === path.join(legacyRoot, legacyDirectory),

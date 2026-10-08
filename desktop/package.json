@@ -1,14 +1,14 @@
 {
   "name": "x2stock",
-  "version": "0.1.0-preview.1",
+  "version": "0.1.0",
   "private": true,
   "description": "x2Stock Windows desktop preview shell",
   "main": "main.cjs",
   "scripts": {
     "stage:renderer": "node scripts/stage-renderer.mjs",
     "start": "electron .",
-    "pack:dir": "npm run stage:renderer && electron-builder --win dir --x64 --publish never",
-    "pack:portable": "npm run stage:renderer && electron-builder --win portable --x64 --publish never"
+    "pack:dir": "node scripts/pack.mjs",
+    "test": "node --test tests/*.test.cjs"
   },
   "devDependencies": {
     "electron": "44.7.0",
@@ -24,17 +24,24 @@
     "files": [
       "main.cjs",
       "preload.cjs",
+      "updater/**/*",
       "renderer/**/*",
       "package.json"
     ],
+    "extraResources": [{ "from": "build/build-manifest.json", "to": "build-manifest.json" }],
     "win": {
       "target": [
         {
           "target": "dir",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "x2Stock-${version}-${arch}.${ext}"
     }
+  },
+  "dependencies": {
+    "yauzl": "3.4.0"
   }
 }
