@@ -1,6 +1,6 @@
 ---
 name: multi-dialogue-development
-description: "在 XXStock 按老板派单、独立 PM、专业任务对话组织模块开发，维护责任、依赖、独立验收、返工和串行发布。仅开发协作；金融角色模板不构成业务运行器或交易授权。"
+description: "在 x2Stock 按老板派单、独立 PM、专业任务对话组织模块开发，维护责任、依赖、独立验收、返工和串行发布。仅开发协作；金融角色模板不构成业务运行器或交易授权。"
 ---
 
 # 多对话开发
@@ -19,6 +19,6 @@ description: "在 XXStock 按老板派单、独立 PM、专业任务对话组织
 
 每项任务使用 [派发与交接模板](references/task-template.md)，根据 [模块责任覆盖](../../../docs/development/agent-coverage.md) 确定三责。短 subagent 可以辅助，不能替代用户要求的持久专业对话；父子关系由任务记录维护，UI 不具有层级树承诺。
 
-真实对话用 Codex create_thread/send_message_to_thread/wait_threads；本地辅助脚本只维护状态，不伪造跨对话 API。新对话不覆盖模型，沿用用户配置。create_thread 前 list_projects；写入角色使用 XXStock 项目的独立 worktree，并从 PM 已提交约定基线接入。
+真实对话用 Codex create_thread/send_message_to_thread/wait_threads；本地辅助脚本只维护状态，不伪造跨对话 API。新对话不覆盖模型，沿用用户配置。create_thread 前 list_projects；写入角色使用 x2Stock 项目的独立 worktree，并从 PM 已提交约定基线接入。
 
 实时记录在 Git 公共目录下被忽略的 `.local/orchestration`，不在 Skill 中放运行数据。先 fetch 最新 origin/main、集成并独立验收源候选；取得 task/PM 绑定的发布锁时再次核对最新基线。持锁后按远端 VERSION 调用 [github-release](../github-release/SKILL.md) 准备版本材料，单独记录最终发布 SHA。主线或源内容变化必须重新集成与验收，不能沿用旧候选通过结果。锁无超时抢占；异常先核对持有者和远端。取消请求不等于已停止。阶段、时间冻结、独立验收和权限均以契约及行为检查执行，不能只靠提示词。
