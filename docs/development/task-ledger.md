@@ -10,8 +10,8 @@
 | S0-004 | 数据来源与历史迁移设计 | 数据 Agent | completed | 来源矩阵、审计、迁移、数据模块 |
 | S0-005 | 架构、契约、界面与功能归并 | 架构 Agent | completed | 架构、接口、UI、模块目录 |
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
-| S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
-| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)，频道19返回HTTP200 |
+| S0-007 | 创建并发布 MrLaoGe/x2Stock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/x2Stock)，MIT；初次远端main提交和32文件与本地一致 |
+| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
 | S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；本地55资产/43测试通过，独立审查无阻断；等待 S0-010 发布后集成复验；[交接](handoffs/module-first-roadmap.md) |
 | S1-001 | 最小应用骨架 | 后续对话 | planned | 独立前后端/PG、显式结构升级、配置健康、空工作台与部署；仅规划未实现 |
@@ -34,7 +34,7 @@
 - 独立审查：原两项问题已修正并定向复核，无剩余阻断问题；worker执行与数据库回滚是未来代码验收，未在本轮运行。
 - 旧项目 Git 状态与开始时一致，本轮未修改旧项目或导入业务数据。来源数量是旧系统审计快照，不构成新版接口权限实测。
 - 全新 GitHub 克隆：无需旧项目、业务运行依赖或用户凭据，公开资产校验通过，工作区干净。
-- 首次 [GitHub Actions](https://github.com/MrLaoGe/XXStock/actions/runs/37754656719) 通过；发布交接记录的后续提交继续由同一流水线验证，最新结果见仓库 Actions。
+- 首次 [GitHub Actions](https://github.com/MrLaoGe/x2Stock/actions/runs/37754656719) 通过；发布交接记录的后续提交继续由同一流水线验证，最新结果见仓库 Actions。
 
 ## Skill 与正式发布（S0-009）
 
@@ -44,6 +44,6 @@
 
 - 已配置 GitHub Secrets（地址/密钥）和 Variables（启用、频道19、前缀、超时），本机秘密仅在被忽略的 `.env`；3.0配置未修改。
 - 23合成测试、公开资产校验和独立审查通过；HTTP协议异常泄露原文的问题已修复并验证。
-- 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
-- 同次[开发校验](https://github.com/MrLaoGe/XXStock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；本轮 S0-009 将正式 main 改为同一发布工作流最终通知，其他 push 的行为见当前通知规范。
+- 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
+- 同次[开发校验](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；本轮 S0-009 将正式 main 改为同一发布工作流最终通知，其他 push 的行为见当前通知规范。
 - 配置、限制和失败处理见[通知说明](git-notifications.md)，本轮交接见[通知交接](handoffs/git-notifications.md)。

@@ -14,13 +14,13 @@
 
 | 配置 | 默认 | 含义 |
 | --- | --- | --- |
-| `XXSTOCK_BIND_HOST` | `127.0.0.1` | 单用户仅本机访问 |
-| `XXSTOCK_WEB_PORT` | `8080` | 后续生产静态网页与同源 API 代理 |
-| `XXSTOCK_API_PORT` | `8140` | 原生开发 API，避开旧服务端口 |
-| `XXSTOCK_DEV_WEB_PORT` | `5180` | Vite 开发端口 |
-| `XXSTOCK_TIMEZONE` | `Asia/Shanghai` | 交易时段及用户展示时间 |
-| `XXSTOCK_LOCAL_USER_ID` / `XXSTOCK_LOCAL_WORKSPACE_ID` | `local` / `local` | 服务端身份上下文；不是访问令牌 |
-| `XXSTOCK_DATA_DIR` | `.local/data` | 新版私有数据，不指向旧目录 |
+| `X2STOCK_BIND_HOST` | `127.0.0.1` | 单用户仅本机访问 |
+| `X2STOCK_WEB_PORT` | `8080` | 后续生产静态网页与同源 API 代理 |
+| `X2STOCK_API_PORT` | `8140` | 原生开发 API，避开旧服务端口 |
+| `X2STOCK_DEV_WEB_PORT` | `5180` | Vite 开发端口 |
+| `X2STOCK_TIMEZONE` | `Asia/Shanghai` | 交易时段及用户展示时间 |
+| `X2STOCK_LOCAL_USER_ID` / `X2STOCK_LOCAL_WORKSPACE_ID` | `local` / `local` | 服务端身份上下文；不是访问令牌 |
+| `X2STOCK_DATA_DIR` | `.local/data` | 新版私有数据，不指向旧目录 |
 | `DATABASE_URL` | 未配置 | 独立 PostgreSQL，不连接旧库 |
 
 Compose 基线只把 web 映射到 `127.0.0.1:8080`；API、worker、PostgreSQL 使用内部网络。PostgreSQL 容器内为 `5432`，默认不映射到宿主机。密码由使用者设置；不提供公共默认密码。原生开发 API/Vite 也绑定本机，CORS 只开放实际开发来源。

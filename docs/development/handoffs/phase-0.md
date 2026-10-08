@@ -24,7 +24,7 @@
 
 ## 发布
 
-[MrLaoGe/XXStock](https://github.com/MrLaoGe/XXStock) 已创建为公开 MIT 文档仓库，使用全新提交历史。首次远端main与本地提交及32个公开文件一致；[首次CI](https://github.com/MrLaoGe/XXStock/actions/runs/37754656719)通过。全新克隆无需旧项目、业务依赖或用户密钥即可运行仓库校验。当前交接记录随后提交，最新流水线结果见仓库Actions。
+[MrLaoGe/x2Stock](https://github.com/MrLaoGe/x2Stock) 已创建为公开 MIT 文档仓库，使用全新提交历史。首次远端main与本地提交及32个公开文件一致；[首次CI](https://github.com/MrLaoGe/x2Stock/actions/runs/37754656719)通过。全新克隆无需旧项目、业务依赖或用户密钥即可运行仓库校验。当前交接记录随后提交，最新流水线结果见仓库Actions。
 
 ## 审查和验证
 
