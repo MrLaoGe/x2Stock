@@ -2,7 +2,7 @@
 
 状态：阶段 0 的角色与协作契约已确定；产品内 Agent 仍为后续阶段设计，不存在运行器、长期调度或交易权限。
 
-完整模板位于 [multi-dialogue-development 角色模板](../.agents/skills/multi-dialogue-development/references/roles.md)，机器覆盖契约位于 [agent-coverage.json](development/agent-coverage.json)。业务与工程池共 40 个角色：数据 4、市场研究 8、报告 6、个人研究 3、量化 7、执行 3、工程 9；另有老板和 PM 两个协调角色，总计 42 个。
+完整模板位于 [multi-dialogue-development 角色模板](../.agents/skills/multi-dialogue-development/references/roles.md)，机器覆盖契约位于 [agent-coverage.json](development/agent-coverage.json)。业务与工程池共 40 个角色：数据 4、市场研究 8、报告 6、个人研究 3、量化 7、执行 3、工程 9；另有老板和 PM 两个协调角色，总计 42 个。 功能目录按当前 `docs/modules/catalog.md` 实际覆盖 44 条能力；早期“43 条”是计数错误，已更正且不删减第 9 条。
 
 ## 关键边界
 

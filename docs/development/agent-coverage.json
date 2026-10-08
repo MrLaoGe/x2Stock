@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "catalog_source": "docs/modules/catalog.md",
-  "catalog_capability_count": 43,
+  "catalog_capability_count": 44,
   "role_count": 42,
   "coordination_role_count": 2,
   "roles": [
@@ -9,756 +9,840 @@
       "id": "data.source_ingestion",
       "name": "数据源接入与采集",
       "group": "data",
-      "stage": "1",
+      "stage": 1,
       "mode": "design",
-      "responsibility": "负责数据源接入与采集的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "核对三家允许来源的权限、分页、频次、限流与失败重试，形成数据集采集边界。",
+      "inputs": "data.source_ingestion packet: 核对三家允许来源的权限、分页、频次、限流与失败重试，形成数据集采集边界。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "data.source_ingestion depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "数据源接入与采集的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "data.source_ingestion acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "data.source_ingestion cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "data.source_ingestion failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#data-source-ingestion",
+      "stage_range": "1"
     },
     {
       "id": "data.standardization_quality",
       "name": "数据标准化与质量",
       "group": "data",
-      "stage": "1",
+      "stage": 1,
       "mode": "design",
-      "responsibility": "负责数据标准化与质量的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "统一证券编码、交易日、单位、复权与板块成员版本，保证原始/标准化/计算层可追溯。",
+      "inputs": "data.standardization_quality packet: 统一证券编码、交易日、单位、复权与板块成员版本，保证原始/标准化/计算层可追溯。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "data.standardization_quality depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "数据标准化与质量的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "data.standardization_quality acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "data.standardization_quality cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "data.standardization_quality failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#data-standardization-quality",
+      "stage_range": "1"
     },
     {
       "id": "data.historical_migration",
       "name": "历史迁移",
       "group": "data",
-      "stage": "1",
+      "stage": 1,
       "mode": "design",
-      "responsibility": "负责历史迁移的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "只读扫描旧资产，按来源血缘筛选，执行可断点、幂等、可回滚的分批导入。",
+      "inputs": "Legacy asset inventory, source lineage, migration allowlist, target schema, sample checks, checkpoints, and rollback fixtures.",
+      "dependencies": "Lineage admission, read-only legacy access, idempotency key, checkpoint protocol, rollback plan, and downstream refresh contract.",
       "outputs": "历史迁移的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Every batch passes lineage admission and can resume from a checkpoint and roll back; migration must not break later refreshes or overwrite valid records.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot write the legacy database, start its scheduler, admit unknown lineage, or make the legacy path a runtime dependency.",
+      "failed_handoff": "Handoff includes batch checkpoint, rollback point, isolation record, failed samples, and an assessment of later-update impact.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#data-historical-migration",
+      "stage_range": "1"
     },
     {
       "id": "data.time_provenance",
       "name": "数据与时间核验",
       "group": "data",
-      "stage": "1",
+      "stage": 1,
       "mode": "design",
-      "responsibility": "负责数据与时间核验的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "核对来源链、首次可用时间、发布时间、修订和成员可得性，给出 point-in-time 范围。",
+      "inputs": "source_available_at, published_at, collected_at, cutoff, revision_id, member-effective dates, and missing-time fixtures.",
+      "dependencies": "Point-in-time policy, source clock calibration, cutoff policy, and revision handling must be approved before this role proceeds.",
       "outputs": "数据与时间核验的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "If available_at is unknown or later than cutoff, keep the value missing and reject it from the snapshot; any revision is rejected or versioned with an evidence trail.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot substitute collected_at for available_at, use future information, erase a revision, or relax cutoff rules.",
+      "failed_handoff": "Handoff includes each timestamp, cutoff decision, revision diff, rejection reason, and impacted report/experiment IDs.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#data-time-provenance",
+      "stage_range": "1"
     },
     {
       "id": "market.structure_sentiment",
       "name": "市场结构与情绪分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责市场结构与情绪分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "计算指数、宽度、成交、涨跌分布、涨停结构和赚钱效应，声明范围与异常。",
+      "inputs": "market.structure_sentiment packet: 计算指数、宽度、成交、涨跌分布、涨停结构和赚钱效应，声明范围与异常。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.structure_sentiment depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "市场结构与情绪分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.structure_sentiment acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.structure_sentiment cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.structure_sentiment failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-structure-sentiment",
+      "stage_range": "2/3"
     },
     {
       "id": "market.sector_theme",
       "name": "板块与题材分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责板块与题材分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "按版本化成员分解行业/概念强弱、贡献、主线、龙头和轮动，禁止未来成员回填。",
+      "inputs": "market.sector_theme packet: 按版本化成员分解行业/概念强弱、贡献、主线、龙头和轮动，禁止未来成员回填。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.sector_theme depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "板块与题材分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.sector_theme acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.sector_theme cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.sector_theme failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-sector-theme",
+      "stage_range": "2/3"
     },
     {
       "id": "market.fund_flow_lhb",
       "name": "资金流与龙虎榜分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责资金流与龙虎榜分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "保留供应商资金定义和单位，分析连续变化、板块聚合和龙虎榜关联。",
+      "inputs": "market.fund_flow_lhb packet: 保留供应商资金定义和单位，分析连续变化、板块聚合和龙虎榜关联。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.fund_flow_lhb depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "资金流与龙虎榜分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.fund_flow_lhb acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.fund_flow_lhb cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.fund_flow_lhb failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-fund-flow-lhb",
+      "stage_range": "2/3"
     },
     {
       "id": "market.technical",
       "name": "个股技术分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责个股技术分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "在固定复权时序上计算趋势、支撑压力、波动和信号，明确触发与失效。",
+      "inputs": "market.technical packet: 在固定复权时序上计算趋势、支撑压力、波动和信号，明确触发与失效。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.technical depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "个股技术分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.technical acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.technical cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.technical failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-technical",
+      "stage_range": "2/3"
     },
     {
       "id": "market.financial_valuation",
       "name": "公司财务与估值分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责公司财务与估值分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "按公告发布日期核对报表、盈利质量、现金流、负债、估值和同行可比性。",
+      "inputs": "market.financial_valuation packet: 按公告发布日期核对报表、盈利质量、现金流、负债、估值和同行可比性。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.financial_valuation depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "公司财务与估值分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.financial_valuation acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.financial_valuation cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.financial_valuation failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-financial-valuation",
+      "stage_range": "2/3"
     },
     {
       "id": "market.news_event",
       "name": "新闻电报与事件分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责新闻电报与事件分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "按发布时间归并新闻，维护主题、标的映射、确认状态、冲突和事件日历。",
+      "inputs": "market.news_event packet: 按发布时间归并新闻，维护主题、标的映射、确认状态、冲突和事件日历。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.news_event depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "新闻电报与事件分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.news_event acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.news_event cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.news_event failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-news-event",
+      "stage_range": "2/3"
     },
     {
       "id": "market.corporate_action",
       "name": "公司公告与公司行动分析",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责公司公告与公司行动分析的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "记录公告、业绩预告、分红、增减持、解禁的发布日期、生效日期和修订版本。",
+      "inputs": "market.corporate_action packet: 记录公告、业绩预告、分红、增减持、解禁的发布日期、生效日期和修订版本。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.corporate_action depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "公司公告与公司行动分析的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.corporate_action acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.corporate_action cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.corporate_action failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-corporate-action",
+      "stage_range": "2/3"
     },
     {
       "id": "market.method_validation",
       "name": "特色指标与方法验证",
       "group": "market",
-      "stage": "2/3",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责特色指标与方法验证的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "建立特色指标公式、样本、版本和限制，检验稳定性；未通过只能标实验。",
+      "inputs": "market.method_validation packet: 建立特色指标公式、样本、版本和限制，检验稳定性；未通过只能标实验。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "market.method_validation depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "特色指标与方法验证的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "market.method_validation acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "market.method_validation cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "market.method_validation failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#market-method-validation",
+      "stage_range": "2/3"
     },
     {
       "id": "report.pre_open",
       "name": "盘前策略",
       "group": "report",
-      "stage": "3",
+      "stage": 3,
       "mode": "design",
-      "responsibility": "负责盘前策略的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "只用盘前截止快照生成情景、关注方向、观察条件和失效条件；冻结后不可回填。",
+      "inputs": "Prior close snapshot, 08:30 cutoff, 08:45 collection window, 08:50 freeze rule, and evidence snapshot.",
+      "dependencies": "Available-time checks, upstream market/event snapshots, prediction version, and freeze-state ledger.",
       "outputs": "盘前策略的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Enforce 08:30 requirement cutoff, 08:45 collection, and 08:50 freeze; replay must reject information arriving after the freeze.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot read post-cutoff information, mutate frozen snapshot_id, or present a live conclusion as a frozen one.",
+      "failed_handoff": "Handoff includes cutoff, collection batch, freeze snapshot, missing fields, unresolved dependencies, and prediction impact.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#report-pre-open",
+      "stage_range": "3"
     },
     {
       "id": "report.intraday",
       "name": "盘中跟踪",
       "group": "report",
-      "stage": "3",
+      "stage": 3,
       "mode": "design",
-      "responsibility": "负责盘中跟踪的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "以时间戳追加盘前条件触发、行情/事件变化和新增证据，不改写冻结稿。",
+      "inputs": "Intraday quotes, event deltas, available_at timestamps, prior report, and T-observation card.",
+      "dependencies": "Market clock, event deduplication, prior freeze, and adversarial review.",
       "outputs": "盘中跟踪的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Every added fact has source and time; revisions are traceable; unconfirmed events never become facts.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot cross the time boundary, place orders, or treat AI interpretation as source fact.",
+      "failed_handoff": "Handoff includes incremental evidence, before/after text, unconfirmed events, and conclusion impact.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#report-intraday",
+      "stage_range": "3"
     },
     {
       "id": "report.post_close",
       "name": "盘后复盘",
       "group": "report",
-      "stage": "3",
+      "stage": 3,
       "mode": "design",
-      "responsibility": "负责盘后复盘的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "用冻结稿、盘中记录和收盘证据解释差异，把事后因果保留为假设。",
+      "inputs": "Close snapshot, report versions, transaction-record references, anomaly log, and review range.",
+      "dependencies": "Close-time confirmation, data quality result, personal-asset ownership, and version linkage.",
       "outputs": "盘后复盘的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Facts, explanations, suggestions, and personal records remain separate with complete citations and visible missing/conflict states.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot rewrite historical fills, fabricate uncollected facts, or turn a review suggestion into an executed order.",
+      "failed_handoff": "Handoff includes close snapshot, citation gaps, version diff, review disputes, and open checks.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#report-post-close",
+      "stage_range": "3"
     },
     {
       "id": "report.prediction_settlement",
       "name": "预测结算与研究评估",
       "group": "report",
-      "stage": "3",
+      "stage": 3,
       "mode": "design",
-      "responsibility": "负责预测结算与研究评估的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "按版本化规则独立结算命中、失效或无法判定，不能改写原判断。",
+      "inputs": "08:50 frozen prediction, realized outcome, settlement window, sample labels, and unavailable markers.",
+      "dependencies": "Frozen version, point-in-time data, settlement clock, and historical evaluation sample.",
       "outputs": "预测结算与研究评估的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Frozen predictions cannot be rewritten; outcomes settle only when available; unavailable outcomes remain missing and can be recalculated.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot use post-freeze information to rewrite a prediction or count unsettled samples in accuracy.",
+      "failed_handoff": "Handoff includes freeze/settlement versions, unavailable outcomes, anomalous samples, metric changes, and recalculation conditions.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#report-prediction-settlement",
+      "stage_range": "3"
     },
     {
       "id": "report.adversarial_review",
       "name": "反方审查",
       "group": "report",
-      "stage": "3",
+      "stage": 3,
       "mode": "design",
-      "responsibility": "负责反方审查的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "逐项寻找替代解释、反证、时间穿越、样本偏差和遗漏风险，提出可复现意见。",
+      "inputs": "report.adversarial_review packet: 逐项寻找替代解释、反证、时间穿越、样本偏差和遗漏风险，提出可复现意见。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "report.adversarial_review depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "反方审查的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "report.adversarial_review acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "report.adversarial_review cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "report.adversarial_review failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#report-adversarial-review",
+      "stage_range": "3"
     },
     {
       "id": "report.editorial_final",
       "name": "报告审校与终稿复核",
       "group": "report",
-      "stage": "3",
+      "stage": 3,
       "mode": "design",
-      "responsibility": "负责报告审校与终稿复核的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "核对数字、引用、截止、事实/意见分层和反方处理，决定通过、退回或部分发布。",
+      "inputs": "report.editorial_final packet: 核对数字、引用、截止、事实/意见分层和反方处理，决定通过、退回或部分发布。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "report.editorial_final depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "报告审校与终稿复核的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "report.editorial_final acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "report.editorial_final cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "report.editorial_final failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#report-editorial-final",
+      "stage_range": "3"
     },
     {
       "id": "personal.research_management",
       "name": "个人研究管理",
       "group": "personal",
-      "stage": "2",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责个人研究管理的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "维护用户股票池、自选、笔记、标签、收藏和上下文版本，手工资产不被自动内容覆盖。",
+      "inputs": "personal.research_management packet: 维护用户股票池、自选、笔记、标签、收藏和上下文版本，手工资产不被自动内容覆盖。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "personal.research_management depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "个人研究管理的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "personal.research_management acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "personal.research_management cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "personal.research_management failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#personal-research-management",
+      "stage_range": "2"
     },
     {
       "id": "personal.monitor_alerts",
       "name": "监控与提醒",
       "group": "personal",
-      "stage": "2",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责监控与提醒的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "定义价格、指标和事件提醒的触发、去重、确认、解除和失败状态，绑定用户与时间。",
+      "inputs": "personal.monitor_alerts packet: 定义价格、指标和事件提醒的触发、去重、确认、解除和失败状态，绑定用户与时间。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "personal.monitor_alerts depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "监控与提醒的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "personal.monitor_alerts acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "personal.monitor_alerts cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "personal.monitor_alerts failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#personal-monitor-alerts",
+      "stage_range": "2"
     },
     {
       "id": "personal.trade_record_discipline",
       "name": "交易记录与纪律复盘",
       "group": "personal",
-      "stage": "2",
+      "stage": 2,
       "mode": "design",
-      "responsibility": "负责交易记录与纪律复盘的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "解析核对私有成交记录，对照事前计划评估纪律偏差，解析与确认分离。",
+      "inputs": "personal.trade_record_discipline packet: 解析核对私有成交记录，对照事前计划评估纪律偏差，解析与确认分离。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "personal.trade_record_discipline depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "交易记录与纪律复盘的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "personal.trade_record_discipline acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "personal.trade_record_discipline cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "personal.trade_record_discipline failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#personal-trade-record-discipline",
+      "stage_range": "2"
     },
     {
       "id": "quant.strategy_research",
       "name": "量化策略研究",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责量化策略研究的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "提出可证伪因子/信号假设，冻结参数、基准、样本划分、费用口径和失效标准。",
+      "inputs": "Research hypothesis, factor definitions, point-in-time features, fees/slippage assumptions, program interface, engine interface, and experiment plan.",
+      "dependencies": "Frozen data lineage, program/engine API contracts, experiment registry, and a declared freeze policy are prerequisites.",
       "outputs": "量化策略研究的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Hypothesis, data, program, engine versions, sample split, costs, and failed candidates are all frozen and reproducible before a conclusion is accepted.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot use future data, unregistered features, live credentials, or promote a research candidate to production.",
+      "failed_handoff": "Handoff includes hypothesis, feature/version lock, sample range, failed candidates, cost assumptions, and blocked experiment dependencies.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-strategy-research",
+      "stage_range": "4"
     },
     {
       "id": "quant.strategy_implementation",
       "name": "量化程序开发",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责量化程序开发的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "忠实实现冻结策略规格为确定性程序，固定参数、信号、持仓和行为测试。",
+      "inputs": "Strategy specification, program API, engine API, parameter schema, frozen data/program/engine version list, and synthetic market fixtures.",
+      "dependencies": "Research freeze, backend/worker interface, data-time semantics, deterministic runtime, and resource boundary.",
       "outputs": "量化程序开发的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Program and engine interfaces are replayable; data, program, and engine versions are frozen; failed candidates and interface errors remain recorded.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot bypass unified data access, read secrets, or connect to broker/order interfaces.",
+      "failed_handoff": "Handoff includes request/response contract, version lock, failed candidates, logs, and unmet interface clauses.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-strategy-implementation",
+      "stage_range": "4"
     },
     {
       "id": "quant.backtest_engine",
       "name": "回测引擎开发",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责回测引擎开发的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "实现时间推进、撮合、停牌/涨跌停、费用、滑点、收益核算和可重放对账。",
+      "inputs": "Trading calendar, adjusted prices, suspension/ST rules, fees, slippage, strategy version, and backtest parameters.",
+      "dependencies": "Strategy program/engine interface, point-in-time data, frozen experiment configuration, and deterministic seed.",
       "outputs": "回测引擎开发的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Replay matches the frozen inputs and records fees, suspension, adjustment, calendar, anomalies, and failed candidates without survivor or look-ahead leakage.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot peek at future data, omit fees/slippage, use survivor-only samples, or rewrite a failed run.",
+      "failed_handoff": "Handoff includes input snapshot, engine version, parameters, anomalous trades, failed candidates, and replay differences.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-backtest-engine",
+      "stage_range": "4"
     },
     {
       "id": "quant.experiment_execution",
       "name": "回测实验执行",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责回测实验执行的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "用冻结代码、数据和配置运行实验，保存交易明细、指标、资源状态和失败候选。",
+      "inputs": "Experiment registry, frozen data/program/engine versions, resource budget, metrics, and candidate strategies.",
+      "dependencies": "Strategy interfaces, backtest engine, experiment freeze policy, run ledger, and cost ceiling.",
       "outputs": "回测实验执行的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "Each run is reproducible with complete version locks; failed candidates, runtime, and fee/resource consumption are retained.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot swap data or code mid-run, delete failures, exceed budget, or publish an unregistered result.",
+      "failed_handoff": "Handoff includes run_id, version lock, logs, failed candidate, resource/fee usage, and replay conditions.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-experiment-execution",
+      "stage_range": "4"
     },
     {
       "id": "quant.independent_evaluation",
       "name": "独立策略评估",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责独立策略评估的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "独立复现实验，检查未来信息、幸存者偏差、参数选择、敏感性和样本外表现。",
+      "inputs": "Frozen experiment package, out-of-sample data, author/executor roster, evaluation plan, and leakage audit.",
+      "dependencies": "Independent evaluator assignment, experiment registry, out-of-sample split, leakage/survivorship/multiple-testing audit, and fee sensitivity plan.",
       "outputs": "独立策略评估的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "This role is the evaluator: the evaluator must not be the strategy author or experiment executor; report out-of-sample performance, leakage, survivorship bias, multiple trials, and fee sensitivity.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "Cannot be the author or executor under review, alter frozen data, cherry-pick metrics, or access trading permissions.",
+      "failed_handoff": "Handoff includes independence declaration, audit evidence, out-of-sample results, bias findings, fee sensitivity, and veto reasons.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-independent-evaluation",
+      "stage_range": "4"
     },
     {
       "id": "quant.paper_trading_drift",
       "name": "模拟交易与偏差监控",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责模拟交易与偏差监控的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "对比实时信号/模拟成交与回测，监控延迟、滑点、数据漂移和异常，不接触真实资金。",
+      "inputs": "quant.paper_trading_drift packet: 对比实时信号/模拟成交与回测，监控延迟、滑点、数据漂移和异常，不接触真实资金。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "quant.paper_trading_drift depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "模拟交易与偏差监控的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "quant.paper_trading_drift acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "quant.paper_trading_drift cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "quant.paper_trading_drift failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-paper-trading-drift",
+      "stage_range": "4"
     },
     {
       "id": "quant.portfolio_risk",
       "name": "投资组合与风险",
       "group": "quant",
-      "stage": "4",
+      "stage": 4,
       "mode": "design",
-      "responsibility": "负责投资组合与风险的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "按独立规则检查仓位、集中度、相关暴露、流动性、损失限额和压力场景。",
+      "inputs": "quant.portfolio_risk packet: 按独立规则检查仓位、集中度、相关暴露、流动性、损失限额和压力场景。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "quant.portfolio_risk depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "投资组合与风险的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "quant.portfolio_risk acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "quant.portfolio_risk cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "quant.portfolio_risk failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#quant-portfolio-risk",
+      "stage_range": "4"
     },
     {
       "id": "execution.order_engineering",
       "name": "订单执行工程",
       "group": "execution",
-      "stage": "5",
+      "stage": 5,
       "mode": "design",
-      "responsibility": "负责订单执行工程的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "在另行授权下实现券商适配、幂等订单状态、成交对账、停止和恢复，动作可审计。",
+      "inputs": "execution.order_engineering packet: 在另行授权下实现券商适配、幂等订单状态、成交对账、停止和恢复，动作可审计。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "execution.order_engineering depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "订单执行工程的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "execution.order_engineering acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "execution.order_engineering cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "execution.order_engineering failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#execution-order-engineering",
+      "stage_range": "5"
     },
     {
       "id": "execution.independent_risk",
       "name": "独立执行风控",
       "group": "execution",
-      "stage": "5",
+      "stage": 5,
       "mode": "design",
-      "responsibility": "负责独立执行风控的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "独立核验资金、仓位、价格、时效、限额和停止开关，缺字段默认拒绝。",
+      "inputs": "execution.independent_risk packet: 独立核验资金、仓位、价格、时效、限额和停止开关，缺字段默认拒绝。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "execution.independent_risk depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "独立执行风控的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "execution.independent_risk acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "execution.independent_risk cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "execution.independent_risk failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#execution-independent-risk",
+      "stage_range": "5"
     },
     {
       "id": "execution.strategy_operations",
       "name": "策略运行与维护",
       "group": "execution",
-      "stage": "5",
+      "stage": 5,
       "mode": "design",
-      "responsibility": "负责策略运行与维护的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "监测策略任务、数据漂移、退化和运行偏差，不静默改变批准策略或风控。",
+      "inputs": "execution.strategy_operations packet: 监测策略任务、数据漂移、退化和运行偏差，不静默改变批准策略或风控。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "execution.strategy_operations depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "策略运行与维护的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "execution.strategy_operations acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "execution.strategy_operations cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "execution.strategy_operations failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#execution-strategy-operations",
+      "stage_range": "5"
     },
     {
       "id": "engineering.architecture",
       "name": "架构",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责架构的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "维护模块边界、共享契约、阶段门槛、时间/权限决策和 ADR，阻止跨阶段集成。",
+      "inputs": "engineering.architecture packet: 维护模块边界、共享契约、阶段门槛、时间/权限决策和 ADR，阻止跨阶段集成。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.architecture depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "架构的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.architecture acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.architecture cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.architecture failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-architecture",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.frontend_interaction",
       "name": "前端与交互",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责前端与交互的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "实现页面、图表、表单和移动布局，准确呈现缺失、过期、失败和归属状态。",
+      "inputs": "engineering.frontend_interaction packet: 实现页面、图表、表单和移动布局，准确呈现缺失、过期、失败和归属状态。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.frontend_interaction depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "前端与交互的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.frontend_interaction acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.frontend_interaction cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.frontend_interaction failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-frontend-interaction",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.backend_api",
       "name": "后端 API",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责后端 API的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "实现查询、领域服务、归属过滤和显式任务入口，普通读取不得隐式采集或调用 AI。",
+      "inputs": "engineering.backend_api packet: 实现查询、领域服务、归属过滤和显式任务入口，普通读取不得隐式采集或调用 AI。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.backend_api depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "后端 API的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.backend_api acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.backend_api cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.backend_api failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-backend-api",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.database",
       "name": "数据库工程",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责数据库工程的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "用显式迁移实现模型、revision、索引、归属约束、幂等发布和备份恢复。",
+      "inputs": "engineering.database packet: 用显式迁移实现模型、revision、索引、归属约束、幂等发布和备份恢复。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.database depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "数据库工程的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.database acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.database cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.database failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-database",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.worker",
       "name": "作业与 worker 工程",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责作业与 worker 工程的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "实现任务依赖、原子领取、lease/fencing、重试、取消和恢复，过期 worker 不能写入。",
+      "inputs": "engineering.worker packet: 实现任务依赖、原子领取、lease/fencing、重试、取消和恢复，过期 worker 不能写入。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.worker depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "作业与 worker 工程的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.worker acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.worker cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.worker failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-worker",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.ai_workflow",
       "name": "AI 工作流工程",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责AI 工作流工程的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "编排角色、白名单工具、证据引用、预算、结构化输出和运行审计。",
+      "inputs": "engineering.ai_workflow packet: 编排角色、白名单工具、证据引用、预算、结构化输出和运行审计。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.ai_workflow depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "AI 工作流工程的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.ai_workflow acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.ai_workflow cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.ai_workflow failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-ai-workflow",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.qa_review",
       "name": "独立 QA／代码审查",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责独立 QA／代码审查的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "独立 forward-test 候选入口，复现边界、失败、权限、时间和回归问题，不能自验收。",
+      "inputs": "engineering.qa_review packet: 独立 forward-test 候选入口，复现边界、失败、权限、时间和回归问题，不能自验收。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.qa_review depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (pm); unresolved prerequisites keep the task in design.",
       "outputs": "独立 QA／代码审查的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.qa_review acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.qa_review cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.qa_review failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-qa-review",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.security_ops",
       "name": "安全与运维",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责安全与运维的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "管理秘密、隔离、脱敏日志、备份恢复、部署和通知故障，执行最小权限。",
+      "inputs": "engineering.security_ops packet: 管理秘密、隔离、脱敏日志、备份恢复、部署和通知故障，执行最小权限。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.security_ops depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "安全与运维的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.security_ops acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.security_ops cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.security_ops failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-security-ops",
+      "stage_range": "0-5"
     },
     {
       "id": "engineering.integration_release",
       "name": "集成与发布",
       "group": "engineering",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责集成与发布的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "按发布锁合并，验证 exact SHA、版本、Actions、Release 和最终通知。",
+      "inputs": "engineering.integration_release packet: 按发布锁合并，验证 exact SHA、版本、Actions、Release 和最终通知。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "engineering.integration_release depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, pm); unresolved prerequisites keep the task in design.",
       "outputs": "集成与发布的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "engineering.integration_release acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "engineering.integration_release cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "engineering.integration_release failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#engineering-integration-release",
+      "stage_range": "0-5"
     },
     {
       "id": "boss",
       "name": "老板",
       "group": "coordination",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责老板的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "确认需求、阶段范围和发布授权，接收 PM 回执后释放对话。",
+      "inputs": "boss packet: 确认需求、阶段范围和发布授权，接收 PM 回执后释放对话。 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "boss depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (pm); unresolved prerequisites keep the task in design.",
       "outputs": "老板的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "boss acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "pm"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "boss cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "boss failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#boss",
+      "stage_range": "0-5"
     },
     {
       "id": "pm",
       "name": "PM",
       "group": "coordination",
-      "stage": "0-5",
+      "stage": 0,
       "mode": "design",
-      "responsibility": "负责PM的业务规则、范围和阶段性产物。",
-      "inputs": "批准方案、相关模块契约、合成或已授权证据、任务截止与版本上下文。",
-      "dependencies": "依赖对应阶段门槛、数据/权限边界和 PM 已接受的前置任务；无前置时使用已接受需求与合成输入。",
+      "responsibility": "拆分业务专责、实现责任和独立验收，维护依赖、文件所有权、返工、集成、发布锁和汇报",
+      "inputs": "pm packet: 拆分业务专责、实现责任和独立验收，维护依赖、文件所有权、返工、集成、发布锁和汇报 Required evidence is role-scoped source data, synthetic fixtures, cutoff/as_of context, and version identifiers.",
+      "dependencies": "pm depends on its declared upstream data lineage, the unified access contract, stage gate, and reviewer set (engineering.qa_review, engineering.integration_release, boss); unresolved prerequisites keep the task in design.",
       "outputs": "PM的结构化产物、来源/版本引用、缺口和失败状态。",
-      "acceptance": "产物可追溯、可复核、保留缺失与冲突，且不超出 design 模式和阶段边界。",
+      "acceptance": "pm acceptance checks the role-specific responsibility, source/version trace, missing and conflict semantics, reproducibility, and explicit design-stage boundary.",
       "reviewer_role_ids": [
         "engineering.qa_review",
         "engineering.integration_release",
         "boss"
       ],
-      "excluded_permissions": "不得越权读取秘密、其他用户资产、旧项目或交易接口；不得把设计契约冒充已运行能力。",
-      "failed_handoff": "保留原始证据、候选版本、错误和影响范围，向 PM 交接；阻断依赖不执行，不以空结果补齐。"
+      "excluded_permissions": "pm cannot read secrets, another user's assets, writable legacy modules, or live trading interfaces; it cannot invent missing inputs or grant permissions.",
+      "failed_handoff": "pm failure handoff includes raw evidence references, version IDs, error class, affected outputs, blocking dependency, and the exact next review question; no empty-result substitution.",
+      "template_ref": ".agents/skills/multi-dialogue-development/references/roles.md#pm",
+      "stage_range": "0-5"
     }
   ],
   "capabilities": [
@@ -766,14 +850,14 @@
       "id": "catalog.01",
       "catalog_capability": "来源配置、能力和权限核验",
       "catalog_row": 1,
-      "business": [
+      "business_role_ids": [
         "data.source_ingestion"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.security_ops"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
@@ -782,14 +866,14 @@
       "id": "catalog.02",
       "catalog_capability": "标准化事实、原始引用、字段质量",
       "catalog_row": 2,
-      "business": [
+      "business_role_ids": [
         "data.standardization_quality"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.database",
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
@@ -798,14 +882,14 @@
       "id": "catalog.03",
       "catalog_capability": "来源探测、覆盖率与可用性审计",
       "catalog_row": 3,
-      "business": [
+      "business_role_ids": [
         "data.source_ingestion"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.worker"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
@@ -814,14 +898,14 @@
       "id": "catalog.04",
       "catalog_capability": "历史导入、预检、隔离和补缺",
       "catalog_row": 4,
-      "business": [
+      "business_role_ids": [
         "data.historical_migration"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.database",
         "engineering.worker"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
@@ -830,14 +914,14 @@
       "id": "catalog.05",
       "catalog_capability": "刷新、自动任务、依赖、手动运行",
       "catalog_row": 5,
-      "business": [
+      "business_role_ids": [
         "data.source_ingestion"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.worker",
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.security_ops"
       ]
@@ -846,14 +930,14 @@
       "id": "catalog.06",
       "catalog_capability": "健康检查、日志、备份恢复",
       "catalog_row": 6,
-      "business": [
+      "business_role_ids": [
         "data.time_provenance"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.security_ops",
         "engineering.database"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.architecture"
       ]
@@ -862,14 +946,14 @@
       "id": "catalog.07",
       "catalog_capability": "首页摘要、指数与全球参考",
       "catalog_row": 7,
-      "business": [
+      "business_role_ids": [
         "market.structure_sentiment"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
@@ -878,562 +962,578 @@
       "id": "catalog.08",
       "catalog_capability": "市场宽度、成交额、涨跌分布",
       "catalog_row": 8,
-      "business": [
+      "business_role_ids": [
         "market.structure_sentiment"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "market.method_validation",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.09",
-      "catalog_capability": "板块资金流、个股资金和历史轨迹",
+      "catalog_capability": "行业/概念指数、自选板块",
       "catalog_row": 9,
-      "business": [
+      "business_role_ids": [
         "market.sector_theme"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
+        "market.method_validation",
+        "data.time_provenance"
+      ]
+    },
+    {
+      "id": "catalog.10",
+      "catalog_capability": "板块资金流、个股资金和历史轨迹",
+      "catalog_row": 10,
+      "business_role_ids": [
+        "market.sector_theme"
+      ],
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance_role_ids": [
         "market.method_validation",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.10",
+      "id": "catalog.11",
       "catalog_capability": "热力图、历史日期与盘中回放",
-      "catalog_row": 10,
-      "business": [
+      "catalog_row": 11,
+      "business_role_ids": [
         "market.structure_sentiment"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
-        "data.time_provenance",
-        "engineering.qa_review"
-      ]
-    },
-    {
-      "id": "catalog.11",
-      "catalog_capability": "新闻电报、公告、同步与时间线",
-      "catalog_row": 11,
-      "business": [
-        "market.news_event",
-        "market.corporate_action"
-      ],
-      "implementation": [
-        "engineering.backend_api",
-        "engineering.worker"
-      ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.12",
-      "catalog_capability": "新闻主题、股票/板块映射与关联",
+      "catalog_capability": "新闻电报、公告、同步与时间线",
       "catalog_row": 12,
-      "business": [
-        "market.news_event"
+      "business_role_ids": [
+        "market.news_event",
+        "market.corporate_action"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
-        "engineering.ai_workflow"
+        "engineering.worker"
       ],
-      "acceptance": [
-        "report.adversarial_review",
+      "acceptance_role_ids": [
+        "data.time_provenance",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.13",
-      "catalog_capability": "新闻详情、收藏/已读与规则评分",
+      "catalog_capability": "新闻主题、股票/板块映射与关联",
       "catalog_row": 13,
-      "business": [
-        "market.news_event",
-        "personal.research_management"
-      ],
-      "implementation": [
-        "engineering.backend_api",
-        "engineering.frontend_interaction"
-      ],
-      "acceptance": [
-        "engineering.security_ops",
-        "engineering.qa_review"
-      ]
-    },
-    {
-      "id": "catalog.14",
-      "catalog_capability": "单条新闻 AI 解读",
-      "catalog_row": 14,
-      "business": [
+      "business_role_ids": [
         "market.news_event"
       ],
-      "implementation": [
-        "engineering.ai_workflow",
-        "engineering.backend_api"
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.ai_workflow"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "report.adversarial_review",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.15",
-      "catalog_capability": "未来大事件、消息/流言与结束状态",
-      "catalog_row": 15,
-      "business": [
+      "id": "catalog.14",
+      "catalog_capability": "新闻详情、收藏/已读与规则评分",
+      "catalog_row": 14,
+      "business_role_ids": [
         "market.news_event",
-        "market.corporate_action"
-      ],
-      "implementation": [
-        "engineering.backend_api",
-        "engineering.worker"
-      ],
-      "acceptance": [
-        "data.time_provenance",
-        "report.adversarial_review"
-      ]
-    },
-    {
-      "id": "catalog.16",
-      "catalog_capability": "股票搜索、股票池和名单配置",
-      "catalog_row": 16,
-      "business": [
         "personal.research_management"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.security_ops",
         "engineering.qa_review"
       ]
     },
     {
+      "id": "catalog.15",
+      "catalog_capability": "单条新闻 AI 解读",
+      "catalog_row": 15,
+      "business_role_ids": [
+        "market.news_event"
+      ],
+      "implementation_role_ids": [
+        "engineering.ai_workflow",
+        "engineering.backend_api"
+      ],
+      "acceptance_role_ids": [
+        "report.adversarial_review",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.16",
+      "catalog_capability": "未来大事件、消息/流言与结束状态",
+      "catalog_row": 16,
+      "business_role_ids": [
+        "market.news_event",
+        "market.corporate_action"
+      ],
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.worker"
+      ],
+      "acceptance_role_ids": [
+        "data.time_provenance",
+        "report.adversarial_review"
+      ]
+    },
+    {
       "id": "catalog.17",
-      "catalog_capability": "个人研究笔记、标签与上下文",
+      "catalog_capability": "股票搜索、股票池和名单配置",
       "catalog_row": 17,
-      "business": [
+      "business_role_ids": [
         "personal.research_management"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.security_ops",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.18",
-      "catalog_capability": "实时/日 K/分钟行情和个股资料",
+      "catalog_capability": "个人研究笔记、标签与上下文",
       "catalog_row": 18,
-      "business": [
-        "market.technical"
+      "business_role_ids": [
+        "personal.research_management"
       ],
-      "implementation": [
-        "data.source_ingestion",
-        "engineering.backend_api"
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
       ],
-      "acceptance": [
-        "data.time_provenance",
+      "acceptance_role_ids": [
+        "engineering.security_ops",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.19",
-      "catalog_capability": "压力/支撑监控、阈值与提醒确认",
+      "catalog_capability": "实时/日 K/分钟行情和个股资料",
       "catalog_row": 19,
-      "business": [
+      "business_role_ids": [
+        "market.technical"
+      ],
+      "implementation_role_ids": [
+        "data.source_ingestion",
+        "engineering.backend_api"
+      ],
+      "acceptance_role_ids": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.20",
+      "catalog_capability": "压力/支撑监控、阈值与提醒确认",
+      "catalog_row": 20,
+      "business_role_ids": [
         "personal.monitor_alerts"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.worker",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.security_ops"
       ]
     },
     {
-      "id": "catalog.20",
+      "id": "catalog.21",
       "catalog_capability": "对子数价格提醒及特殊观察规则",
-      "catalog_row": 20,
-      "business": [
+      "catalog_row": 21,
+      "business_role_ids": [
         "personal.monitor_alerts",
         "market.technical"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.worker"
       ],
-      "acceptance": [
-        "market.method_validation",
-        "engineering.qa_review"
-      ]
-    },
-    {
-      "id": "catalog.21",
-      "catalog_capability": "个股分析、技术筛选与选股实验",
-      "catalog_row": 21,
-      "business": [
-        "market.technical"
-      ],
-      "implementation": [
-        "engineering.backend_api",
-        "engineering.frontend_interaction"
-      ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "market.method_validation",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.22",
-      "catalog_capability": "龙虎榜、公告与个股消息证据",
+      "catalog_capability": "个股分析、技术筛选与选股实验",
       "catalog_row": 22,
-      "business": [
-        "market.fund_flow_lhb",
-        "market.corporate_action",
-        "market.news_event"
+      "business_role_ids": [
+        "market.technical"
       ],
-      "implementation": [
-        "engineering.backend_api"
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
       ],
-      "acceptance": [
-        "data.time_provenance",
+      "acceptance_role_ids": [
+        "market.method_validation",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.23",
-      "catalog_capability": "情绪时间线、趋势阶段和情绪板",
+      "catalog_capability": "龙虎榜、公告与个股消息证据",
       "catalog_row": 23,
-      "business": [
-        "market.structure_sentiment",
-        "market.method_validation"
+      "business_role_ids": [
+        "market.fund_flow_lhb",
+        "market.corporate_action",
+        "market.news_event"
       ],
-      "implementation": [
-        "engineering.backend_api",
-        "engineering.frontend_interaction"
+      "implementation_role_ids": [
+        "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "data.time_provenance",
         "engineering.qa_review"
       ]
     },
     {
       "id": "catalog.24",
-      "catalog_capability": "风险/机遇指数及模型建议仓位",
+      "catalog_capability": "情绪时间线、趋势阶段和情绪板",
       "catalog_row": 24,
-      "business": [
+      "business_role_ids": [
+        "market.structure_sentiment",
         "market.method_validation"
       ],
-      "implementation": [
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance_role_ids": [
+        "data.time_provenance",
+        "engineering.qa_review"
+      ]
+    },
+    {
+      "id": "catalog.25",
+      "catalog_capability": "风险/机遇指数及模型建议仓位",
+      "catalog_row": 25,
+      "business_role_ids": [
+        "market.method_validation"
+      ],
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.ai_workflow"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "report.adversarial_review",
         "quant.independent_evaluation"
       ]
     },
     {
-      "id": "catalog.25",
+      "id": "catalog.26",
       "catalog_capability": "本金/融资仓位和用户持仓口径",
-      "catalog_row": 25,
-      "business": [
+      "catalog_row": 26,
+      "business_role_ids": [
         "personal.research_management"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.security_ops",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.26",
+      "id": "catalog.27",
       "catalog_capability": "今日/月度平均收益参考线",
-      "catalog_row": 26,
-      "business": [
+      "catalog_row": 27,
+      "business_role_ids": [
         "market.method_validation"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "report.adversarial_review",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.27",
+      "id": "catalog.28",
       "catalog_capability": "赚钱/亏钱效应与市场结构指标",
-      "catalog_row": 27,
-      "business": [
+      "catalog_row": 28,
+      "business_role_ids": [
         "market.structure_sentiment"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "market.method_validation",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.28",
+      "id": "catalog.29",
       "catalog_capability": "拥挤度、大盘/板块/个股观察列表",
-      "catalog_row": 28,
-      "business": [
+      "catalog_row": 29,
+      "business_role_ids": [
         "market.structure_sentiment",
         "market.technical"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
-        "market.method_validation",
-        "data.time_provenance"
-      ]
-    },
-    {
-      "id": "catalog.29",
-      "catalog_capability": "题材主线、强弱领导和轮动日历",
-      "catalog_row": 29,
-      "business": [
-        "market.sector_theme"
-      ],
-      "implementation": [
-        "engineering.backend_api",
-        "engineering.frontend_interaction"
-      ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "market.method_validation",
         "data.time_provenance"
       ]
     },
     {
       "id": "catalog.30",
-      "catalog_capability": "宝妈指数等社区情绪实验",
+      "catalog_capability": "题材主线、强弱领导和轮动日历",
       "catalog_row": 30,
-      "business": [
+      "business_role_ids": [
+        "market.sector_theme"
+      ],
+      "implementation_role_ids": [
+        "engineering.backend_api",
+        "engineering.frontend_interaction"
+      ],
+      "acceptance_role_ids": [
+        "market.method_validation",
+        "data.time_provenance"
+      ]
+    },
+    {
+      "id": "catalog.31",
+      "catalog_capability": "宝妈指数等社区情绪实验",
+      "catalog_row": 31,
+      "business_role_ids": [
         "market.method_validation"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.worker",
         "engineering.ai_workflow"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "report.adversarial_review",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.31",
+      "id": "catalog.32",
       "catalog_capability": "盘前/盘中/盘后策略报告",
-      "catalog_row": 31,
-      "business": [
+      "catalog_row": 32,
+      "business_role_ids": [
         "report.pre_open",
         "report.intraday",
         "report.post_close"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.ai_workflow",
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "report.adversarial_review",
-        "report.editorial_final"
-      ]
-    },
-    {
-      "id": "catalog.32",
-      "catalog_capability": "08:50 盘前预测冻结与结算",
-      "catalog_row": 32,
-      "business": [
-        "report.pre_open",
-        "report.prediction_settlement"
-      ],
-      "implementation": [
-        "engineering.worker",
-        "engineering.ai_workflow"
-      ],
-      "acceptance": [
-        "data.time_provenance",
         "report.editorial_final"
       ]
     },
     {
       "id": "catalog.33",
-      "catalog_capability": "交易模型文档和个人方法资产",
+      "catalog_capability": "08:50 盘前预测冻结与结算",
       "catalog_row": 33,
-      "business": [
+      "business_role_ids": [
+        "report.pre_open",
+        "report.prediction_settlement"
+      ],
+      "implementation_role_ids": [
+        "engineering.worker",
+        "engineering.ai_workflow"
+      ],
+      "acceptance_role_ids": [
+        "data.time_provenance",
+        "report.editorial_final"
+      ]
+    },
+    {
+      "id": "catalog.34",
+      "catalog_capability": "交易模型文档和个人方法资产",
+      "catalog_row": 34,
+      "business_role_ids": [
         "report.editorial_final",
         "personal.research_management"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.security_ops"
       ]
     },
     {
-      "id": "catalog.34",
+      "id": "catalog.35",
       "catalog_capability": "日内 T 观察、动作卡片与纪律规则",
-      "catalog_row": 34,
-      "business": [
+      "catalog_row": 35,
+      "business_role_ids": [
         "report.intraday",
         "personal.monitor_alerts"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "report.adversarial_review",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.35",
+      "id": "catalog.36",
       "catalog_capability": "交易记录与文本导入、复盘关联",
-      "catalog_row": 35,
-      "business": [
+      "catalog_row": 36,
+      "business_role_ids": [
         "personal.trade_record_discipline"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.frontend_interaction"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.security_ops",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.36",
+      "id": "catalog.37",
       "catalog_capability": "提醒通知、已确认状态",
-      "catalog_row": 36,
-      "business": [
+      "catalog_row": 37,
+      "business_role_ids": [
         "personal.monitor_alerts"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.worker",
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.security_ops"
-      ]
-    },
-    {
-      "id": "catalog.37",
-      "catalog_capability": "桌面通知、外部消息推送",
-      "catalog_row": 37,
-      "business": [
-        "personal.monitor_alerts"
-      ],
-      "implementation": [
-        "engineering.worker",
-        "engineering.security_ops"
-      ],
-      "acceptance": [
-        "engineering.qa_review",
-        "engineering.architecture"
       ]
     },
     {
       "id": "catalog.38",
-      "catalog_capability": "Skill 蓝图、文档注册与依赖治理",
+      "catalog_capability": "桌面通知、外部消息推送",
       "catalog_row": 38,
-      "business": [
-        "pm"
+      "business_role_ids": [
+        "personal.monitor_alerts"
       ],
-      "implementation": [
-        "engineering.architecture",
-        "engineering.integration_release"
-      ],
-      "acceptance": [
-        "engineering.qa_review",
+      "implementation_role_ids": [
+        "engineering.worker",
         "engineering.security_ops"
+      ],
+      "acceptance_role_ids": [
+        "engineering.qa_review",
+        "engineering.architecture"
       ]
     },
     {
       "id": "catalog.39",
-      "catalog_capability": "项目 Skill 目录与注册表",
+      "catalog_capability": "Skill 蓝图、文档注册与依赖治理",
       "catalog_row": 39,
-      "business": [
-        "engineering.architecture"
+      "business_role_ids": [
+        "pm"
       ],
-      "implementation": [
+      "implementation_role_ids": [
+        "engineering.architecture",
         "engineering.integration_release"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.security_ops"
       ]
     },
     {
       "id": "catalog.40",
-      "catalog_capability": "正式版本、标签、Release 与最终通知",
+      "catalog_capability": "项目 Skill 目录与注册表",
       "catalog_row": 40,
-      "business": [
+      "business_role_ids": [
+        "engineering.architecture"
+      ],
+      "implementation_role_ids": [
+        "engineering.integration_release"
+      ],
+      "acceptance_role_ids": [
+        "engineering.qa_review",
+        "engineering.security_ops"
+      ]
+    },
+    {
+      "id": "catalog.41",
+      "catalog_capability": "正式版本、标签、Release 与最终通知",
+      "catalog_row": 41,
+      "business_role_ids": [
         "pm"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.integration_release",
         "engineering.security_ops"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "boss"
       ]
     },
     {
-      "id": "catalog.41",
+      "id": "catalog.42",
       "catalog_capability": "多 Agent 研究、审校与报告记录",
-      "catalog_row": 41,
-      "business": [
+      "catalog_row": 42,
+      "business_role_ids": [
         "report.adversarial_review",
         "report.editorial_final"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.ai_workflow",
         "engineering.backend_api"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "data.time_provenance"
       ]
     },
     {
-      "id": "catalog.42",
+      "id": "catalog.43",
       "catalog_capability": "量化因子、回测与模拟交易",
-      "catalog_row": 42,
-      "business": [
+      "catalog_row": 43,
+      "business_role_ids": [
         "quant.strategy_research",
         "quant.strategy_implementation",
         "quant.backtest_engine",
@@ -1442,31 +1542,31 @@
         "quant.paper_trading_drift",
         "quant.portfolio_risk"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.worker",
         "engineering.database",
         "engineering.ai_workflow"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "quant.independent_evaluation",
         "engineering.qa_review"
       ]
     },
     {
-      "id": "catalog.43",
+      "id": "catalog.44",
       "catalog_capability": "真实订单执行与长期策略维护",
-      "catalog_row": 43,
-      "business": [
+      "catalog_row": 44,
+      "business_role_ids": [
         "execution.order_engineering",
         "execution.independent_risk",
         "execution.strategy_operations"
       ],
-      "implementation": [
+      "implementation_role_ids": [
         "engineering.backend_api",
         "engineering.worker",
         "engineering.security_ops"
       ],
-      "acceptance": [
+      "acceptance_role_ids": [
         "engineering.qa_review",
         "engineering.architecture"
       ]
