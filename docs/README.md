@@ -53,6 +53,9 @@
 
 - [ADR 0007：桌面界面与三语基线](adr/0007-frontend-style.md)
 
+- [ADR0008：Windows项目树运行时与更新](adr/0008-windows-desktop.md)
+- [桌面架构测量证据](development/desktop-architecture-evidence.md)
+
 ## 外部依据
 
 外部文档于 2026-10-08 核对；接口权限和版本仍需实施时验证。

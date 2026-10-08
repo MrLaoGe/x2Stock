@@ -15,15 +15,15 @@
 | 配置 | 默认 | 含义 |
 | --- | --- | --- |
 | `X2STOCK_BIND_HOST` | `127.0.0.1` | 单用户仅本机访问 |
-| `X2STOCK_WEB_PORT` | `8080` | 后续生产静态网页与同源 API 代理 |
-| `X2STOCK_API_PORT` | `8140` | 原生开发 API，避开旧服务端口 |
+| `X2STOCK_WEB_PORT` | `8080` | 保留未来服务器配置示例，桌面不启动生产Web |
+| `X2STOCK_API_PORT` | `8140` | 未来开发/服务器示例；桌面后台采用系统分配动态端口，不读取此固定端口 |
 | `X2STOCK_DEV_WEB_PORT` | `5180` | Vite 开发端口 |
 | `X2STOCK_TIMEZONE` | `Asia/Shanghai` | 交易时段及用户展示时间 |
 | `X2STOCK_LOCAL_USER_ID` / `X2STOCK_LOCAL_WORKSPACE_ID` | `local` / `local` | 服务端身份上下文；不是访问令牌 |
-| `X2STOCK_DATA_DIR` | `.local/data` | 新版私有数据，不指向旧目录 |
-| `DATABASE_URL` | 未配置 | 独立 PostgreSQL，不连接旧库 |
+| `X2STOCK_DATA_DIR` | `.local/data` | 未来业务私有目录示例；当前未创建或写入业务数据，桌面设置/profile使用独立AppData目录 |
+| `DATABASE_URL` | 未配置 | 未来业务存储由模块配置；桌面SQLite候选，PG留服务器；不连旧库 |
 
-Compose 基线只把 web 映射到 `127.0.0.1:8080`；API、worker、PostgreSQL 使用内部网络。PostgreSQL 容器内为 `5432`，默认不映射到宿主机。密码由使用者设置；不提供公共默认密码。原生开发 API/Vite 也绑定本机，CORS 只开放实际开发来源。
+未来服务器 Compose 方案只把 web 映射到 `127.0.0.1:8080`；API、worker、PostgreSQL 使用内部网络。PostgreSQL 容器内为 `5432`，默认不映射到宿主机。密码由使用者设置；不提供公共默认密码。开发 API/Vite 也绑定本机，CORS只开放实际开发来源；当前Vite5181仅视觉调试，未来Python动态端口/每会话凭据受主进程控制，不把端口或凭据暴露renderer。
 
 首期不是面向公网的免登录服务。允许外部访问和多人共享前必须实现认证、会话、归属授权及用户 secrets 隔离，不能仅改变 bind host。
 
@@ -75,4 +75,4 @@ OpenAI 官方 SDK 支持 Responses 和可配置客户端；第三方兼容性需
 ## Windows 首包与分发边界
 
 
-Windows EXE 是产品入口，浏览器仅用于开发/视觉调试。免安装包解压到用户选择目录；它不启动 Docker、PostgreSQL、Python worker 或外置 API。程序目录、用户数据、未来更新下载临时目录和缓存必须独立，更新不能覆盖研究资产。Runtime 更新器尚未实现；当前首包没有更新 UI 或操作。未来 Release 更新器的签名/完整性公钥可随程序发布，私钥只在 CI secret；渲染器不接触 token。
+Windows EXE 是产品入口，浏览器仅用于开发/视觉调试。整体项目随附 `desktop-runtime/win-x64`，根 `启动.bat` 仅相对启动本地程序；它不启动 Docker、PostgreSQL、Python worker 或外置 API。程序目录、用户数据、更新下载临时目录和缓存独立，更新不能覆盖研究资产。更新UI已实现三语状态与确认；更新器代码正在集成，实际helper与真实Release/source archive仍待验收，最终状态见[桌面交接](development/handoffs/frontend-style.md)。完整性依赖GitHub同Release的metadata digest和archive摘要及TLS；当前没有独立代码签名，渲染器不接触 token。

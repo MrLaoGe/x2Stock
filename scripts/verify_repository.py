@@ -10,9 +10,9 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 try:
-    from scripts.verify_desktop_runtime import approved_name, COMPILED_SUFFIXES, verify_runtime
+    from scripts.verify_desktop_runtime import approved_name, canonical_launcher, COMPILED_SUFFIXES, verify_runtime
 except ModuleNotFoundError:
-    from verify_desktop_runtime import approved_name, COMPILED_SUFFIXES, verify_runtime
+    from verify_desktop_runtime import approved_name, canonical_launcher, COMPILED_SUFFIXES, verify_runtime
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -281,6 +281,8 @@ def verify() -> int:
             continue
         if not content.endswith("\n"):
             issues.append(f"{name}: missing final newline")
+        if name == "启动.bat" and not canonical_launcher(path.read_bytes()):
+            issues.append("root launcher differs from canonical offline relative startup")
         issues.extend(f"{name}: {issue}" for issue in secret_issues(content, python_code=path.suffix.lower() == ".py"))
         if path.suffix.lower() == ".md":
             issues.extend(f"{name}: {issue}" for issue in link_issues(name, content, public))

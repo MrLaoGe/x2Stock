@@ -1,97 +1,56 @@
-# 架构设计
+# Windows 桌面架构
 
-状态：阶段 0 设计确定，尚未实现运行服务。本文约束后续模块开发，不提供当前可执行的启动命令。总体进度见 [项目方案](project-plan.md) 与 [阶段路线](roadmap.md)。
+当前产品入口是 Windows x64 `启动.bat` → `desktop-runtime/win-x64/x2Stock.exe`；浏览器只用于开发与视觉调试。React 空工作台和三语首包已本地独立验收；项目树随附 runtime、Git LFS 归档和更新闭环仍按[交接](development/handoffs/frontend-style.md)记录真实状态。无金融业务、数据库、Python 服务或旧数据导入。此文按[ADR 0008](adr/0008-windows-desktop.md)替代 ADR 0002 的当前单用户部署选择，保留旧历史与未来服务器方案；逐模块路线仍按 ADR 0006。
 
-## 技术基线
+## 当前与后续技术职责
 
-| 层 | 选型 | 职责 |
+| 层 | 当前选择 | 实施状态及边界 |
 | --- | --- | --- |
-| 桌面渲染层 | React、TypeScript、Vite、React Router，运行于 Electron Windows EXE | 当前产品入口；浏览器仅供开发/视觉调试 |
-| 组件与请求 | Ant Design、TanStack Query | 常规交互、服务器状态、加载和错误展示 |
-| 图表 | ECharts | 行情、时间序列、资金与回放可视化 |
-| API | Python、FastAPI、Pydantic | `/api/v1` 接口、校验、归属检查 |
-| 持久层 | PostgreSQL、SQLAlchemy、Alembic | 长期记录、任务和显式版本迁移 |
-| 后台执行 | 独立 Python worker、PostgreSQL 任务表 | 采集、计算、补缺、报告任务 |
-| 批量分析 | pandas、Parquet、DuckDB | 按需分析与可重建的数据集产物 |
-| 部署 | Docker Compose 基线 | web、api、worker、postgres 独立服务 |
+| 用户入口 | 整个源码项目包含完整 Windows runtime，根 BAT 相对启动 | 禁止 BAT 临时下载或 npm 构建；远端源码归档真实二进制待验 |
+| 桌面壳 | Electron 44.7.0 x64；内置 Chromium/Node 仅主进程可用 | contextIsolation、sandbox、renderer Node关闭；无安装器/外置 runtime要求 |
+| 界面 | React/TypeScript/Vite 与 Hash 路由 | 本地 file资源，Vite base './'；canonical token/组件；三语本地词典 |
+| 更新 | 固定 MrLaoGe/x2Stock Release、受限 IPC、受信整项目归档 | 仅切换 desktop-runtime/win-x64 全部资源，用户确认，hash/安全解压/回退/renderer健康门槛；验收未闭合 |
+| Python 生态 | FastAPI/Pydantic/SQLAlchemy/Alembic；按模块启用的后台进程 | 首包不启动；打包解释器随启用模块提供，不要求使用者安装 Python |
+| 单用户事务存储 | SQLite WAL，归属与显式 Alembic保留 | 设计，未创建业务表；事实、任务、用户研究与来源关系由模块决定 |
+| 批量分析 | Parquet + DuckDB，单后台进程持有嵌入式写入 | 设计；不先搬旧库或造全数据平台 |
+| 服务器 | PostgreSQL、Docker Compose、认证与多用户隔离 | 后续独立部署方案；不是桌面启动条件，不同时开发两套后端 |
 
-阶段 0 不创建业务代码、实际 Compose 文件或已实现的目录脚手架。下一项本体任务只规划[最小应用骨架](modules/application-skeleton.md)，随后按用户选定模块建立业务服务、worker 和适配器。未选模块不建业务表、不部署采集/导入任务；数据中心随已启用模块增长，不先做全数据平台。避免再把全部页面放入一个组件、把全部接口放入一个文件，或把个人 Skill 脚本变成运行时架构。
+Ant Design/TanStack Query/ECharts 仅在已选模块需要时引入；大表用分页/虚拟化、图表按需加载、计算留后台，不能在本轮用虚构行情堆首屏。业务来源仅三类准入适配器；React或产品研究Agent不能直接获取provider数据，普通查询不暗中付费AI或采集。
 
-下图描述长期服务关系，骨架只实现前后端、独立 PG、配置健康、空工作台与部署。worker、三类来源适配、私有数据产物及 AI 并非骨架必建服务。数据库结构升级由显式 Alembic 管理，与可选旧数据导入分开，见 [ADR 0006](adr/0006-module-first-new-project.md)。
+## 选择 Electron 的证据与限制
 
-## 服务关系
+**Observed**：相同x2Stock空白UI的5554d196构建具备完整本机运行资源，独立QA验证中文空格路径、DNS屏蔽、非空本地renderer与三语/重启/390px。现有电脑缺Rust/Cargo/MSVC/SDK，所以未构建Tauri原型。**Derived**：本机Electron三次暖启动到CDP确认正文非空的中位数238.55ms，工作集空闲加总323.52–338.42MiB；这不是首次绘制、冷启动、峰值或独占内存。详细协议见[测量证据](development/desktop-architecture-evidence.md)。
 
-```mermaid
-flowchart LR
-  U[本机浏览器] --> W[Web 静态页面与反向代理]
-  W --> A[FastAPI /api/v1]
-  A --> D[共享领域服务与归属检查]
-  K[独立 worker] --> D
-  D --> P[(PostgreSQL)]
-  K --> R[数据源适配器]
-  R --> T[Tushare]
-  R --> E[东方财富]
-  R --> C[财联社]
-  K --> F[私有原始文件与 Parquet]
-  Q[按需 DuckDB 分析] --> F
-  K -. 后续研究任务 .-> I[AI 网关]
-```
+Electron满足现阶段无额外安装和渲染一致性；代价是386MB级完整运行目录与246MB核心EXE，必须LFS管理。不能据现有结果宣布Electron比Tauri快或节省内存。Tauri依赖Windows WebView2；官方描述fixed runtime约增加180MB，系统runtime模式仍是外部先决条件。未来若工具链和运行条件允许，应对同一UI比较完整资源/全进程/暖冷启动，再决定是否换壳。[Tauri Windows发行](https://v2.tauri.app/distribute/windows-installer/)、[Electron性能指南](https://www.electronjs.org/docs/latest/tutorial/performance)。
 
-- 网页和未来研究 Agent 通过领域服务读取已入库数据，不直接请求外部数据源。API 的普通读取不能暗中执行采集或付费 AI 工作；刷新通过显式任务入口提交。
-- API 和 worker 复用数据契约、归属策略、计算服务与适配器。长任务留在 worker，API 返回任务标识与状态；具体任务接口随已选模块需求实现。
-- PostgreSQL 保存标准化事实、用户记录、来源关系、计算版本、任务实例和运行状态。原始材料与批量文件放独立私有数据目录，由数据库登记引用、摘要、时间和校验信息。
-- DuckDB 读取分析副本或 Parquet，不替代 PostgreSQL 作为用户记录和任务状态的主库。Parquet 是显式版本的数据集产物，不能悄然成为另一套未登记事实源。
+## 分发、版本与用户资料
 
-## 数据、身份和时间边界
+用户下载整个公开项目；`desktop-runtime/win-x64`包含EXE、DLL、locale、app.asar、构建清单与Electron/Chromium许可证，不能只复制EXE。该目录严格白名单并通过Git LFS跟踪；其他exe、数据库、用户配置、provider文件不能藉此进入公开仓库。GitHub源码归档默认含LFS指针，需要管理员开启Archives include LFS，再实际下载确认PE二进制/完整资源/BAT离线启动；本地复制不算远端通过。[GitHub LFS归档规则](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-git-lfs-objects-in-archives-of-your-repository)。
 
-直接数据、派生结果与 AI 解读分层保存，引用上游输入和版本。来源名、文件哈希、多个 Agent 的一致意见只能帮助追踪，不能证明内容真实。保留缺失、冲突、失败和过期状态，完整规则见 [接口契约](contracts.md)。
+root VERSION是正式版本事实源。runtime清单记录version、build_source_sha、source_tree_hash、repository、win32/x64；编译二进制提交不能嵌入它自身的最终SHA，因此发布清单绑定最终tag/exact SHA并验证其源码treehash与runtime一致，不用预览parent SHA冒充tag SHA。源码treehash对tracked frontend/desktop/VERSION计算，排除构建中间产物，按相对POSIX路径排序每文件sha256再整体sha256。
 
-首期为独立部署的本机单用户应用，服务端身份上下文固定 `user_id=local`、`workspace_id=local`。个人股票池、提醒、标记、配置、报告、任务和文件均须由后端按归属访问。客户端不能通过传入任意身份改变归属；后台任务必须携带创建时的身份上下文，不能绕开同一边界。
+普通新安装使用APPDATA/x2Stock；已有APPDATA/XXStock profile/session则安全复用，不复制live LevelDB、不删旧目录。新语言key优先，缺失才兼容读旧key。程序/resources、更新缓存、用户资料分开；真实物理E:/XXStock/worktree保留，旧ZIP只是审计。旧名与新名进程不能同时占同一profile。只读/保护目录的更新必须拒绝并继续打开旧程序，不能要求管理员绕过权限。
 
-公共市场事实与用户私有资产分别组织。部署内部的共享数据不意味着向外共享，也不意味着可以在不同凭据、查询范围或部署之间复用私有缓存。文件下载、任务状态与缓存键同样纳入访问边界。
+## 更新边界与失败恢复
 
-首期没有登录认证，只允许本机访问；`local` 是数据隔离约束，不能作为互联网访问控制。开放局域网、公网或多用户前，必须先增加认证、成员权限、凭据与任务隔离，以及跨用户行为测试。手机布局可阅读，但阶段 0 不因此开放网络访问。
+Electron内置autoUpdater描述的是已安装Squirrel/MSIX形态，不能假设其支持源码树portable；本产品使用独立受限更新机制。[Electron autoUpdater](https://www.electronjs.org/docs/latest/api/auto-updater/)。
 
-数据库时间使用可表达时区的时间类型；API 输出带偏移的 ISO 8601，界面使用 `Asia/Shanghai`。交易日与盘中时段由交易日历决定，不以周一至周五替代。区分事件时点、系统观察时点和可用于研究的时点；历史研究按可得时间截止，具体含义见契约。
+主进程从固定公开repo读取Release，按整数SemVer筛选更高版本、draft=false、0.x prerelease=true，文档-only版本没有受信更新清单则跳过。启动后非阻塞自动检查、合理间隔及手动检查均不得下载执行；可用更新展示版本/说明/大小并需明确确认。renderer只发送checked releaseId/version/confirmed，不能提供URL、路径、token。API HTTPS+repo控制+GitHub digest是当前真实性信任根，独立发布者签名未实现；仓库账号被攻陷仍会损害信任，不能把SHA完整性宣称独立签名。
 
-## 任务与存储生命周期
+同Release受信JSON清单绑定final tag SHA、整项目codeload URL、archive大小与SHA、runtime路径及source_tree_hash。下载与解压有超时/限额，拒绝路径穿越、ADS、设备名、大小写冲突、符号链接、CRC错误和架构/版本/源码身份不符。只提取runtime到独立staging，再准备目标同卷sibling；源码/.git/.env/.local/AppData不参与替换。
 
-- API 提交任务、worker 领取执行。任务登记归属、类型、参数引用、依赖、状态、尝试次数与执行时间；采用数据库原子领取和 lease。每次领取生成递增 generation/fencing token；续租、状态更新和正式数据发布在事务中检查当前 token 与租约，过期 worker 恢复后不得覆盖新 worker 的成果。外部请求可能重复，正式写入仍须业务键幂等。
-- 确定性写入按业务键幂等；失败记录错误并保留既有有效数据。网络重试须受次数与频率限制，外部权限或字段口径错误不得无限重试。
-- 调度依据明确的交易日与时间窗。进程退出后可定位未完成实例；lease 超时不能直接宣称任务未产生任何副作用，重跑先检查已写成果。
-- 使用显式 Alembic 迁移；导入应用、启动普通查询或打开页面不隐式建表、修复旧库或迁移资产。
-- 长期数据保留不等于每秒快照永久堆积。模块实现时确定数据粒度、留存和压缩；保留研究所需事实与证据，清理缓存不删除用户资产。数据库与文件登记一起备份，并验证恢复后引用一致。
+helper独立于renderer且在profile/单实例初始化前处理受限模式。等主进程退出后复核目标、digest、journal，current→backup、next→current各自rename；两次rename不是整体原子事务。保留backup；中断或第二次rename/重启失败从journal恢复。新进程必须确认本地非空renderer和预期manifest，不能只因title或did-finish-load成功就报告更新完成；健康确认超时回退旧runtime。网络/校验/写权限错误保持旧程序可用，不删除用户资料或在错误时宣称最新版。
 
-## 本地部署与演进
+## 未来 Python 生命周期与接口
 
-| 入口 | 基线 | 说明 |
-| --- | --- | --- |
-| Web | `127.0.0.1:8080` | 本地正式入口，同源代理 `/api/v1` |
-| API | `127.0.0.1:8140` | 原生本地开发与诊断；Compose 仅内部网络 |
-| Vite | `127.0.0.1:5180` | 后续开发服务，代理到新版 API |
-| PostgreSQL | 容器网络 `5432` | 默认不映射主机端口 |
+只有用户选定模块需要金融计算/采集时，Electron主进程启动随包Python onedir服务；未启用模块不预装业务服务、worker或数据库。单实例管理进程，退出时先停止新任务、让事务/lease收尾，在有界超时后终止自己的后台，不杀其他系统进程。采用PyInstaller onedir以避免onefile每次启动解包；包必须在目标Windows构建并验解释器/依赖许可。[PyInstaller运行模式](https://pyinstaller.org/en/stable/operating-mode.html)。
 
-服务端口、数据库、私有数据目录、配置、worker 和调度均与旧项目独立。旧项目只有用户主动发起的本地只读迁移能访问；不成为 API、worker、DuckDB 或页面的正常运行依赖。导入排除和血缘判断见 [迁移设计](data/migration.md)。
+FastAPI作为内部业务边界保留，但默认只监听127.0.0.1系统分配端口。随机每会话凭据由主进程通过stdin交给自有后台，状态端口经独立管道返回；主进程代理有限领域IPC，不把地址/凭据/任意请求工具暴露renderer。backend身份固定local/local并按user/workspace过滤；读取不能暗中采集或AI。长任务返回taskId由独立任务组件跟踪，后台计算不阻塞界面主线程。token/动态端口/生命周期/跨归属需模块行为测试，当前这些服务未实现。
 
-Compose 默认只映射 Web 到本机，不映射 API 或数据库。后续开发模式才启动本机 API/Vite，CORS 仅开放实际开发来源。
+## SQLite与分析数据约束
 
-配置与密钥规则见 [配置说明](configuration.md)；AI 接入和角色协作见 [产品 Agent 设计](agents.md)。先完成独立骨架与用户选定的常规研究模块，再增加可审计研究工作流、回测、模拟执行；真实交易执行单独设计授权、风控、订单状态与恢复，不由前期 API 顺带提供。
+SQLite WAL是本机单用户候选，不是无迁移。一个业务后台持有写入职责；短事务、显式Alembic、唯一键幂等、bounded busy retry，失败保留已有有效数据。使用checkpoint水位监控，长读查询避免无限保持WAL；备份用online backup或停写checkpoint后成组快照，不能单独复制主db遗漏WAL。恢复须验证用户资产引用、schema版本及任务lease；原始文件由数据库登记hash和来源，缺失保持缺失。
 
-## 后续验收边界
+SQLite官方当前披露WAL-reset修复3.51.3及回补3.44.6/3.50.7，最终模块要核验实际bundled sqlite3.sqlite_version与补丁，不能只看Python版本；本轮没有运行数据库。[SQLite WAL](https://www.sqlite.org/wal.html)。DuckDB嵌入式读写由同一个后台持有，多读副本/Parquet用于分析；不让API/worker跨进程同时写。Quack beta不引入当前范围，Parquet是可重建数据集而非未经登记第二事实源。[DuckDB并发](https://duckdb.org/docs/current/connect/concurrency.html)。
 
-下列任务、数据血缘和 worker 验收在对应模块启用时适用；骨架不承担采集、导入或完整任务平台验收。新采集足够即可交付功能，默认不迁移旧数据，迁移评估不是执行授权。
-
-- 干净部署无需旧项目、个人路径或开发工具内置运行时；不配置数据源或 AI 时仍可诊断缺配置。
-- 同一读取结果能定位事实、来源和时间；重复任务不会重复写入，失败不会清空历史有效记录。
-- worker 租约过期并被重新领取后，旧执行者恢复时的续租、正式写入与完成状态更新都被拒绝；新执行者的结果保留。
-- API、worker、文件和缓存均拒绝跨归属访问；未来认证方案上线前不开放远程访问。
-- 实际 Compose、迁移、备份恢复和 worker 故障恢复通过后，才把对应能力标为已实现。
-
-
-## Windows 免安装应用补充（ADR 0007）
-
-当前产品是 Windows x64 portable/onedir EXE：解压后双击程序，程序资源、用户研究数据、下载更新包和缓存分目录，不要求 Node、Python、Docker、PostgreSQL 或管理员权限。React/TypeScript/Vite 渲染层运行在 Electron 桌面壳内；浏览器运行仅供开发与视觉调试，不构成独立 Web 产品。Tauri 2 的资源对比属于后续优化研究，不是本轮交付前提。
-
-单用户免安装存储优先评估 SQLite WAL + SQLAlchemy/Alembic；WAL checkpoint、busy 重试、备份一致性和故障恢复仍需实现和验收。Parquet/DuckDB 仅作为按需批量分析产物，嵌入式写入由单个后台进程持有；不在本轮建立业务表或导入数据。PostgreSQL、Docker Compose 和多用户服务保留未来服务器部署方案，不能成为桌面首包启动前提。Python 生态保留给未来金融计算、采集和量化模块；空白 UI 不等待不存在的服务。
-
-Runtime 自动更新器本轮未实现。未来版本若接入，只能消费受信 GitHub Release 元数据和 Windows 资产，进行 SemVer/prerelease 筛选、完整性/真实性校验、原子切换、回退和用户确认；渲染器无 Node/秘密，主进程 IPC 受控。
+未来任务仍携带user/workspace、lease generation/fencing token，过期执行者不能发布结果；来源/时点/计算/AI分层，交易日历和Asia/Shanghai不由语言变更。远程/多用户需先认证与隔离，不能仅放开bind。默认不迁移；评估血缘/质量不是授权导入，按用户选定模块另批处理。

@@ -3,11 +3,28 @@
 ## 任务
 
 - 日期：2026-10-08；主文档分支：`codex/frontend-style`。
-- 目标：交付 Windows x64 免安装 EXE 空白工作台、三语 UI 与固定前端风格 Skill。
+- 目标：交付 Windows x64 免安装 EXE 空白工作台、三语 UI、固定前端风格 Skill、完整项目分发校验及 GitHub 更新闭环。
 - 产品边界：Windows EXE 是产品本身及验收基线。React/Vite 浏览器运行仅供开发和视觉调试，不承诺独立 Web 部署。无行情、API、worker、数据库、采集、迁移、交易或真实用户数据。
-- 正式范围：本任务不占用正式版本号、main、标签或 Release；本地 preview ZIP 与正式发布分开。
+- 正式范围：C不自行推送或占用版本；A汇集A/B/C最终候选及独立审查后统一正式main批次。旧preview ZIP仅留审计，常规交付改为完整项目树。
 
-## 当前状态
+## 当前集成状态
+
+C ready=false。已经合入B最终路线候选及A协作能力、更名决策，受保护A/B文件与ADR0006/0009完整保留；没有推送、标签或新版Release。更新UI已经实现三语状态、确认及桌面事件订阅，桌面更新代码与真实helper仍在集成验证。以下待办不能用首包QA代替。
+
+| 项目 | 当前结果 | 验收边界 |
+| --- | --- | --- |
+| 源码集成 | HEAD `7af0293`；validation/架构补丁待独审提交 | 最终C exact SHA尚未产生，不作为正式发布候选 |
+| 整体分发结构 | 根`启动.bat`已实现；仅相对启动`desktop-runtime/win-x64/x2Stock.exe` | canonical脚本检查，不执行npm或下载；最终runtime尚未加入本分支 |
+| 公共runtime准入 | 精确73资源清单、Git LFS index/object、x64 PE、VERSION、源码身份与build提交历史验证 | 12项合成runtime/archive测试通过；不是远端项目下载验收 |
+| 归档安全 | 拒绝LFS pointer、私有配置/数据库、路径碰撞/ADS/设备/遍历，绑定规范BAT及源码hash | 合成archive通过；CI实际archive gate正在实现 |
+| 更新工程 | 三语UI已合入；桌面查Release、摘要/源码验证、隔离helper/回退正在集成 | 独立Windows进程替换与崩溃恢复证据待收齐；真实Release更新闭环未验 |
+| 架构与性能 | Electron三次warm启动/工作集证据、Python/SQLite/DuckDB未来设计已整理 | 不是cold start/首帧/峰值/private bytes或Tauri实测对比，见[测量证据](../desktop-architecture-evidence.md) |
+| GitHub Include LFS | **外部待验收** | 尚无真实exactSHA source archive含全部二进制、BAT离线非空renderer的下载证据，不能标已验收 |
+| 真实Release | **外部待验收** | 现有v0.1.0无更新资产；最终main工作流前不得宣称已能实际更新 |
+
+最终提交将替换本节candidate、测试和独审收据。远端归档与真实Release分别保留外部状态，不因本地通过改为成功。
+
+## 首包历史状态（源5554d196，非最终更新候选）
 
 | 能力 | 状态 | 证据或待办 |
 | --- | --- | --- |
@@ -20,7 +37,7 @@
 | Runtime 自动更新器 | 未实现 | 没有 Release 查询、下载、校验、替换、回退或更新 UI |
 | 独立 Web 产品 / 正式 Release | 本轮不交付 | localhost 只供开发与视觉调试；无 Web 发布，也无正式版本、标签或 Release |
 
-## 实现和验证边界
+## 首包历史实现和验证边界
 
 本地交付：`E:\XXStock\.local\artifacts\windows-preview\x2Stock-preview-5554d196-win-x64.zip`，158,298,900 bytes，SHA-256 前缀 `6a689f58880b8eb56`（完整摘要见随包 `.sha256` sidecar）。72 entries / 385,691,644 expanded bytes；解压后的 `x2Stock.exe` 为 246,302,208 bytes，包内无 `XXStock.exe`。独立 QA 在中文空格路径、DNS 阻断条件下确认真实 renderer 资源加载与非空正文。包属性 ProductName/FileDescription 为 x2Stock，npm name 为 x2stock，bridge 为 x2stockDesktop，appId 为 com.mrlaoge.x2stock，开发变量为 X2STOCK_DEV_SERVER_URL。EXE 未签名、Runtime 更新器未实现。
 
@@ -38,6 +55,6 @@ obsolete 候选（已通过旧名包 QA，因更名不交付）：`E:\XXStock\.l
 
 生产依赖审计 `npm audit --omit=dev` 无 advisories。完整 desktop 构建依赖审计有 8 项 moderate，处于 `electron-builder` 构建依赖链；建议修复版本会将已锁定的 26.15.3 降级，故未改锁文件。审计不能替代 Electron/Chromium 二进制的安全更新检查。Electron/Tauri 性能对比和自动更新安全链路均未验收。不得把早期失效包的启动记录或截图冒充新包验收证据。
 
-## 下一轮
+## 首包原交接（保留审计，当前后续以集成状态为准）
 
 本地首包交付与独立 QA 已完成。正式集成须基于 B 最新 main，保留主任务更名补丁 `a1dcf4f9c24f740681344566cfc28f16546ebfd4`、ADR 0009 和 2 项新增发布行为测试；顺序仍是 A→B→桌面。当前没有正式 push/tag/Release，未占用正式版本。保留全部旧产物。Runtime 更新器、物理缩放与原生整窗截图分别留给后续实现/验收，不把它们写成当前能力。
