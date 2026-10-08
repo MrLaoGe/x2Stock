@@ -10,7 +10,7 @@
 | S0-004 | 数据来源与历史迁移设计 | 数据 Agent | completed | 来源矩阵、审计、迁移、数据模块 |
 | S0-005 | 架构、契约、界面与功能归并 | 架构 Agent | completed | 架构、接口、UI、模块目录 |
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
-| S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | in_progress | 本地交付已完成，发布后登记远端验证 |
+| S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
 | S1-001 | 数据中心与迁移详细实施 | 后续对话 | planned | 先模块范围和验收，再骨架/数据代码 |
 
 ## 下一轮入口
@@ -24,3 +24,5 @@
 - 校验函数的 12 项行为核验：空秘密、密钥模式、秘密赋值、带 token URL、带密码 URI、正常/缺失/越界/绝对路径链接、代码块与配置准入。
 - 独立审查：原两项问题已修正并定向复核，无剩余阻断问题；worker执行与数据库回滚是未来代码验收，未在本轮运行。
 - 旧项目 Git 状态与开始时一致，本轮未修改旧项目或导入业务数据。来源数量是旧系统审计快照，不构成新版接口权限实测。
+- 全新 GitHub 克隆：无需旧项目、业务运行依赖或用户凭据，公开资产校验通过，工作区干净。
+- 首次 [GitHub Actions](https://github.com/MrLaoGe/XXStock/actions/runs/37754656719) 通过；发布交接记录的后续提交继续由同一流水线验证，最新结果见仓库 Actions。
