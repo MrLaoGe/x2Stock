@@ -11,7 +11,7 @@
 | S0-005 | 架构、契约、界面与功能归并 | 架构 Agent | completed | 架构、接口、UI、模块目录 |
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
 | S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
-| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | in_progress | 通知与脱敏已实现；23合成测试通过，Secrets/频道19已配置，待真实push验收 |
+| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S1-001 | 数据中心与迁移详细实施 | 后续对话 | planned | 先模块范围和验收，再骨架/数据代码 |
 
 ## 下一轮入口
@@ -27,3 +27,11 @@
 - 旧项目 Git 状态与开始时一致，本轮未修改旧项目或导入业务数据。来源数量是旧系统审计快照，不构成新版接口权限实测。
 - 全新 GitHub 克隆：无需旧项目、业务运行依赖或用户凭据，公开资产校验通过，工作区干净。
 - 首次 [GitHub Actions](https://github.com/MrLaoGe/XXStock/actions/runs/37754656719) 通过；发布交接记录的后续提交继续由同一流水线验证，最新结果见仓库 Actions。
+
+## Git 通知验收（S0-008）
+
+- 已配置 GitHub Secrets（地址/密钥）和 Variables（启用、频道19、前缀、超时），本机秘密仅在被忽略的 `.env`；3.0配置未修改。
+- 23合成测试、公开资产校验和独立审查通过；HTTP协议异常泄露原文的问题已修复并验证。
+- 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
+- 同次[开发校验](https://github.com/MrLaoGe/XXStock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；后续每个push事件继续触发。
+- 配置、限制和失败处理见[通知说明](git-notifications.md)，本轮交接见[通知交接](handoffs/git-notifications.md)。

@@ -27,6 +27,7 @@
 - [任务台账](development/task-ledger.md)：实际完成状态。
 - [交接模板](development/handoff-template.md)：每轮交付的最小交接。
 - [阶段 0 交接](development/handoffs/phase-0.md)：本轮已交付内容及下一轮入口。
+- [Git 通知交接](development/handoffs/git-notifications.md)：真实频道19投递验收与维护。
 
 ## 已接受的架构决策
 
