@@ -1,6 +1,6 @@
 """Small, local state machine for multi-dialogue development coordination."""
 from __future__ import annotations
-import argparse, copy, json, os, re, secrets, subprocess, sys, tempfile
+import argparse, copy, hashlib, json, os, re, secrets, subprocess, sys, tempfile
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,7 +11,9 @@ DEFAULT_ROLES={r:0 for r in ("boss","pm","business","engineer","reviewer","relea
 MODES={"design","execution"}
 SEMVER=re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 SHA=re.compile(r"[0-9a-f]{40}$")
+SHA256=re.compile(r"[0-9a-f]{64}$")
 ID=re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:/@+-]{0,199}$")
+LFS_POINTER=re.compile(rb"^version https://git-lfs\.github\.com/spec/v1\noid sha256:([0-9a-f]{64})\nsize ([1-9][0-9]*)\n$")
 
 class OrchestrationError(Exception): pass
 class MutexBusy(OrchestrationError): pass
@@ -168,7 +170,9 @@ def deliver(root,tid,*,artifact,candidate_id=None,commit_sha="",snapshot_id="",a
     cid=ident(candidate_id,"candidate ID") if candidate_id else "cand-"+secrets.token_hex(8)
     with locked(root) as s:
         t=task(s,tid)
-        if t["status"]!="running":raise OrchestrationError("Candidate delivery requires a running task")
+        publish_lock=s.get("publish_lock") or {}; publish_owned=publish_lock.get("task_id")==tid
+        if publish_owned and publish_lock.get("final_publish_sha"): raise OrchestrationError("Final publish SHA is already bound")
+        if t["status"]!="running" and not (t["status"]=="accepted" and publish_owned):raise OrchestrationError("Candidate delivery requires a running task or an owned publish lock")
         if any(x["candidate_id"]==cid for x in t["candidates"]):raise OrchestrationError("Candidate ID already exists")
         if t["freeze"] is not None:
             if not new_version and snapshot_id!=t["freeze"]["snapshot_id"]:raise OrchestrationError("Frozen task cannot be backfilled")
@@ -187,7 +191,9 @@ def deliver(root,tid,*,artifact,candidate_id=None,commit_sha="",snapshot_id="",a
                     nav=datetime.fromisoformat(str(nested).replace("Z","+00:00"))
                     if nav.tzinfo is None or nav > av: raise ValueError
                 except (TypeError,ValueError): raise OrchestrationError("Nested evidence available_at is later than outer evidence or invalid")
-        c={"candidate_id":cid,"commit_sha":commit_sha,"artifact":clean(artifact),"snapshot_id":snapshot_id or None,"available_at":available_at,"new_version":bool(new_version),"evidence":copy.deepcopy(evidence or {}),"status":"pending_review","delivered_at":now()}; t["candidates"].append(c); t["current_candidate_id"]=cid; t["status"]="delivered"; audit(s,"candidate_delivered",actor,{"task_id":tid,"candidate_id":cid}); return copy.deepcopy(c)
+        c={"candidate_id":cid,"commit_sha":commit_sha,"artifact":clean(artifact),"snapshot_id":snapshot_id or None,"available_at":available_at,"new_version":bool(new_version),"evidence":copy.deepcopy(evidence or {}),"status":"pending_review","delivered_at":now()}
+        if publish_owned: c["publish_context"]={k:publish_lock.get(k) for k in ("lock_id","task_id","pm_thread_id","source_candidate_sha","base_sha","version")}; c["publish_context"]["reviewer_thread_id"]=t["reviewer_thread_id"]
+        t["candidates"].append(c); t["current_candidate_id"]=cid; t["status"]="delivered"; audit(s,"candidate_delivered",actor,{"task_id":tid,"candidate_id":cid}); return copy.deepcopy(c)
 def review(root,tid,*,candidate_id,result,reviewer_thread_id,notes="",actor=None):
     if result not in {"passed","returned","insufficient"}:raise OrchestrationError("Invalid review result")
     reviewer_thread_id=real_thread(reviewer_thread_id,"review thread ID")
@@ -198,7 +204,7 @@ def review(root,tid,*,candidate_id,result,reviewer_thread_id,notes="",actor=None
         if t.get("reviewer_thread_id")!=reviewer_thread_id or reviewer_thread_id in set(t.get("contributor_thread_ids",[]))|set(t.get("author_thread_ids",[])):raise OrchestrationError("Review must use the task's assigned independent reviewer")
         c=next((x for x in t["candidates"] if x["candidate_id"]==candidate_id),None)
         if not c or c["status"]!="pending_review":raise OrchestrationError("Candidate is not awaiting review")
-        r={"candidate_id":candidate_id,"reviewer_thread_id":reviewer_thread_id,"result":result,"notes":clean(notes),"reviewed_at":now()}; c["status"]=result; t["reviews"].append(r); t["status"]="reviewed" if result=="passed" else result; audit(s,"candidate_reviewed",actor,{"task_id":tid,"candidate_id":candidate_id,"result":result}); return copy.deepcopy(r)
+        r={"candidate_id":candidate_id,"commit_sha":c.get("commit_sha"),"reviewer_thread_id":reviewer_thread_id,"result":result,"notes":clean(notes),"reviewed_at":now()}; c["status"]=result; t["reviews"].append(r); t["status"]="reviewed" if result=="passed" else result; audit(s,"candidate_reviewed",actor,{"task_id":tid,"candidate_id":candidate_id,"result":result}); return copy.deepcopy(r)
 def accept(root,tid,*,candidate_id,actor=None):
     with locked(root) as s:
         t=task(s,tid); c=next((x for x in t["candidates"] if x["candidate_id"]==candidate_id),None)
@@ -262,6 +268,102 @@ def remote_main(root,fetch=False):
     v=git(root,"show",f"{sha}:VERSION")
     if not v or not SEMVER.fullmatch(v):raise OrchestrationError("origin/main VERSION is invalid")
     a,b,c=map(int,v.split(".")); return sha,v,f"{a}.{b}.{c+1}"
+def git_blob(root,sha,path):
+    r=subprocess.run(["git","-C",str(root),"show",f"{sha}:{path}"],capture_output=True)
+    if r.returncode: raise OrchestrationError("Git coordination check failed")
+    return r.stdout
+def changed_paths(root,old_sha,new_sha):
+    r=subprocess.run(["git","-C",str(root),"diff","--name-only","-z",old_sha,new_sha],capture_output=True)
+    if r.returncode: raise OrchestrationError("Git coordination check failed")
+    return {p.decode("utf-8") for p in r.stdout.split(b"\0") if p}
+def _tree_entries(root,commit):
+    r=subprocess.run(["git","-C",str(root),"ls-tree","-r","-z",commit,"--","frontend","desktop","VERSION"],capture_output=True)
+    if r.returncode: raise OrchestrationError("Git coordination check failed")
+    rows=[]
+    for item in r.stdout.split(b"\0"):
+        if not item: continue
+        head,path=item.split(b"\t",1); mode,kind,blob=head.split()
+        if kind!=b"blob" or mode not in {b"100644",b"100755"}: raise OrchestrationError("Canonical source tree contains an unsupported entry")
+        rows.append((path.decode("utf-8"),blob.decode("ascii")))
+    return rows
+def canonical_source_hash(root,commit):
+    rows=[]; total=0
+    for path,blob in _tree_entries(root,commit):
+        parts=path.split("/")
+        if any(part in {"node_modules","dist","release","renderer","build","__pycache__"} for part in parts) or path.endswith((".pyc",".tsbuildinfo")): continue
+        r=subprocess.run(["git","-C",str(root),"cat-file","blob",blob],capture_output=True)
+        if r.returncode: raise OrchestrationError("Git coordination check failed")
+        total+=len(r.stdout)
+        if len(r.stdout)>8*1024*1024 or total>64*1024*1024: raise OrchestrationError("Canonical source tree is too large")
+        rows.append((path,f"{hashlib.sha256(r.stdout).hexdigest()}  {path}\n"))
+    return hashlib.sha256("".join(line for _,line in sorted(rows,key=lambda row:row[0].encode("utf-8"))).encode("utf-8")).hexdigest()
+def runtime_allowlist(root,source_sha):
+    try: raw=git_blob(root,source_sha,"desktop/updater/runtime-files.json")
+    except OrchestrationError as exc: raise OrchestrationError("Runtime rebuild requires the canonical runtime file list") from exc
+    try: names=json.loads(raw.decode("utf-8"))
+    except (UnicodeError,ValueError) as exc: raise OrchestrationError("Canonical runtime file list is invalid") from exc
+    if not isinstance(names,list) or not names or any(not isinstance(x,str) or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*",x) or any(p in {".",".."} for p in x.split("/")) for x in names): raise OrchestrationError("Canonical runtime file list is invalid")
+    out={"desktop-runtime/win-x64/"+x for x in names}
+    if len(out)!=len(names): raise OrchestrationError("Canonical runtime file list contains duplicates")
+    return out
+def lfs_pointer(root,commit,path):
+    match=LFS_POINTER.fullmatch(git_blob(root,commit,path))
+    if not match: raise OrchestrationError(f"Runtime file is not a valid Git LFS pointer: {path}")
+    return match.group(1).decode("ascii"),int(match.group(2))
+def runtime_tree(root,commit):
+    rows=git(root,"ls-tree","-r","-z",commit,"--","desktop-runtime").split("\0")
+    files=set()
+    for row in rows:
+        if not row: continue
+        metadata,path=row.split("\t",1)
+        if metadata.split()[:2]!=["100644","blob"]: raise OrchestrationError("Runtime tree must contain regular non-executable LFS pointer files")
+        files.add(path)
+    return files
+def verify_local_lfs_object(root,oid,size):
+    obj=common_dir(root)/"lfs"/"objects"/oid[:2]/oid[2:4]/oid
+    if obj.is_symlink() or not obj.is_file() or obj.stat().st_size!=size: raise OrchestrationError("Local LFS object is missing or has the wrong byte size")
+    digest=hashlib.sha256()
+    with obj.open("rb") as source:
+        for chunk in iter(lambda:source.read(1024*1024),b""): digest.update(chunk)
+    if digest.hexdigest()!=oid: raise OrchestrationError("Local LFS object digest does not match the candidate pointer")
+def validate_runtime_candidate(root,old_sha,candidate_sha,version,evidence):
+    changed=changed_paths(root,old_sha,candidate_sha); runtime={p for p in changed if p.startswith("desktop-runtime/")}
+    if not runtime: raise OrchestrationError("Source rebind requires a runtime rebuild candidate")
+    if "VERSION" not in changed or git(root,"show",f"{candidate_sha}:VERSION") != version: raise OrchestrationError("Runtime rebuild candidate must bump VERSION to the locked version")
+    allowed={"VERSION","CHANGELOG.md",f"docs/releases/{version}.md",f"docs/releases/{version}.json"}|runtime
+    if not changed.issubset(allowed): raise OrchestrationError("Runtime candidate changes files outside release materials and explicitly listed runtime files")
+    d=evidence.get("desktop_runtime") if isinstance(evidence,dict) else None
+    required=("verifier","verified","rebuilt","manifest_reused","build_source_sha","source_tree_hash","manifest_path","manifest_lfs_oid","manifest_size","manifest_content","runtime_file_count","lfs_objects_verified","lfs_objects")
+    if not isinstance(d,dict) or any(k not in d for k in required) or d.get("verifier")!="verify_desktop_runtime" or d.get("verified") is not True or d.get("rebuilt") is not True or d.get("manifest_reused") is not False or d.get("lfs_objects_verified") is not True: raise OrchestrationError("Runtime candidate requires a complete verified rebuild receipt")
+    paths=d.get("paths")
+    if not isinstance(paths,list) or any(not isinstance(p,str) for p in paths) or len(paths)!=len(set(paths)) or set(paths)!=runtime: raise OrchestrationError("Runtime evidence must enumerate the exact changed runtime files")
+    build_source=d.get("build_source_sha"); source_tree=d.get("source_tree_hash")
+    if not SHA.fullmatch(str(build_source)) or not SHA256.fullmatch(str(source_tree)): raise OrchestrationError("Runtime build source or canonical source hash is invalid")
+    if git(root,"merge-base","--is-ancestor",build_source,candidate_sha,optional=True) is None: raise OrchestrationError("Build source must be an ancestor of the runtime candidate")
+    if git(root,"show",f"{build_source}:VERSION") != version: raise OrchestrationError("Build source VERSION does not match the locked version")
+    content=d.get("manifest_content")
+    if not isinstance(content,str) or len(content.encode("utf-8"))!=d.get("manifest_size") or hashlib.sha256(content.encode("utf-8")).hexdigest()!=d.get("manifest_lfs_oid"): raise OrchestrationError("Runtime manifest content does not match its LFS object")
+    try: m=json.loads(content)
+    except ValueError as exc: raise OrchestrationError("Runtime build manifest is invalid JSON") from exc
+    fields={"schema","repository","version","build_source_sha","source_tree_hash","platform","arch"}
+    if not isinstance(m,dict) or set(m)!=fields or type(m.get("schema")) is not int or m.get("schema")!=1 or m.get("repository")!="MrLaoGe/x2Stock" or m.get("version")!=version or m.get("build_source_sha")!=build_source or m.get("source_tree_hash")!=source_tree or m.get("platform")!="win32" or m.get("arch")!="x64": raise OrchestrationError("Runtime build manifest is inconsistent with the lock")
+    if canonical_source_hash(root,build_source)!=source_tree: raise OrchestrationError("Runtime receipt source_tree_hash does not match the clean build source")
+    if canonical_source_hash(root,candidate_sha)!=source_tree: raise OrchestrationError("Runtime candidate source tree differs from the build source")
+    allowed_runtime=runtime_allowlist(root,old_sha)
+    if len(allowed_runtime)!=73 or runtime_tree(root,candidate_sha)!=allowed_runtime: raise OrchestrationError("Runtime candidate must contain exactly the 73 canonical runtime files")
+    if not runtime.issubset(allowed_runtime) or "desktop-runtime/win-x64/resources/build-manifest.json" not in runtime: raise OrchestrationError("Runtime changes must be a subset of the canonical runtime file list and include build-manifest.json")
+    if d.get("runtime_file_count")!=len(allowed_runtime): raise OrchestrationError("Runtime receipt does not account for every canonical runtime object")
+    pointer_oids={}
+    for path in allowed_runtime:
+        pointer_oids[path]=lfs_pointer(root,candidate_sha,path)
+        verify_local_lfs_object(root,*pointer_oids[path])
+    expected_objects={path:{"oid":oid,"size":size} for path,(oid,size) in pointer_oids.items()}
+    if d.get("lfs_objects")!=expected_objects: raise OrchestrationError("Runtime receipt LFS objects do not match every candidate pointer")
+    manifest_path=d.get("manifest_path")
+    if manifest_path!="desktop-runtime/win-x64/resources/build-manifest.json" or manifest_path not in runtime: raise OrchestrationError("Runtime receipt must identify the canonical build manifest")
+    manifest_oid,manifest_size=pointer_oids[manifest_path]
+    if d.get("manifest_lfs_oid")!=manifest_oid or d.get("manifest_size")!=manifest_size: raise OrchestrationError("Runtime manifest LFS pointer does not match the reviewed receipt")
+    return changed
 def acquire_lock(root,*,task_id,pm_thread_id,candidate_id,expected_version=None,fetch=False,actor=None):
     pm_thread_id=real_thread(pm_thread_id,"PM thread ID"); base,old,nxt=remote_main(root,fetch)
     if expected_version and expected_version!=nxt:raise OrchestrationError("Publish version is stale")
@@ -276,7 +378,33 @@ def acquire_lock(root,*,task_id,pm_thread_id,candidate_id,expected_version=None,
         evidence=candidate.get("evidence",{})
         if evidence.get("integrated_base_sha")!=base or evidence.get("integration_verified") is not True:raise OrchestrationError("Candidate lacks verified integration evidence")
         if s.get("publish_lock"):raise OrchestrationError("Another PM holds publish lock; no timeout takeover")
-        l={"task_id":task_id,"pm_thread_id":pm_thread_id,"candidate_id":candidate_id,"source_candidate_sha":candidate.get("commit_sha"),"baseline_sha":t.get("baseline_sha"),"base_sha":base,"remote_version":old,"version":nxt,"coordination_version":nxt,"final_publish_sha":None,"final_publish_version":None,"holder_status":"held","acquired_at":now()}; s["publish_lock"]=l; audit(s,"publish_lock_acquired",actor,{"task_id":task_id,"version":nxt,"candidate_id":candidate_id}); return copy.deepcopy(l)
+        l={"lock_id":"lock-"+secrets.token_hex(12),"task_id":task_id,"pm_thread_id":pm_thread_id,"candidate_id":candidate_id,"source_candidate_sha":candidate.get("commit_sha"),"baseline_sha":t.get("baseline_sha"),"base_sha":base,"remote_version":old,"version":nxt,"coordination_version":nxt,"runtime_review_sha":None,"final_publish_sha":None,"final_publish_version":None,"holder_status":"held","acquired_at":now()}; s["publish_lock"]=l; audit(s,"publish_lock_acquired",actor,{"task_id":task_id,"version":nxt,"candidate_id":candidate_id,"lock_id":l["lock_id"]}); return copy.deepcopy(l)
+def rebind_publish_source(root,*,task_id,pm_thread_id,candidate_id,fetch=False,actor=None):
+    pm_thread_id=real_thread(pm_thread_id,"PM thread ID")
+    base,old,nxt=remote_main(root,fetch)
+    with locked(root) as s:
+        l=s.get("publish_lock")
+        if not l or l["task_id"]!=task_id or l["pm_thread_id"]!=pm_thread_id: raise OrchestrationError("Only lock owner may rebind source candidate")
+        if l.get("final_publish_sha"): raise OrchestrationError("Final publish SHA is already bound")
+        t=task(s,task_id)
+        if not l.get("lock_id") or (base,old,nxt)!=(l.get("base_sha"),l.get("remote_version"),l.get("version")) or t.get("baseline_sha")!=base: raise OrchestrationError("Source rebind requires the locked latest main baseline and version")
+        if t["participants"]["pm"]!=pm_thread_id or t.get("cancellation",{}).get("requested"): raise OrchestrationError("Rebind task PM or cancellation state is invalid")
+        if t.get("status")!="accepted" or t.get("current_candidate_id")!=candidate_id: raise OrchestrationError("Rebind requires a newly reviewed accepted current candidate")
+        c=next((x for x in t.get("candidates",[]) if x.get("candidate_id")==candidate_id),None)
+        if not c or c.get("status")!="passed" or not c.get("commit_sha") or git(root,"merge-base","--is-ancestor",l["base_sha"],c["commit_sha"],optional=True) is None: raise OrchestrationError("Rebind candidate does not contain locked latest main")
+        context=c.get("publish_context",{})
+        if any(context.get(k)!=l.get(k) for k in ("lock_id","task_id","pm_thread_id","base_sha","version","source_candidate_sha")) or context.get("reviewer_thread_id")!=t.get("reviewer_thread_id"): raise OrchestrationError("Rebind candidate is not bound to this lock, PM, version, source, and reviewer")
+        if git(root,"merge-base","--is-ancestor",l["source_candidate_sha"],c["commit_sha"],optional=True) is None: raise OrchestrationError("Rebind candidate must contain the previously accepted source candidate")
+        snapshot=t.get("accepted_candidate_snapshot",{})
+        if snapshot.get("candidate_id")!=candidate_id or snapshot.get("commit_sha")!=c["commit_sha"] or not any(r.get("candidate_id")==candidate_id and r.get("commit_sha")==c["commit_sha"] and r.get("reviewer_thread_id")==t["reviewer_thread_id"] and r.get("result")=="passed" for r in t.get("reviews",[])): raise OrchestrationError("Rebind requires exact SHA acceptance and assigned independent review")
+        d=c.get("evidence",{}).get("desktop_runtime",{})
+        receipt_context={**context,"candidate_sha":c["commit_sha"],"candidate_id":candidate_id}
+        if not isinstance(d,dict) or d.get("review_binding")!=receipt_context: raise OrchestrationError("Runtime verifier receipt is not bound to the exact candidate and review context")
+        if c.get("evidence",{}).get("integrated_base_sha")!=l["base_sha"] or c.get("evidence",{}).get("integration_verified") is not True: raise OrchestrationError("Rebind candidate lacks verified integration evidence")
+        validate_runtime_candidate(root,l["source_candidate_sha"],c["commit_sha"],l["version"],c.get("evidence",{}))
+        if remote_main(root,False)!=(base,old,nxt): raise OrchestrationError("origin/main changed while validating the runtime candidate")
+        l.setdefault("source_rebindings",[]).append({"from_sha":l["source_candidate_sha"],"to_sha":c["commit_sha"],"candidate_id":candidate_id,"reviewer_thread_id":t["reviewer_thread_id"],"lock_id":l["lock_id"],"version":l["version"],"base_sha":base,"at":now()})
+        l.update({"candidate_id":candidate_id,"source_candidate_sha":c["commit_sha"],"runtime_review_sha":c["commit_sha"],"holder_status":"held"}); audit(s,"publish_source_rebound",actor,{"task_id":task_id,"candidate_id":candidate_id,"source_candidate_sha":c["commit_sha"],"runtime_review_sha":c["commit_sha"]}); return copy.deepcopy(l)
 def bind_publish_final(root,*,task_id,pm_thread_id,final_publish_sha,version,actor=None):
     if not SHA.fullmatch(final_publish_sha) or not SEMVER.fullmatch(version): raise OrchestrationError("Final publish SHA/version is invalid")
     with locked(root) as s:
@@ -286,16 +414,24 @@ def bind_publish_final(root,*,task_id,pm_thread_id,final_publish_sha,version,act
         if l.get("final_publish_sha"):
             if l["final_publish_sha"]==final_publish_sha and l.get("final_publish_version")==version: return copy.deepcopy(l)
             raise OrchestrationError("Final publish SHA is already bound and cannot be replaced")
+        t=task(s,task_id)
+        if t.get("status")!="accepted" or t.get("current_candidate_id")!=l.get("candidate_id") or t.get("cancellation",{}).get("requested"): raise OrchestrationError("Final binding requires the lock's accepted current candidate")
         if git(root,"merge-base","--is-ancestor",l["source_candidate_sha"],final_publish_sha,optional=True) is None: raise OrchestrationError("Final publish SHA does not contain source candidate")
+        if l.get("runtime_review_sha") and final_publish_sha!=l["runtime_review_sha"]: raise OrchestrationError("Final publish must equal the exact runtime review SHA")
         if git(root,"show",f"{final_publish_sha}:VERSION") != version: raise OrchestrationError("Final publish VERSION does not match lock")
         allowed={"VERSION","CHANGELOG.md",f"docs/releases/{version}.md",f"docs/releases/{version}.json"}
-        changed={p for p in git(root,"diff","--name-only",l["source_candidate_sha"],final_publish_sha).splitlines() if p}
+        changed=changed_paths(root,l["source_candidate_sha"],final_publish_sha)
+        if runtime_tree(root,l["source_candidate_sha"]) and (not l.get("runtime_review_sha") or "VERSION" in changed): raise OrchestrationError("Existing runtime requires rebuilding and exact candidate review before final binding")
+        if any(p.startswith("desktop-runtime/") for p in changed): raise OrchestrationError("Runtime changes require a reviewed source rebind before final binding")
         if not changed.issubset(allowed): raise OrchestrationError("Final publish commit changes files outside release-material allowlist")
         l["final_publish_sha"]=final_publish_sha; l["final_publish_version"]=version; l["holder_status"]="final_bound"; audit(s,"publish_final_bound",actor,{"task_id":task_id,"final_publish_sha":final_publish_sha,"version":version}); return copy.deepcopy(l)
 def release_lock(root,*,task_id,pm_thread_id,actor=None):
     with locked(root) as s:
         l=s.get("publish_lock")
         if not l or l["task_id"]!=task_id or l["pm_thread_id"]!=pm_thread_id:raise OrchestrationError("Only lock owner may release")
+        t=task(s,task_id)
+        if t.get("status")!="accepted" or t.get("current_candidate_id")!=l.get("candidate_id"): raise OrchestrationError("Lock can only be released from the accepted current candidate")
+        if l.get("runtime_review_sha") and l.get("runtime_review_sha")!=l.get("source_candidate_sha"): raise OrchestrationError("Runtime source rebind is incomplete")
         s["publish_lock"]=None; audit(s,"publish_lock_released",actor,{"task_id":task_id})
 def recover_lock(root,*,task_id,pm_thread_id,coordinator_id,evidence,actor=None):
     if not isinstance(evidence,dict) or evidence.get("holder_status") not in {"stopped","failed"} or not evidence.get("mutex_recovered") or not SHA.fullmatch(str(evidence.get("exact_sha",""))) or not SEMVER.fullmatch(str(evidence.get("version",""))) or evidence.get("actions") not in {"completed","failed"} or any(not isinstance(evidence.get(k),dict) or evidence[k].get("status") not in {"completed","failed","absent"} for k in ("remote_git","tag","release","notification")):
@@ -363,6 +499,7 @@ def main(argv=None,root=None):
     x=sub.add_parser("dispatch-record-result");x.add_argument("--dispatch-key",required=True);x.add_argument("--operation-id");x.add_argument("--client-thread-id");x.add_argument("--api-status",default="returned")
     x=sub.add_parser("dispatch-confirm");x.add_argument("--dispatch-key",required=True);x.add_argument("--thread-id",required=True)
     x=sub.add_parser("publish-lock-acquire");x.add_argument("--task-id",required=True);x.add_argument("--pm",required=True);x.add_argument("--candidate-id",required=True);x.add_argument("--expected-version");x.add_argument("--no-fetch",action="store_true")
+    x=sub.add_parser("publish-lock-rebind-source");x.add_argument("--task-id",required=True);x.add_argument("--pm",required=True);x.add_argument("--candidate-id",required=True);x.add_argument("--no-fetch",action="store_true")
     x=sub.add_parser("publish-lock-bind-final");x.add_argument("--task-id",required=True);x.add_argument("--pm",required=True);x.add_argument("--publish-sha",required=True);x.add_argument("--version",required=True)
     x=sub.add_parser("publish-lock-release");x.add_argument("--task-id",required=True);x.add_argument("--pm",required=True)
     x=sub.add_parser("mutex-recover");x.add_argument("--evidence",required=True)
@@ -384,6 +521,7 @@ def main(argv=None,root=None):
         elif a.c=="dispatch-record-result":r=dispatch_record_result(root,dispatch_key=a.dispatch_key,operation_id=a.operation_id,client_thread_id=a.client_thread_id,api_status=a.api_status)
         elif a.c=="dispatch-confirm":r=dispatch_confirm(root,dispatch_key=a.dispatch_key,thread_id=a.thread_id)
         elif a.c=="publish-lock-acquire":r=acquire_lock(root,task_id=a.task_id,pm_thread_id=a.pm,candidate_id=a.candidate_id,expected_version=a.expected_version,fetch=not a.no_fetch)
+        elif a.c=="publish-lock-rebind-source":r=rebind_publish_source(root,task_id=a.task_id,pm_thread_id=a.pm,candidate_id=a.candidate_id,fetch=not a.no_fetch)
         elif a.c=="publish-lock-bind-final":r=bind_publish_final(root,task_id=a.task_id,pm_thread_id=a.pm,final_publish_sha=a.publish_sha,version=a.version)
         elif a.c=="publish-lock-recover":r=recover_lock(root,task_id=a.task_id,pm_thread_id=a.pm,coordinator_id=a.coordinator,evidence=json.loads(a.evidence)) or {"recovered":True}
         elif a.c=="mutex-recover":r=recover_mutex(root,evidence=json.loads(a.evidence)) or {"recovered":True}

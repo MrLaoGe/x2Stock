@@ -52,6 +52,42 @@ Git/标签/Release/通知的结构化结果。这样不会把 `base_sha`（锁�
 `GetExitCodeProcess` 和显式 `argtypes`/`restype` 查询；句柄或退出码查询失败时保持锁，
 不使用 `os.kill` 或超时抢占。
 
+若版本升级还必须重建 `desktop-runtime`，不得把目录加入通配白名单。PM 必须在同一
+发布锁内交付、独立 reviewer 复审并接受一个新的精确候选，然后调用
+`publish-lock-rebind-source`。准备版本、完整重建、验证并提交 runtime 和最终说明后，才
+交付这个候选；审查通过后不再追加发布材料提交。该命令默认 fetch，重新读取
+`origin/main`，要求 SHA、远端版本及下一 patch 仍与锁一致（隔离离线测试可用
+`--no-fetch`）。候选必须同时包含 locked base 和原已审 source candidate。交付时自动
+固定 `publish_context`，绑定 lock_id、task_id、pm_thread_id、source_candidate_sha、
+base_sha、version 与 reviewer_thread_id；复审和验收均固定候选 commit_sha。
+
+`evidence.desktop_runtime` 是实际 verifier 运行结果及独审材料的回执，不授予跳过验证的
+权限。它必须包含 `verifier=verify_desktop_runtime`、`verified=true`、`rebuilt=true`、
+`manifest_reused=false`、`lfs_objects_verified=true`、`paths`（精确变更 runtime 路径）、
+`runtime_file_count=73`、`lfs_objects`（全部 73 路径对应 `{oid,size}`）、build_source_sha、
+source_tree_hash、manifest_path、manifest_lfs_oid、manifest_size、manifest_content。
+`review_binding` 必须等于交付的 publish_context 加 candidate_id 和 candidate_sha。
+
+manifest_path 固定为 `desktop-runtime/win-x64/resources/build-manifest.json`；其 UTF-8
+原文必须与候选 LFS oid/size 一致，JSON 只含 schema=1、repository=MrLaoGe/x2Stock、
+version、build_source_sha、source_tree_hash、platform=win32、arch=x64。根 VERSION、
+构建源 VERSION、manifest version 与锁版本一致。build_source_sha 可以是最终候选的
+前置干净构建源，必须为有效祖先，**不要求等于 final_publish_sha**。按 C verifier 的
+canonical Git blob 规则，frontend/desktop/VERSION 源树哈希在构建源与候选均须一致。
+
+工具从旧已审源的 `desktop/updater/runtime-files.json` 读取完整 canonical 73 文件集；
+候选 runtime 树必须与之完全相等。每个文件必须是 regular Git LFS pointer，oid/size 与
+回执及本地 `.git` common-dir 的 `lfs/objects` 对象逐一对应，实际字节数和 SHA-256 均
+验证。工具不会下载对象、执行 runtime 或代替 C verifier 的 PE/打包校验；PM 和 reviewer
+仍须完成真实 verifier 验证，回执不得由猜测或旧结果填充。
+
+仅允许 VERSION、CHANGELOG、该版本的 md/json 发布材料及上述 runtime 变化，其他
+源码变化必须走重新集成任务。缺对象、额外文件、假 digest、旧 manifest、非祖先、错误
+绑定或未审候选都会拒绝并保持锁及状态。无 runtime 变化不能调用 rebind；已有 runtime
+时旧材料流程也拒绝 version-only 升版。新流重绑定后 final_publish_sha 必须等于独审的
+候选 exact SHA；原 SHA、审查身份及重绑定历史保留。final 绑定不可替换，恢复仍必须
+匹配当前 source/final exact SHA 和锁版本；待复审或未重绑定候选不得普通释放锁。
+
 持锁后 fetch origin/main，从远端 VERSION 计算下一 patch；推送必须快进。失败恢复沿用
 同 SHA/版本，不 force push，不修改历史发布材料。最终收据留本地或 Actions，不追加成功提交。
 
@@ -65,6 +101,6 @@ git diff --check
 
 CLI 还提供 `task-freeze`、`task-post-freeze-version`、`task-deliver`、`task-review`、
 `task-accept`、`task-cancel`、`task-stop`、`task-release-files`、`publish-lock-recover`、
-`publish-lock-bind-final` 和 `mutex-recover`；`task-create` 可带 parent、baseline、
+`publish-lock-bind-final`、`publish-lock-rebind-source` 和 `mutex-recover`；`task-create` 可带 parent、baseline、
 worktree、branch、contributors、authors 与 versions。命令只更新本地协作状态，不代替
 Codex 对话 API、GitHub Actions 或发布工具。

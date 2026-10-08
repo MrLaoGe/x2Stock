@@ -1,4 +1,6 @@
 import importlib.util
+import copy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -15,6 +17,9 @@ class OrchestrationTests(unittest.TestCase):
         for args in (("init","-b","main"),("config","user.name","T"),("config","user.email","t@example.invalid")):
             subprocess.run(["git","-C",str(self.root),*args],check=True,capture_output=True)
         (self.root/"VERSION").write_text("0.1.0\n"); (self.root/"README.md").write_text("x\n")
+        locales="af am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr sv sw ta te th tr uk ur vi zh-CN zh-TW".split()
+        self.runtime_names=["chrome_100_percent.pak","chrome_200_percent.pak","d3dcompiler_47.dll","dxcompiler.dll","dxil.dll","ffmpeg.dll","icudtl.dat","LICENSE.electron.txt","LICENSES.chromium.html"]+[f"locales/{locale}.pak" for locale in locales]+["resources.pak","resources/app.asar","resources/build-manifest.json","snapshot_blob.bin","v8_context_snapshot.bin","vk_swiftshader_icd.json","vk_swiftshader.dll","vulkan-1.dll","x2Stock.exe"]
+        (self.root/"desktop/updater").mkdir(parents=True); (self.root/"desktop/updater/runtime-files.json").write_text(json.dumps(self.runtime_names))
         subprocess.run(["git","-C",str(self.root),"add","."],check=True); subprocess.run(["git","-C",str(self.root),"commit","-m","base"],check=True,capture_output=True)
         sha=orch.git(self.root,"rev-parse","HEAD"); subprocess.run(["git","-C",str(self.root),"branch","-f","origin/main",sha],check=True,capture_output=True)
         roles=[{"id":"engineering.qa_review","stage":0},{"id":"data.source_ingestion","stage":2},{"id":"quant.backtest","stage":3}]
@@ -121,6 +126,176 @@ class OrchestrationTests(unittest.TestCase):
         orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=final_sha,version=lock["version"])
         self.assertEqual(orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=final_sha,version=lock["version"])["final_publish_sha"],final_sha)
         with self.assertRaises(orch.OrchestrationError): orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=bad_sha,version=lock["version"])
+
+    def runtime_candidate(self, review=True, extra_path=None):
+        previous,lock=self.accepted_lock()
+        (self.root/"VERSION").write_text(lock["version"]+"\n")
+        orch.git(self.root,"add","VERSION"); orch.git(self.root,"commit","-m","clean versioned build source")
+        build_source=orch.git(self.root,"rev-parse","HEAD")
+        source_hash=orch.canonical_source_hash(self.root,build_source)
+        manifest={"schema":1,"repository":"MrLaoGe/x2Stock","version":lock["version"],"build_source_sha":build_source,"source_tree_hash":source_hash,"platform":"win32","arch":"x64"}
+        content=json.dumps(manifest,separators=(",",":"))+"\n"
+        objects={}
+        for name in self.runtime_names:
+            path="desktop-runtime/win-x64/"+name
+            data=content.encode("utf-8") if name=="resources/build-manifest.json" else ("synthetic "+name).encode("utf-8")
+            if name=="x2Stock.exe": data=b"MZ"+b"\0"*58+(64).to_bytes(4,"little")+b"PE\0\0\x64\x86"
+            oid=hashlib.sha256(data).hexdigest(); size=len(data)
+            obj=orch.common_dir(self.root)/"lfs/objects"/oid[:2]/oid[2:4]/oid; obj.parent.mkdir(parents=True,exist_ok=True); obj.write_bytes(data)
+            target=self.root/path; target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(f"version https://git-lfs.github.com/spec/v1\noid sha256:{oid}\nsize {size}\n".encode("ascii"))
+            objects[path]={"oid":oid,"size":size}
+        if extra_path:
+            target=self.root/extra_path; target.parent.mkdir(parents=True,exist_ok=True); target.write_text("unreviewed source\n")
+        orch.git(self.root,"add","."); orch.git(self.root,"commit","-m","synthetic rebuilt runtime")
+        candidate=orch.git(self.root,"rev-parse","HEAD")
+        context={k:lock[k] for k in ("lock_id","task_id","pm_thread_id","source_candidate_sha","base_sha","version")}
+        context.update(reviewer_thread_id="review-1",candidate_sha=candidate,candidate_id="runtime")
+        manifest_path="desktop-runtime/win-x64/resources/build-manifest.json"
+        receipt={"verifier":"verify_desktop_runtime","verified":True,"rebuilt":True,"manifest_reused":False,"paths":sorted(objects),"manifest_path":manifest_path,"manifest_lfs_oid":objects[manifest_path]["oid"],"manifest_size":objects[manifest_path]["size"],"manifest_content":content,"source_tree_hash":source_hash,"build_source_sha":build_source,"runtime_file_count":73,"lfs_objects_verified":True,"lfs_objects":objects,"review_binding":context}
+        evidence={"integrated_base_sha":lock["base_sha"],"integration_verified":True,"cutoff":"2026-10-08T09:00:00+08:00","summary":"synthetic runtime rebuild","desktop_runtime":receipt}
+        orch.deliver(self.root,"T1",candidate_id="runtime",artifact="runtime-a",commit_sha=candidate,snapshot_id="snap2",available_at="2026-10-08T08:30:00+08:00",new_version=True,evidence=evidence)
+        if review:
+            orch.review(self.root,"T1",candidate_id="runtime",result="passed",reviewer_thread_id="review-1"); orch.accept(self.root,"T1",candidate_id="runtime")
+        return previous,lock,build_source,candidate,evidence
+
+    def test_runtime_rebuild_requires_reviewed_rebind_inside_same_lock(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate()
+        self.assertNotEqual(build_source,candidate)
+        with self.assertRaises(orch.OrchestrationError): orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=candidate,version=lock["version"])
+        self.assertEqual(orch.main(["publish-lock-rebind-source","--task-id","T1","--pm","pm-1","--candidate-id","runtime","--no-fetch"],root=self.root),0)
+        rebound=orch.read_state(self.root)["publish_lock"]
+        self.assertEqual(rebound["lock_id"],lock["lock_id"]); self.assertEqual(rebound["source_candidate_sha"],candidate)
+        self.assertEqual(rebound["source_rebindings"][0]["from_sha"],previous)
+        (self.root/"CHANGELOG.md").write_text("later material\n"); orch.git(self.root,"add","CHANGELOG.md"); orch.git(self.root,"commit","-m","after review")
+        with self.assertRaises(orch.OrchestrationError): orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=orch.git(self.root,"rev-parse","HEAD"),version=lock["version"])
+        final=orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=candidate,version=lock["version"])
+        self.assertEqual(final["final_publish_sha"],candidate)
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        wrong={"holder_status":"failed","mutex_recovered":True,"exact_sha":previous,"version":lock["version"],"candidate_sha":previous,"actions":"failed",**{k:{"status":"absent"} for k in ("remote_git","tag","release","notification")}}
+        with self.assertRaises(orch.OrchestrationError): orch.recover_lock(self.root,task_id="T1",pm_thread_id="pm-1",coordinator_id="pm-2",evidence=wrong)
+        wrong.update(exact_sha=candidate,candidate_sha=candidate)
+        orch.recover_lock(self.root,task_id="T1",pm_thread_id="pm-1",coordinator_id="pm-2",evidence=wrong)
+
+    def test_runtime_pending_review_cannot_rebind_bind_release_or_use_wrong_reviewer(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate(review=False)
+        for action in (
+            lambda:orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime"),
+            lambda:orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=candidate,version=lock["version"]),
+            lambda:orch.release_lock(self.root,task_id="T1",pm_thread_id="pm-1"),
+            lambda:orch.review(self.root,"T1",candidate_id="runtime",result="passed",reviewer_thread_id="wrong-reviewer")):
+            with self.assertRaises(orch.OrchestrationError): action()
+        orch.review(self.root,"T1",candidate_id="runtime",result="passed",reviewer_thread_id="review-1"); orch.accept(self.root,"T1",candidate_id="runtime")
+        for task_id,pm,cid in (("T2","pm-1","runtime"),("T1","pm-2","runtime"),("T1","pm-1","c1")):
+            with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id=task_id,pm_thread_id=pm,candidate_id=cid)
+        orch.git(self.root,"branch","-f","origin/main",build_source)
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        orch.git(self.root,"branch","-f","origin/main",lock["base_sha"])
+        state=orch.read_state(self.root)
+        def main_moves_during_validation(*args):
+            orch.git(self.root,"branch","-f","origin/main",build_source)
+        with patch.object(orch,"validate_runtime_candidate",side_effect=main_moves_during_validation), self.assertRaises(orch.OrchestrationError):
+            orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        self.assertEqual(orch.read_state(self.root),state)
+
+    def test_runtime_receipt_rejects_wrong_manifest_source_version_and_lfs_objects(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate()
+        mutations=[("manifest_content","{}"),("manifest_lfs_oid","0"*64),("manifest_size",1),("source_tree_hash","0"*64),("build_source_sha",lock["base_sha"]),("runtime_file_count",72),("lfs_objects",{}),("manifest_reused",True),("lfs_objects_verified",False),("paths",["desktop-runtime/win-x64/extra.dll"])]
+        for key,value in mutations:
+            with self.subTest(key=key):
+                bad=copy.deepcopy(evidence); bad["desktop_runtime"][key]=value
+                with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,candidate,lock["version"],bad)
+        with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,candidate,"0.1.2",evidence)
+        with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,build_source,lock["version"],evidence)
+        state=orch.read_state(self.root)
+        for key in ("lock_id","task_id","pm_thread_id","source_candidate_sha","base_sha","version","reviewer_thread_id","candidate_sha","candidate_id"):
+            with self.subTest(binding=key):
+                bad=copy.deepcopy(state); bad["tasks"]["T1"]["candidates"][-1]["evidence"]["desktop_runtime"]["review_binding"][key]="wrong"
+                orch.atomic(orch.state_file(self.root),bad)
+                with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        orch.atomic(orch.state_file(self.root),state)
+        bad=copy.deepcopy(state); bad["tasks"]["T1"]["reviews"][-1]["commit_sha"]=previous
+        orch.atomic(orch.state_file(self.root),bad)
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+
+    def test_runtime_rebind_rejects_source_or_external_path_changes(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate(extra_path="frontend/unreviewed.js")
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        for path in ("outside.py","desktop-runtime/win-x64/extra.dll"):
+            target=self.root/path; target.parent.mkdir(parents=True,exist_ok=True); target.write_text("invalid\n")
+            orch.git(self.root,"add","."); orch.git(self.root,"commit","-m","out of scope")
+            with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,orch.git(self.root,"rev-parse","HEAD"),lock["version"],evidence)
+
+    def test_runtime_rejects_old_forged_minimal_receipt_and_bad_manifest_semantics(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate()
+        state=orch.read_state(self.root)
+        bad=copy.deepcopy(state)
+        bad["tasks"]["T1"]["candidates"][-1]["evidence"]["desktop_runtime"]={"verifier":"verify_desktop_runtime","verified":True,"rebuilt":True,"manifest_reused":False,"paths":["desktop-runtime/manifest.json","desktop-runtime/sourcehash"],"manifest_path":"desktop-runtime/manifest.json","manifest_sha256":"a"*64,"sourcehash":"a"*64}
+        orch.atomic(orch.state_file(self.root),bad)
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        self.assertEqual(orch.read_state(self.root),bad)
+        orch.atomic(orch.state_file(self.root),state)
+        for key,value in (("schema",True),("repository","other/repo"),("version","0.1.0"),("platform","linux"),("arch","arm64"),("build_source_sha","0"*40),("source_tree_hash","0"*64)):
+            with self.subTest(manifest=key):
+                bad=copy.deepcopy(evidence); manifest=json.loads(bad["desktop_runtime"]["manifest_content"]); manifest[key]=value
+                content=json.dumps(manifest,separators=(",",":"))+"\n"
+                bad["desktop_runtime"].update(manifest_content=content,manifest_lfs_oid=hashlib.sha256(content.encode()).hexdigest(),manifest_size=len(content.encode()))
+                with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,candidate,lock["version"],bad)
+
+    def test_runtime_rejects_missing_extra_objects_and_version_only_bypass(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate()
+        obj_info=evidence["desktop_runtime"]["lfs_objects"]["desktop-runtime/win-x64/x2Stock.exe"]
+        oid=obj_info["oid"]; obj=orch.common_dir(self.root)/"lfs/objects"/oid[:2]/oid[2:4]/oid
+        original=obj.read_bytes(); state=orch.read_state(self.root)
+        obj.unlink()
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        self.assertEqual(orch.read_state(self.root),state)
+        obj.write_bytes(b"!"*len(original))
+        with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,candidate,lock["version"],evidence)
+        obj.write_bytes(original)
+        target=self.root/"desktop-runtime/win-x64/x2Stock.exe"; target.unlink(); orch.git(self.root,"add","-u"); orch.git(self.root,"commit","-m","missing canonical runtime")
+        with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,orch.git(self.root,"rev-parse","HEAD"),lock["version"],evidence)
+        orch.git(self.root,"reset","--hard",candidate)
+        target=self.root/"desktop-runtime/win-x64/extra.dll"; target.write_text("invalid\n"); orch.git(self.root,"add","."); orch.git(self.root,"commit","-m","extra runtime")
+        with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,orch.git(self.root,"rev-parse","HEAD"),lock["version"],evidence)
+        orch.git(self.root,"reset","--hard",candidate)
+        orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="runtime")
+        orch.release_lock(self.root,task_id="T1",pm_thread_id="pm-1")
+        orch.git(self.root,"branch","-f","origin/main",candidate)
+        with orch.locked(self.root) as updated: updated["tasks"]["T1"]["baseline_sha"]=candidate
+        # Model the next accepted source and lock in this isolated state; its runtime is still 0.1.1.
+        with orch.locked(self.root) as updated:
+            updated["publish_lock"]={**lock,"candidate_id":"runtime","source_candidate_sha":candidate,"version":"0.1.2","runtime_review_sha":None}
+        (self.root/"VERSION").write_text("0.1.2\n"); orch.git(self.root,"add","VERSION"); orch.git(self.root,"commit","-m","version-only bypass")
+        state=orch.read_state(self.root)
+        with self.assertRaises(orch.OrchestrationError): orch.bind_publish_final(self.root,task_id="T1",pm_thread_id="pm-1",final_publish_sha=orch.git(self.root,"rev-parse","HEAD"),version="0.1.2")
+        self.assertEqual(orch.read_state(self.root),state)
+
+    def test_runtime_rebind_rejects_nonancestor_source_even_with_locked_base(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate()
+        sibling=orch.git(self.root,"commit-tree",orch.git(self.root,"rev-parse",candidate+"^{tree}"),"-p",lock["base_sha"],"-m","sibling runtime candidate")
+        orch.deliver(self.root,"T1",candidate_id="sibling",artifact="sibling-runtime",commit_sha=sibling,snapshot_id="snap3",available_at="2026-10-08T08:30:00+08:00",new_version=True,evidence=evidence)
+        orch.review(self.root,"T1",candidate_id="sibling",result="passed",reviewer_thread_id="review-1"); orch.accept(self.root,"T1",candidate_id="sibling")
+        state=orch.read_state(self.root)
+        with self.assertRaises(orch.OrchestrationError): orch.rebind_publish_source(self.root,task_id="T1",pm_thread_id="pm-1",candidate_id="sibling")
+        self.assertEqual(orch.read_state(self.root),state)
+        bad=copy.deepcopy(evidence); bad["desktop_runtime"]["build_source_sha"]=sibling
+        with self.assertRaises(orch.OrchestrationError): orch.validate_runtime_candidate(self.root,previous,candidate,lock["version"],bad)
+
+    @unittest.skipUnless((Path(__file__).parents[1]/"scripts/verify_desktop_runtime.py").is_file(), "C desktop verifier is not in the A-only baseline")
+    def test_integrated_c_verifier_accepts_full_materialized_synthetic_runtime(self):
+        previous,lock,build_source,candidate,evidence=self.runtime_candidate()
+        spec=importlib.util.spec_from_file_location("c_runtime_verifier",Path(__file__).parents[1]/"scripts/verify_desktop_runtime.py")
+        verifier=importlib.util.module_from_spec(spec); spec.loader.exec_module(verifier)
+        self.assertEqual(set(self.runtime_names),verifier.REQUIRED)
+        self.assertEqual(verifier.manifest_issues(evidence["desktop_runtime"]["manifest_content"].encode(),lock["version"]),[])
+        self.assertEqual(verifier.canonical_source_hash(self.root),evidence["desktop_runtime"]["source_tree_hash"])
+        (self.root/".gitattributes").write_text("desktop-runtime/** filter=lfs diff=lfs merge=lfs -text\n"); orch.git(self.root,"add",".gitattributes")
+        for path,entry in evidence["desktop_runtime"]["lfs_objects"].items():
+            oid=entry["oid"]; obj=orch.common_dir(self.root)/"lfs/objects"/oid[:2]/oid[2:4]/oid
+            (self.root/path).write_bytes(obj.read_bytes())
+        self.assertEqual(verifier.verify_runtime(self.root,[x for x in orch.git(self.root,"ls-files","-z").split("\0") if x],materialized=True),[])
+        orch.validate_runtime_candidate(self.root,previous,candidate,lock["version"],evidence)
 
     def test_cli_covers_task_to_release_lock_binding(self):
         base=orch.git(self.root,"rev-parse","HEAD")
