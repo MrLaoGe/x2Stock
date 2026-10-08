@@ -2,11 +2,11 @@
   <img src="docs/assets/readme-header.jpg" alt="项目趣图" width="270">
 </p>
 
-# XXStock
+# x2Stock
 
 面向 A 股投资者的开源研究工作台，逐步构建 **多 Agent 研究分析 → 量化验证 → 可审计执行** 的能力。
 
-**当前状态：阶段 0，设计文档与开发运维仓库。** 已实现可配置的 Git 推送到 VChat / VoceChat 通知；尚无可运行网页、采集服务、迁移程序或交易功能。架构、业务接口和应用部署描述是后续开发契约，不代表已经实现。
+**当前状态：阶段 0，Windows EXE 是产品入口与验收基线。** React/Vite 浏览器入口仅用于开发和视觉调试，不代表单独部署的 Web 产品。已实现可配置的 Git 推送到 VChat / VoceChat 通知；Windows 首包只包含空白工作台和中性风格预览，没有采集服务、迁移程序、金融模块、交易功能或运行时自动更新器。首包状态与正式 Release 分开记录。
 
 ## 项目交流群
 
@@ -38,9 +38,9 @@
 
 ## 技术选型
 
-前端采用 React、TypeScript、Vite、React Router、Ant Design、TanStack Query 和 ECharts；后端采用 Python、FastAPI、Pydantic、SQLAlchemy、Alembic；长期存储采用 PostgreSQL。后台 worker 独立运行，大批量分析按需使用 pandas、Parquet 和 DuckDB。部署基线为 Docker Compose。
+Windows 桌面应用采用可复用的 React、TypeScript、Vite 渲染层与 Electron 壳；浏览器运行只用于开发和视觉调试。后端保留 Python、FastAPI、Pydantic、SQLAlchemy、Alembic 与 Python 金融生态；单用户存储优先评估 SQLite WAL，批量分析按需使用 Parquet/DuckDB，PostgreSQL/Docker 保留未来服务器方案。TanStack Query、ECharts、Ant Design 按业务模块需要再引入。
 
-具体架构、配置和 API 约束见 [架构设计](docs/architecture.md)、[接口契约](docs/contracts.md) 和 [配置说明](docs/configuration.md)。当前无需安装这些运行依赖，也没有可执行的 Docker Compose 启动命令。
+具体架构、配置和 API 约束见 [架构设计](docs/architecture.md)、[接口契约](docs/contracts.md) 和 [配置说明](docs/configuration.md)。首包无需 Node/Python/Docker/外置数据库，解压后运行随包资源；源码开发命令和桌面构建边界见 [前端开发](docs/development/frontend.md)。
 
 ## 校验文档仓库
 

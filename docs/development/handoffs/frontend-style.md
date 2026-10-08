@@ -1,0 +1,43 @@
+# UI-001：x2Stock Windows EXE 产品首包与固定前端风格交接
+
+## 任务
+
+- 日期：2026-10-08；主文档分支：`codex/frontend-style`。
+- 目标：交付 Windows x64 免安装 EXE 空白工作台、三语 UI 与固定前端风格 Skill。
+- 产品边界：Windows EXE 是产品本身及验收基线。React/Vite 浏览器运行仅供开发和视觉调试，不承诺独立 Web 部署。无行情、API、worker、数据库、采集、迁移、交易或真实用户数据。
+- 正式范围：本任务不占用正式版本号、main、标签或 Release；本地 preview ZIP 与正式发布分开。
+
+## 当前状态
+
+| 能力 | 状态 | 证据或待办 |
+| --- | --- | --- |
+| 空白工作台与风格规范预览 | 已实现 | React/TypeScript/Vite；业务功能为空 |
+| zh-CN / zh-TW / en | 已实现，桌面验收待完成 | zh-CN 默认；切换即时生效并持久化；title、状态、控件及无障碍文案本地化；不依赖远程字体或翻译服务 |
+| 前端最终候选 | 已更名，合入文档分支 | `91ebb8da35aebe54be9f5b16550014f0cfe9b5b7`；x2Stock 品牌/三语/title/npm 包，兼容旧语言偏好；保留 Vite 相对 base；桌面新包待构建 |
+| 固定风格 Skill | 已实现 | `.agents/skills/frontend-style/SKILL.md` 已登记并通过 Skill 校验 |
+| Windows portable 包 | 本地交付完成 | 源 `5554d196eb46fdaf97dbb23f15b51279a9d2b54f` / `codex/desktop-shell-final`，x2Stock.exe/appId/npm/bridge/环境命名均已同步；实体 E:\XXStock/worktree 不改动；已有 AppData/profile 安全复用 |
+| 独立 Windows EXE QA | 通过以下已列项目 | 精确新名 ZIP 的 hash/结构/品牌/属性/title/语言迁移/三语/重启/离线/390px 与 renderer 页面截图通过；物理系统缩放及原生整窗截图未验收 |
+| Runtime 自动更新器 | 未实现 | 没有 Release 查询、下载、校验、替换、回退或更新 UI |
+| 独立 Web 产品 / 正式 Release | 本轮不交付 | localhost 只供开发与视觉调试；无 Web 发布，也无正式版本、标签或 Release |
+
+## 实现和验证边界
+
+本地交付：`E:\XXStock\.local\artifacts\windows-preview\x2Stock-preview-5554d196-win-x64.zip`，158,298,900 bytes，SHA-256 前缀 `6a689f58880b8eb56`（完整摘要见随包 `.sha256` sidecar）。72 entries / 385,691,644 expanded bytes；解压后的 `x2Stock.exe` 为 246,302,208 bytes，包内无 `XXStock.exe`。独立 QA 在中文空格路径、DNS 阻断条件下确认真实 renderer 资源加载与非空正文。包属性 ProductName/FileDescription 为 x2Stock，npm name 为 x2stock，bridge 为 x2stockDesktop，appId 为 com.mrlaoge.x2stock，开发变量为 X2STOCK_DEV_SERVER_URL。EXE 未签名、Runtime 更新器未实现。
+
+仓库已由主任务真实更名为 `https://github.com/MrLaoGe/x2Stock`，origin 指向同名 `.git`；本任务无更新查询/受信仓库代码。主任务负责 ADR 0009，本任务不占用该编号；正式推送仍等待 main 更名和 A→B→桌面顺序，首包仅本地交付。
+
+新包 QA 对工作台、规范页、404 重跑三语/title/meta/控件/提示/无障碍标签，切换即时生效。旧 `en` + 新值缺失时恢复英文并写入新 key，旧值保留；新 `zh-TW` + 旧 `en` 时繁体优先。QA 保存并恢复两个测试 key 的原值，无 profile 删除或数据覆盖。`CloseMainWindow` 正常退出后从同一路径重启保持英文，原生 title 为 `x2Stock | Workspace`；繁体/简体规范 title 也实测通过。所有 QA 启动进程已关闭。
+
+新名截图目录为 `E:\XXStock\.local\artifacts\windows-preview\screenshots`：`x2Stock-5554d196-zh-CN.png`、`x2Stock-5554d196-zh-TW.png`、`x2Stock-5554d196-en.png`、`x2Stock-5554d196-en-390.png`。它们由 CDP 从精确 ZIP 的 app.asar renderer 捕获并亲自查看，不含原生边框。390px 图在同一连接内设置并核验 innerWidth=390、innerHeight=844、DPR≈1、scrollWidth=clientWidth=375，无横向溢出。物理系统缩放、实际文字缩放、系统级整窗截图未验证；无旧 profile 的首次安装路径仅经源码/合成测试验证。文字对比及 blur fallback 使用此前独立源码检查作为依据。
+
+产品壳采用 Electron Windows x64，加载随包的本地前端并将用户设置写入独立用户目录。前端默认 zh-CN；语言选择使用本机设置持久化，启动时恢复；三个词典具有类型约束。前端源代码通过 typecheck、Stylelint、Vite production build 和 `git diff --check`。生产依赖审计为 0 advisories；完整开发依赖审计报告 7 项 Stylelint 依赖链 advisory，升级修复会改变 Stylelint 主版本，暂不作为本轮阻断。
+
+obsolete 候选（已通过旧名包 QA，因更名不交付）：`E:\XXStock\.local\artifacts\windows-preview\XXStock-preview-a96db3b0-win-x64.zip`，158,298,639 bytes，SHA-256 前缀 `10b41503e94a6e79`（完整摘要保存在随包 `.sha256` sidecar）。ZIP CRC（72 entries / 385,691,120 expanded bytes）、DNS 阻断启动及 CDP packaged renderer 内容均通过。独立 QA 通过三语三路由、控件/提示/无障碍、即时切换与英文退出重启恢复、390px 同会话页面捕获；旧截图保留于 `E:\XXStock\.local\artifacts\windows-preview\screenshots`。截图来自 app.asar renderer，不含原生边框；物理系统缩放/实际文字缩放未验收。旧 EXE 未签名。
+
+失败候选（保留，不交付）：`E:\XXStock\.local\artifacts\windows-preview\XXStock-preview-33c9d506-win-x64.zip`，158,298,636 bytes，SHA-256 前缀 `2a0ba44beeb09989`（完整摘要保存在 sidecar）。其 CDP 结果证明根相对 `/assets/...` 会解析为 `file:///C:/assets/...`，React root 与正文为空；修复是在 `frontend/vite.config.ts` 为打包产物设置相对 `base: './'`。不得用该包的窗口启动记录替代 UI 验收。EXE 未签名。
+
+生产依赖审计 `npm audit --omit=dev` 无 advisories。完整 desktop 构建依赖审计有 8 项 moderate，处于 `electron-builder` 构建依赖链；建议修复版本会将已锁定的 26.15.3 降级，故未改锁文件。审计不能替代 Electron/Chromium 二进制的安全更新检查。Electron/Tauri 性能对比和自动更新安全链路均未验收。不得把早期失效包的启动记录或截图冒充新包验收证据。
+
+## 下一轮
+
+本地首包交付与独立 QA 已完成。正式集成须基于 B 最新 main，保留主任务更名补丁 `a1dcf4f9c24f740681344566cfc28f16546ebfd4`、ADR 0009 和 2 项新增发布行为测试；顺序仍是 A→B→桌面。当前没有正式 push/tag/Release，未占用正式版本。保留全部旧产物。Runtime 更新器、物理缩放与原生整窗截图分别留给后续实现/验收，不把它们写成当前能力。

@@ -33,6 +33,9 @@ config/secrets/
 
 # Dependency/build caches
 node_modules/
+/desktop/node_modules/
+/desktop/release/
+/desktop/renderer/
 dist/
 build/
 .venv/

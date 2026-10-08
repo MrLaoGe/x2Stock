@@ -10,12 +10,15 @@
 | S0-004 | 数据来源与历史迁移设计 | 数据 Agent | completed | 来源矩阵、审计、迁移、数据模块 |
 | S0-005 | 架构、契约、界面与功能归并 | 架构 Agent | completed | 架构、接口、UI、模块目录 |
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
-| S0-007 | 创建并发布 MrLaoGe/XXStock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/XXStock)，MIT；初次远端main提交和32文件与本地一致 |
-| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)，频道19返回HTTP200 |
+| S0-007 | 创建并发布 MrLaoGe/x2Stock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/x2Stock)，MIT；初次远端main提交和32文件与本地一致 |
+| S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，频道19返回HTTP200 |
 | S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
+| UI-001 | x2Stock 空白工作台、Windows 三语首包与固定前端风格 Skill | 独立前端 PM / 前端 / 桌面 / Skill / 独立 QA | in_progress | 新名 ZIP/EXE 本地交付和独立 QA 完成，源5554d196；品牌/旧设置兼容/三语/重启/离线/390px/CDP页截图通过。物理系统缩放未验收，Runtime 更新器未实现。旧包保留 obsolete；正式发布仍等待 A→B→桌面并保留主线 rename/ADR0009/新增测试。见 [UI-001 交接](handoffs/frontend-style.md) |
 | S1-001 | 数据中心与迁移详细实施 | 后续对话 | planned | 先模块范围和验收，再骨架/数据代码 |
 
 ## 下一轮入口
+
+UI-001 分工：前端 Agent 在独立分支仅实现 `frontend/`；Skill Agent 在独立分支仅实现 `.agents/skills/frontend-style/`；PM 负责设计文档、注册、CI、集成和发布；独立 QA 在固定候选上检查真实页面、代码，并在隔离位置使用 Skill 创建中性样例。未建设后端、业务模块、数据库或迁移程序。
 
 [数据中心与迁移](../modules/data-center.md) 是下一轮首个 A 股业务模块。用户已先追加 Git通知运维任务 S0-008；当前未实现数据库、采集、迁移、API、业务页面、产品 Agent、回测或交易执行。
 
@@ -27,7 +30,7 @@
 - 独立审查：原两项问题已修正并定向复核，无剩余阻断问题；worker执行与数据库回滚是未来代码验收，未在本轮运行。
 - 旧项目 Git 状态与开始时一致，本轮未修改旧项目或导入业务数据。来源数量是旧系统审计快照，不构成新版接口权限实测。
 - 全新 GitHub 克隆：无需旧项目、业务运行依赖或用户凭据，公开资产校验通过，工作区干净。
-- 首次 [GitHub Actions](https://github.com/MrLaoGe/XXStock/actions/runs/37754656719) 通过；发布交接记录的后续提交继续由同一流水线验证，最新结果见仓库 Actions。
+- 首次 [GitHub Actions](https://github.com/MrLaoGe/x2Stock/actions/runs/37754656719) 通过；发布交接记录的后续提交继续由同一流水线验证，最新结果见仓库 Actions。
 
 ## Skill 与正式发布（S0-009）
 
@@ -37,6 +40,6 @@
 
 - 已配置 GitHub Secrets（地址/密钥）和 Variables（启用、频道19、前缀、超时），本机秘密仅在被忽略的 `.env`；3.0配置未修改。
 - 23合成测试、公开资产校验和独立审查通过；HTTP协议异常泄露原文的问题已修复并验证。
-- 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/XXStock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
-- 同次[开发校验](https://github.com/MrLaoGe/XXStock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；本轮 S0-009 将正式 main 改为同一发布工作流最终通知，其他 push 的行为见当前通知规范。
+- 功能提交的真实push触发通知；[专用工作流](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)记录 `sent`、频道19、HTTP200。
+- 同次[开发校验](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570653)通过。通知成功与开发校验分别记录；本轮 S0-009 将正式 main 改为同一发布工作流最终通知，其他 push 的行为见当前通知规范。
 - 配置、限制和失败处理见[通知说明](git-notifications.md)，本轮交接见[通知交接](handoffs/git-notifications.md)。

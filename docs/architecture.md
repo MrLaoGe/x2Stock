@@ -6,7 +6,7 @@
 
 | 层 | 选型 | 职责 |
 | --- | --- | --- |
-| 网页 | React、TypeScript、Vite、React Router | 按功能组织页面和路由 |
+| 桌面渲染层 | React、TypeScript、Vite、React Router，运行于 Electron Windows EXE | 当前产品入口；浏览器仅供开发/视觉调试 |
 | 组件与请求 | Ant Design、TanStack Query | 常规交互、服务器状态、加载和错误展示 |
 | 图表 | ECharts | 行情、时间序列、资金与回放可视化 |
 | API | Python、FastAPI、Pydantic | `/api/v1` 接口、校验、归属检查 |
@@ -82,3 +82,12 @@ Compose 默认只映射 Web 到本机，不映射 API 或数据库。后续开�
 - worker 租约过期并被重新领取后，旧执行者恢复时的续租、正式写入与完成状态更新都被拒绝；新执行者的结果保留。
 - API、worker、文件和缓存均拒绝跨归属访问；未来认证方案上线前不开放远程访问。
 - 实际 Compose、迁移、备份恢复和 worker 故障恢复通过后，才把对应能力标为已实现。
+
+
+## Windows 免安装应用补充（ADR 0007）
+
+当前产品是 Windows x64 portable/onedir EXE：解压后双击程序，程序资源、用户研究数据、下载更新包和缓存分目录，不要求 Node、Python、Docker、PostgreSQL 或管理员权限。React/TypeScript/Vite 渲染层运行在 Electron 桌面壳内；浏览器运行仅供开发与视觉调试，不构成独立 Web 产品。Tauri 2 的资源对比属于后续优化研究，不是本轮交付前提。
+
+单用户免安装存储优先评估 SQLite WAL + SQLAlchemy/Alembic；WAL checkpoint、busy 重试、备份一致性和故障恢复仍需实现和验收。Parquet/DuckDB 仅作为按需批量分析产物，嵌入式写入由单个后台进程持有；不在本轮建立业务表或导入数据。PostgreSQL、Docker Compose 和多用户服务保留未来服务器部署方案，不能成为桌面首包启动前提。Python 生态保留给未来金融计算、采集和量化模块；空白 UI 不等待不存在的服务。
+
+Runtime 自动更新器本轮未实现。未来版本若接入，只能消费受信 GitHub Release 元数据和 Windows 资产，进行 SemVer/prerelease 筛选、完整性/真实性校验、原子切换、回退和用户确认；渲染器无 Node/秘密，主进程 IPC 受控。

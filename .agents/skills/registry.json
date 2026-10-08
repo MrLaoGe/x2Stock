@@ -8,7 +8,25 @@
       "status": "active",
       "purpose": "整理变更、升版、验证、发布 GitHub Release 并通知频道",
       "dependencies": [],
-      "resources": ["VERSION", "CHANGELOG.md", "scripts/vocechat_notify.py"]
+      "resources": [
+        "VERSION",
+        "CHANGELOG.md",
+        "scripts/vocechat_notify.py"
+      ]
+    },
+    {
+      "id": "frontend-style",
+      "path": ".agents/skills/frontend-style/SKILL.md",
+      "category": "development",
+      "status": "active",
+      "purpose": "固定 x2Stock React/Electron 可复用界面风格、token、组件与视觉验收",
+      "dependencies": [],
+      "resources": [
+        "frontend/src/styles/tokens.css",
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/ui.tsx",
+        "docs/ui-design.md"
+      ]
     }
   ]
 }

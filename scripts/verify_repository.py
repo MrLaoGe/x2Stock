@@ -36,7 +36,10 @@ PRIVATE_SUFFIXES = {
     ".db", ".sqlite", ".sqlite3", ".duckdb", ".parquet", ".csv", ".xlsx",
     ".xls", ".docx", ".pdf", ".log", ".pem", ".key",
 }
-TEXT_SUFFIXES = {".md", ".json", ".py", ".yml", ".yaml", ".toml", ".example"}
+TEXT_SUFFIXES = {
+    ".md", ".json", ".py", ".yml", ".yaml", ".toml", ".example",
+    ".ts", ".tsx", ".js", ".jsx", ".css", ".html", ".cjs", ".mjs",
+}
 DATABASE_FILE = re.compile(r"\.(?:db|sqlite|sqlite3)(?:-(?:wal|shm|journal))?$|\.duckdb(?:\.wal)?$", re.I)
 LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+[\"'][^\n]*[\"'])?\s*\)")
 SECRET_RULES = (

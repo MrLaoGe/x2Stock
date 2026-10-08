@@ -1,0 +1,40 @@
+{
+  "name": "x2stock",
+  "version": "0.1.0-preview.1",
+  "private": true,
+  "description": "x2Stock Windows desktop preview shell",
+  "main": "main.cjs",
+  "scripts": {
+    "stage:renderer": "node scripts/stage-renderer.mjs",
+    "start": "electron .",
+    "pack:dir": "npm run stage:renderer && electron-builder --win dir --x64 --publish never",
+    "pack:portable": "npm run stage:renderer && electron-builder --win portable --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.mrlaoge.x2stock",
+    "productName": "x2Stock",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "x2Stock-${version}-${arch}.${ext}"
+    }
+  }
+}

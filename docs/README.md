@@ -6,7 +6,8 @@
 
 - [总体方案](project-plan.md)：已确认决策与首轮边界。
 - [功能审查清单](modules/catalog.md)：旧功能归并、候选与淘汰边界。
-- [界面规范](ui-design.md)：桌面工作台与手机操作原则。
+- [界面规范](ui-design.md)：Windows EXE 产品基线、界面要求与浏览器调试边界。
+- [前端开发](development/frontend.md)：浏览器调试、Windows 桌面构建与验收命令。
 - [阶段路线](roadmap.md)：各阶段交付与进入下一阶段的条件。
 
 ## 技术与数据
@@ -25,6 +26,7 @@
 - [协作规范](development/collaboration.md)：分支、worktree、评审和集成。
 - [项目 Skill 组织](development/skills.md)：项目目录、注册表、开发/业务分类和权限边界。
 - [github-release Skill](../.agents/skills/github-release/SKILL.md)：本地准备/检查和受限 Actions 发布入口。
+- [frontend-style Skill](../.agents/skills/frontend-style/SKILL.md)：固定共享界面 token、组件和验收。
 - [版本与正式发布](development/releases.md)：版本、exact SHA、Release、最终通知与失败恢复。
 - [Git 与发布到 VChat / VoceChat](development/git-notifications.md)：通知分工、配置和脱敏。
 - [任务台账](development/task-ledger.md)：实际完成状态。
@@ -40,6 +42,7 @@
 - [ADR 0002：技术栈与独立部署](adr/0002-stack-and-deployment.md)
 - [ADR 0003：来源准入和历史迁移](adr/0003-provenance-and-migration.md)
 - [ADR 0004：Agent 证据与执行边界](adr/0004-agent-and-execution.md)
+- [ADR 0007：初始界面、三语资源与 Windows 产品壳](adr/0007-frontend-style.md)
 
 ## 外部依据
 
