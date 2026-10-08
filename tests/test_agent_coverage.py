@@ -27,6 +27,10 @@ class CoverageTests(unittest.TestCase):
         self.coverage["capabilities"][0]["business_role_ids"] = ["unknown"]
         self.assertTrue(coverage_issues(self.catalog, self.coverage))
 
+    def test_role_pool_cannot_replace_specialist_with_generic_group(self):
+        self.coverage["roles"][0]["group"] = "generic"
+        self.assertIn("approved role pool coverage incomplete", coverage_issues(self.catalog, self.coverage))
+
     def test_implementer_cannot_self_accept(self):
         item = self.coverage["capabilities"][0]
         item["acceptance_role_ids"] = item["implementation_role_ids"][:]

@@ -180,7 +180,7 @@ def coverage_issues(catalog: str, coverage: dict) -> list[str]:
     if actual_groups != expected_groups or len(roles) != sum(expected_groups.values()):
         issues.append("approved role pool coverage incomplete")
     for role in roles:
-        for field in ("name", "group", "stage", "mode", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
+        for field in ("name", "group", "stage", "mode", "responsibility", "inputs", "dependencies", "outputs", "acceptance", "reviewer_role_ids", "excluded_permissions", "failed_handoff", "template_ref"):
             if not role.get(field):
                 issues.append(f"role contract missing {field}")
         reviewers = role.get("reviewer_role_ids", [])
