@@ -14,6 +14,17 @@ PRIVATE_ROOTS = {'.agents', '.local', '.worktrees', 'runtime', 'data', 'logs', '
 PRIVATE_SUFFIXES = {'.db', '.sqlite', '.sqlite3', '.duckdb', '.parquet', '.csv', '.xlsx',
                     '.xls', '.docx', '.pdf', '.log', '.pem', '.key'}
 DATABASE_FILE = re.compile(r'\.(?:db|sqlite|sqlite3)(?:-(?:wal|shm|journal))?$|\.duckdb(?:\.wal)?$', re.I)
+BINARY_ASSETS = {'docs/assets/readme-header.jpg'}
+SECRET_ASSIGNMENT = re.compile(
+    r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|VOCECHAT_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
+    r"[\"']?[ \t]*[:=][ \t]*[\"']?([A-Za-z0-9_./+=:-]+)"
+)
+PYTHON_SECRET_ASSIGNMENT = re.compile(
+    r"(?im)[\"']?\b(?:TUSHARE_TOKEN|AI_API_KEY|OPENAI_API_KEY|VOCECHAT_API_KEY|POSTGRES_PASSWORD|api_key|access_token|password|token)"
+    r"[\"']?[ \t]*[:=][ \t]*[\"']([A-Za-z0-9_./+=:-]+)"
+)
+ENV_REFERENCES = {'TUSHARE_TOKEN', 'AI_API_KEY', 'OPENAI_API_KEY', 'VOCECHAT_API_KEY',
+                  'POSTGRES_PASSWORD', 'DATABASE_URL'}
 
 
 def secret_issues(text, python_code=False):
@@ -23,7 +34,23 @@ def secret_issues(text, python_code=False):
              r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',
              r'\b[0-9a-fA-F]{48,128}\b',
              r'[?&](?:token|api_key|access_token|key)=[^\s&<>]+']
-    return ['credential pattern'] if any(re.search(rule, text) for rule in rules) else []
+    issues = ['credential pattern'] if any(re.search(rule, text) for rule in rules) else []
+    assignments = PYTHON_SECRET_ASSIGNMENT if python_code else SECRET_ASSIGNMENT
+    for match in assignments.finditer(text):
+        value = match.group(1)
+        if value in ENV_REFERENCES or value.lower().startswith(('example', 'placeholder', 'replace_')):
+            continue
+        issues.append('nonempty credential assignment')
+    return issues
+
+
+def content_issues(name, data):
+    if name in BINARY_ASSETS:
+        return [] if data.startswith((b'\xff\xd8\xff', b'\x89PNG\r\n\x1a\n')) else ['approved image is not JPEG or PNG']
+    try:
+        return secret_issues(data.decode('utf-8'), python_code=name.endswith('.py'))
+    except UnicodeError:
+        return ['ordinary public content must be UTF-8']
 
 
 def main():
@@ -49,6 +76,10 @@ def main():
             continue
         if hashlib.sha256(data).hexdigest() != record['sha256']:
             issues.append('public blob digest differs from export manifest')
+        # Inspect committed and working bytes so an accidentally filled local env
+        # example cannot be hidden by an unchanged committed digest.
+        issues.extend(content_issues(name, data))
+        issues.extend(content_issues(name, path.read_bytes()))
     issues.extend(verify_runtime(ROOT, sorted(names), materialized=True))
     print('FAIL: generated public tree rejected' if issues else 'PASS: generated public tree and materialized runtime verified')
     return bool(issues)

@@ -1,5 +1,5 @@
 {
-  "content_sha256": "fd3df84d922941ead0690d4aef080df746a16f951cd7770b18ef9bd65f7041e3",
+  "content_sha256": "fae9506ec736b16caf6584ac3ac389650f88d88cda3306558c0f97dec550f38a",
   "files": {
     ".editorconfig": {
       "sha256": "85bccbd23a9070becfe1dc0dbb9ad7305fb2bb98f92f54cb9856d7d6eca4ebfe",
@@ -590,8 +590,8 @@
       "size": 10599
     },
     "scripts/verify_repository.py": {
-      "sha256": "16ac1af198b460b2098c18a9a7def5cb92ada355bd79933bc020e1325c305c07",
-      "size": 2984
+      "sha256": "738fab76f440ce7eac5510c80a261d6fd181deb1bc5d2c39eafbac7b13773acc",
+      "size": 4617
     },
     "tests/test_desktop_runtime.py": {
       "sha256": "4b47a38e9e8e77028666b853f9daa2c1f9f42aaf64cd87979d63b30c1fe96bd1",
