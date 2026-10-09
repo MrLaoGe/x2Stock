@@ -1,6 +1,6 @@
 # 任务台账
 
-更新时间：2026-10-08。阶段 0 文档状态与远端发布状态分开记录。
+更新时间：2026-10-09。阶段 0 文档状态与远端发布状态分开记录。
 
 | ID | 任务 | 负责人角色 | 状态 | 产物 / 下一步 |
 | --- | --- | --- | --- | --- |
@@ -12,10 +12,10 @@
 | S0-006 | 独立评审与公开资产验证 | 审查 / 主 Agent | completed | 32 公开资产校验；CI差异与worker领取代次问题已修正 |
 | S0-007 | 创建并发布 MrLaoGe/x2Stock | 主 Agent | completed | [公开仓库](https://github.com/MrLaoGe/x2Stock)，MIT；初次远端main提交和32文件与本地一致 |
 | S0-008 | Git push 自动通知 VChat #19 | 主 Agent / 审查 | completed | 23测试与独立审查通过；实际push触发[通知](https://github.com/MrLaoGe/x2Stock/actions/runs/37757570650)，频道19返回HTTP200 |
-| S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | in_progress | 本地实现与独立审查完成，43测试、51公开资产、Skill及版本校验通过；0.1.0远端Release与最终通知待本次工作流，结果保留于Actions及对话 |
-| S0-010 | 多对话开发 Skill 与金融专业角色体系 | 独立 PM / 角色专责 / 工程 / 独立审查 | in_progress | 42角色契约、44能力逐项三责；角色与工程候选已独立 PASS，等待 x2Stock 更名后的最终集成和发布 |
+| S0-009 | 项目 Skill 标准化与正式版本发布 | 主 Agent / 文档 / 审查 | completed | 0.1.0 已发布；精确标签、预发布及最终通知已核实，见下方历史记录；不改写历史发布材料 |
+| S0-010 | 多对话开发 Skill 与金融专业角色体系 | 独立 PM / 角色专责 / 工程 / 独立审查 | reviewed | 42角色契约、44能力逐项三责及协调工具本地独审通过；桌面重建桥接补丁 bce0a7bf 独审通过并集成，主 Agent 接管统一候选与发布；整批最终及远端结果另验 |
 | S0-011 | 独立新建与按模块复用路线调整 | 独立 PM / 独立审查 | reviewed | ADR 0006、当前入口与迁移规则统一；初稿独审无阻断；A/B整合68资产/69测试和差异检查通过，已含更名与ADR0009；等待最终一致性复核及 A/B/C 全部 ready；[交接](handoffs/module-first-roadmap.md) |
-| UI-001 | x2Stock 三语Windows工作台、风格Skill、整体分发与更新闭环 | 独立前端 PM / 前端 / 桌面 / 独立 QA | in_progress | A/B/rename/ADR0009完整集成，clean源7a4e1ec重建73资源LFS及BAT离线/freshprofile通过；更新器healthy/blank/2kill点恢复后持续native可见/en偏好/hash/数据保留通过，21Node/9前端/13runtime archive合成测试通过。最终C exactSHA独审待闭合，ready=false；Include LFS/实际archive/跨版本Release仍external_unverified；旧ZIP留审计。见[交接](handoffs/frontend-style.md) |
+| UI-001 | x2Stock 三语Windows工作台、风格Skill、整体分发与更新闭环 | 独立前端 PM / 前端 / 桌面 / 独立 QA | reviewed | C exact 2823e68 本地独审通过，73资源LFS及BAT离线/freshprofile、更新恢复闭环通过；91Python/21桌面/9前端测试通过。正式版本须重建并独审；Include LFS/实际archive/跨版本Release仍外部待验；旧ZIP留审计。见[交接](handoffs/frontend-style.md) |
 | S1-001 | 金融后台应用骨架 | 后续对话 | planned | 空桌面UI已实现；按需Python/SQLite、显式结构升级与配置健康仍规划，PG/Compose留未来服务器，不作Windows启动前提 |
 
 ## 下一轮入口
@@ -26,7 +26,7 @@
 
 ## 路线调整（S0-011）
 
-本轮只交付文档；本地验证、独立审查与外部发布分别验收。与 S0-010 Skill 和桌面任务并行本地验收，按最新 all-ready 门槛整合固定候选，不要求前任务先单独发布。A 负责最终集成与独立审查，A/B/C 全部 ready 后统一正式批次并核验 Git、Release、Actions、#19；B 不单独 push 或预占版本。角色模板、协调脚本、行为测试和发布流水线不属本轮修改范围，前任务成果须完整保留。旧项目和真实业务数据未修改。当前审查/验证进度见[本轮交接](handoffs/module-first-roadmap.md)。
+本轮只交付文档；本地验证、独立审查与外部发布分别验收。与 S0-010 Skill 和桌面任务并行本地验收，按最新 all-ready 门槛整合固定候选，不要求前任务先单独发布。A 原负责最终集成与独立审查；原任务对话受模型服务余额不足阻断后，由老板对话主 Agent 接管最终集成，并安排另一独立审查 Agent。A/B/C 本地验收结果保留，统一正式批次核验 Git、Release、Actions、#19；B 不单独 push 或预占版本。角色模板、协调脚本、行为测试和发布流水线不属本轮修改范围，前任务成果须完整保留。旧项目和真实业务数据未修改。当前审查/验证进度见[本轮交接](handoffs/module-first-roadmap.md)。
 
 ## 本轮验证
 
