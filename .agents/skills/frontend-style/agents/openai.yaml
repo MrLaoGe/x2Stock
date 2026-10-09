@@ -1,7 +1,0 @@
-interface:
-  display_name: "x2Stock Frontend Style"
-  short_description: "Keep x2Stock pages consistent with the dark workspace style"
-  default_prompt: "Use $frontend-style to create or revise an x2Stock page while preserving the canonical tokens and shared components."
-
-policy:
-  allow_implicit_invocation: true

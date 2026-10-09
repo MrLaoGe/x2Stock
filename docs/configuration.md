@@ -1,78 +1,19 @@
-# 配置与用户接入设计
+# 配置说明
 
-状态：应用配置为设计；独立 Git 通知工具已实现其 `notifications.vocechat` 子集的读取与脱敏。公开模板为 [config.example.json](../config/config.example.json) 与 [.env.example](../.env.example)。模板不是真实用户配置，也不触发网络访问。配置项列出长期契约，不代表对应模块已选或默认部署。骨架无旧项目、数据源凭据和 AI 也能启动；未选模块不初始化业务表、不部署采集/导入任务。
+应用配置示例位于 [`config/config.example.json`](../config/config.example.json)，环境变量示例位于 [`.env.example`](../.env.example)。模板不会访问网络，也不包含真实凭据。
 
-## 配置位置和优先级
+## 本地运行
 
-普通设置采用“已提供的环境变量 → `config/config.local.json` → 版本化默认值”。缺省使用示例中的设计值；JSON 中的 `*_env` 表示环境变量名称，而非密钥。环境变量空值视为未提供；关闭功能使用明确的 `enabled=false`，不依赖空字符串。
+复制 `.env.example` 为 `.env`，按需填写 Tushare、AI 和本地存储设置。`.env` 已被 Git 忽略，不能提交或打印到日志。默认绑定 `127.0.0.1`，默认 AI 关闭，预算为零。
 
-秘密只从后端环境或部署 secrets 读取，不写 JSON。未来 secrets 文件采用对应的 `*_FILE` 环境变量；同一秘密同时配置直接变量和 `_FILE` 时启动报配置冲突，防止意外选错账户。实际文件、`.env`、本地 JSON 和数据目录均被 Git 忽略。
+## 数据源
 
-公开 settings 接口返回配置状态、脱敏摘要和验证结果，不返回密钥、数据库密码或完整带凭据 URI。异常日志不能透传 provider 请求体或认证头。
+当前允许的数据源配置为 Tushare、东方财富和财联社。具体模块只有在用户选择并启用后才会采集或建立业务存储；未配置权限时应显示缺失状态，不以空值或 AI 内容补造数据。
 
-## 运行设置
+## AI
 
-| 配置 | 默认 | 含义 |
-| --- | --- | --- |
-| `X2STOCK_BIND_HOST` | `127.0.0.1` | 单用户仅本机访问 |
-| `X2STOCK_WEB_PORT` | `8080` | 保留未来服务器配置示例，桌面不启动生产Web |
-| `X2STOCK_API_PORT` | `8140` | 未来开发/服务器示例；桌面后台采用系统分配动态端口，不读取此固定端口 |
-| `X2STOCK_DEV_WEB_PORT` | `5180` | Vite 开发端口 |
-| `X2STOCK_TIMEZONE` | `Asia/Shanghai` | 交易时段及用户展示时间 |
-| `X2STOCK_LOCAL_USER_ID` / `X2STOCK_LOCAL_WORKSPACE_ID` | `local` / `local` | 服务端身份上下文；不是访问令牌 |
-| `X2STOCK_DATA_DIR` | `.local/data` | 未来业务私有目录示例；当前未创建或写入业务数据，桌面设置/profile使用独立AppData目录 |
-| `DATABASE_URL` | 未配置 | 未来业务存储由模块配置；桌面SQLite候选，PG留服务器；不连旧库 |
+AI 设置包含 `base_url`、`api_key`、`model`、协议、超时和预算。密钥只放本地环境或部署 secrets，前端不会返回密钥。支持的协议由实际模块声明，默认不开启计费调用。
 
-未来服务器 Compose 方案只把 web 映射到 `127.0.0.1:8080`；API、worker、PostgreSQL 使用内部网络。PostgreSQL 容器内为 `5432`，默认不映射到宿主机。密码由使用者设置；不提供公共默认密码。开发 API/Vite 也绑定本机，CORS只开放实际开发来源；当前Vite5181仅视觉调试，未来Python动态端口/每会话凭据受主进程控制，不把端口或凭据暴露renderer。
+## 用户数据
 
-首期不是面向公网的免登录服务。允许外部访问和多人共享前必须实现认证、会话、归属授权及用户 secrets 隔离，不能仅改变 bind host。
-
-## 数据源配置
-
-Tushare 使用 `TUSHARE_TOKEN`，通过 SDK 或固定官方 HTTP 地址访问。缺 token 不导致空数据覆盖，也不自动探测收费数据；在已启用能力列表显示 `missing_credential`，骨架仅显示安全的配置状态。权限核验逐接口、最小请求、显式触发，记录核验时间和结果。
-
-东方财富与财联社适配器也要独立记录端点、口径、限频、最近成功和结构变化；“公开接口”不代表有可保证的 SLA。三类来源开关不能改变准入规则。此阶段不会创建 zhitu、mairuiapi 或其他来源配置。
-
-MCP 是后续 Agent 工具通道，不承担初期持久采集。若接入，带 token 的 URL 从秘密配置即时组装，不进入仓库、前端、日志和 Agent 普通上下文。MCP 的数据仍经过同一契约、缓存和权限核验。
-
-## AI 配置
-
-| 配置 | 默认与行为 |
-| --- | --- |
-| `AI_ENABLED` | `false`；未配置 AI 仍可使用确定性数据与研究模块 |
-| `AI_BASE_URL` | `https://api.openai.com/v1`；由部署者配置 |
-| `AI_API_KEY` | 空；仅后端读取 |
-| `AI_MODEL` | 空；用户填写 GPT 模型，不硬编码“最新模型” |
-| `AI_PROTOCOL` | `responses`，另支持 `chat_completions` |
-| `AI_TIMEOUT_SECONDS` | `60` |
-| `AI_MAX_CONCURRENT_REQUESTS` | `1`，后续按实测调整 |
-| `AI_MAX_OUTPUT_TOKENS` | `2048`，每个角色可在总预算内收紧 |
-| `AI_DAILY_BUDGET_CNY` | `0`，默认不开启计费工作 |
-| `AI_INPUT_CNY_PER_MILLION_TOKENS` / `AI_OUTPUT_CNY_PER_MILLION_TOKENS` | 空；部署者填写每百万 token 的人民币输入/输出价格 |
-
-启用 AI 需要模型、密钥、非零预算、明确协议以及部署者填写的输入/输出计费参数；缺价格时不能可靠计算费用，禁止计费后台任务并显示待配置。第三方网关的自定义地址不能证明协议完整兼容，需分别验证文本输出、结构化输出和错误处理。
-
-费用在任务发起前按最坏输入/输出上限预占，完结按可得实际用量结算并释放差额；并发任务共享预算计数，重试也计入。缓存输入先按普通输入价格保守估算，不自动下载价格或推测汇率。免费网关可明确填写零价格，仍需要非零预算与显式启用。
-
-不会因 Responses 失败就隐式切换到另一模型或协议重复付费。连接测试属于用户主动操作，显示预期请求和预算，再按已有操作授权执行。模型故障时确定性计算可继续，报告明确标记 AI 未完成。
-
-OpenAI 官方 SDK 支持 Responses 和可配置客户端；第三方兼容性需另行验证，参考 [官方 Python SDK](https://developers.openai.com/api/reference/python)。开发 Codex 的模型设置与产品 AI 配置彼此独立。
-
-## 已实现：VChat / VoceChat Git 通知
-
-机器人地址与密钥分别通过 `VOCECHAT_BASE_URL`、`VOCECHAT_API_KEY` 配置，频道 `VOCECHAT_GROUP_ID` 默认 `19`；公开模板默认关闭且秘密为空。GitHub端使用 Actions Secrets 存地址/密钥、Variables存开关/频道/前缀/超时。配置检查只显示是否已配置，错误不包含上游正文或原始异常。
-
-工具仅为 Git 推送通知，不启动应用服务或旧调度器。使用方法、环境优先级、脱敏及故障验收见 [通知说明](development/git-notifications.md)。
-
-## 迁移配置
-
-`LEGACY_SOURCE_PATH` 默认为空，只供用户选定模块、数据集、字段、证券/日期范围及批次并另行批准的本地迁移工具使用；默认不迁移，评估不构成导入授权。该工具未实现，不是骨架交付前置。正常服务启动不读取它、不扫描旧目录。工具必须验证源、目标不是同一个库或目录，并把只读连接、一致性快照和导入报告作为独立操作。
-
-## 配置验收
-
-验证未配置、不合法、缺凭据、权限不足、协议不兼容、价格缺失与预算耗尽。确认前端、日志、任务错误和导出均无秘密；实际本地配置不会被 `git add .` 纳入。自身配置与健康随骨架实施；provider/AI 探测、权限及预算验收随相应已选模块启用，不强加骨架。
-
-## Windows 首包与分发边界
-
-
-Windows EXE 是产品入口，浏览器仅用于开发/视觉调试。整体项目随附 `desktop-runtime/win-x64`，根 `启动.bat` 仅相对启动本地程序；它不启动 Docker、PostgreSQL、Python worker 或外置 API。程序目录、用户数据、更新下载临时目录和缓存独立，更新不能覆盖研究资产。更新UI已实现三语状态与确认；更新器代码正在集成，实际helper与真实Release/source archive仍待验收，最终状态见[桌面交接](development/handoffs/frontend-style.md)。完整性依赖GitHub同Release的metadata digest和archive摘要及TLS；当前没有独立代码签名，渲染器不接触 token。
+运行时数据、缓存和个人研究资产保存在本机忽略目录。旧 ReviewStock_Codex 的数据库、调度器和缓存不是新版运行依赖；只有用户选定模块并明确批准后，才会进行一次独立的旧数据评估和导入。

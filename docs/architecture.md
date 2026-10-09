@@ -1,6 +1,6 @@
 # Windows 桌面架构
 
-当前产品入口是 Windows x64 `启动.bat` → `desktop-runtime/win-x64/x2Stock.exe`；浏览器只用于开发与视觉调试。React 空工作台和三语首包已本地独立验收；项目树随附 runtime、Git LFS 归档和更新闭环仍按[交接](development/handoffs/frontend-style.md)记录真实状态。无金融业务、数据库、Python 服务或旧数据导入。此文按[ADR 0008](adr/0008-windows-desktop.md)替代 ADR 0002 的当前单用户部署选择，保留旧历史与未来服务器方案；逐模块路线仍按 ADR 0006。
+当前产品入口是 Windows x64 `启动.bat` → `desktop-runtime/win-x64/x2Stock.exe`；浏览器只用于开发与视觉调试。React 空工作台和三语首包已本地独立验收；项目树随附 runtime、Git LFS 归档和更新闭环。无金融业务、数据库、Python 服务或旧数据导入。当前采用单用户桌面部署，服务器方案留待后续模块。
 
 ## 当前与后续技术职责
 
@@ -19,7 +19,7 @@ Ant Design/TanStack Query/ECharts 仅在已选模块需要时引入；大表用�
 
 ## 选择 Electron 的证据与限制
 
-**Observed**：相同x2Stock空白UI的5554d196构建具备完整本机运行资源，独立QA验证中文空格路径、DNS屏蔽、非空本地renderer与三语/重启/390px。现有电脑缺Rust/Cargo/MSVC/SDK，所以未构建Tauri原型。**Derived**：本机Electron三次暖启动到CDP确认正文非空的中位数238.55ms，工作集空闲加总323.52–338.42MiB；这不是首次绘制、冷启动、峰值或独占内存。详细协议见[测量证据](development/desktop-architecture-evidence.md)。
+**Observed**：Electron 空白 UI 构建具备完整本机运行资源，已验证中文空格路径、非空本地 renderer 与三语首包。当前不以此宣称 Electron 与其他桌面壳的性能优劣；性能数据和研发测量记录属于内盒。
 
 Electron满足现阶段无额外安装和渲染一致性；代价是386MB级完整运行目录与246MB核心EXE，必须LFS管理。不能据现有结果宣布Electron比Tauri快或节省内存。Tauri依赖Windows WebView2；官方描述fixed runtime约增加180MB，系统runtime模式仍是外部先决条件。未来若工具链和运行条件允许，应对同一UI比较完整资源/全进程/暖冷启动，再决定是否换壳。[Tauri Windows发行](https://v2.tauri.app/distribute/windows-installer/)、[Electron性能指南](https://www.electronjs.org/docs/latest/tutorial/performance)。
 
@@ -39,7 +39,7 @@ Electron内置autoUpdater描述的是已安装Squirrel/MSIX形态，不能假设
 
 同Release受信JSON清单绑定final tag SHA、整项目codeload URL、archive大小与SHA、runtime路径及source_tree_hash。下载与解压有超时/限额，拒绝路径穿越、ADS、设备名、大小写冲突、符号链接、CRC错误和架构/版本/源码身份不符。只提取runtime到独立staging，再准备目标同卷sibling；源码/.git/.env/.local/AppData不参与替换。
 
-helper独立于renderer且在profile/单实例初始化前处理受限模式。等主进程退出后复核目标、digest、journal，current→backup、next→current各自rename；两次rename不是整体原子事务。先准备固定.recovery副本与受限pending入口，根BAT在mainEXE缺失时启动恢复副本；main存在但pending时也交独立恢复进程处理，不在当前EXE内重命名自身目录。保留backup；中断/替换/重启失败通过journal恢复。新进程须确认非空本地renderer和预期manifest，helper退出后仍须持续可见可用；健康超时回退。具体机制和真实未验项目见[桌面更新](development/desktop-updates.md)，不由函数单测代替进程证据。网络/校验/权限错误保持旧程序，不删除资料或声称最新版。
+更新辅助进程独立于 renderer，并在用户确认后校验完整运行时、版本和回退状态。网络、校验或权限错误保持旧程序，不删除资料或声称已更新；详细实现随公开更新协议和后续版本逐步验收。
 
 ## 未来 Python 生命周期与接口
 

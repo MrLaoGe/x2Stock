@@ -16,6 +16,7 @@ config/secrets/
 /logs/
 /outputs/
 /backups/
+docs/designs/
 *.db
 *.db-*
 *.sqlite
