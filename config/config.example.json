@@ -1,41 +1,5 @@
 {
   "schema_version": 1,
-  "deployment": {
-    "mode": "local_single_user",
-    "bind_host": "127.0.0.1",
-    "timezone": "Asia/Shanghai",
-    "ports": { "web": 8080, "api": 8140, "dev_web": 5180 }
-  },
-  "identity": { "local_user_id": "local", "local_workspace_id": "local" },
-  "storage": { "database_url_env": "DATABASE_URL", "data_dir": ".local/data" },
-  "providers": {
-    "tushare": { "enabled": true, "token_env": "TUSHARE_TOKEN", "transport": "http" },
-    "eastmoney": { "enabled": true },
-    "cailianshe": { "enabled": true }
-  },
-  "notifications": {
-    "vocechat": {
-      "enabled": false,
-      "base_url_env": "VOCECHAT_BASE_URL",
-      "api_key_env": "VOCECHAT_API_KEY",
-      "group_id": "19",
-      "api_prefix": "/api/bot",
-      "timeout_seconds": 15
-    }
-  },
-  "ai": {
-    "enabled": false,
-    "base_url": "https://api.openai.com/v1",
-    "api_key_env": "AI_API_KEY",
-    "model": "",
-    "protocol": "responses",
-    "timeout_seconds": 60,
-    "max_concurrent_requests": 1,
-    "max_output_tokens": 2048,
-    "daily_budget_cny": 0,
-    "pricing": {
-      "input_cny_per_million_tokens_env": "AI_INPUT_CNY_PER_MILLION_TOKENS",
-      "output_cny_per_million_tokens_env": "AI_OUTPUT_CNY_PER_MILLION_TOKENS"
-    }
-  }
+  "application": "x2Stock",
+  "financial_modules_enabled": false
 }
