@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, session, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, session, ipcMain, nativeTheme } = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { existsSync } = require('node:fs');
@@ -87,6 +87,9 @@ function isAllowedNavigation(url) {
 }
 
 function createWindow() {
+  // Match the dark workspace even when Windows uses a light system theme.
+  // Keep native caption buttons, drag, snap and accessibility behavior.
+  nativeTheme.themeSource = 'dark';
   const win = new BrowserWindow({
     width: 1280,
     height: 820,
